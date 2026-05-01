@@ -8,9 +8,16 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
 
+interface Branch {
+  id: number;
+  name: string;
+  name_bn: string;
+  is_active: boolean;
+}
+
 export default function Home() {
-  const [branches, setBranches] = useState([]);
-  const [selectedBranch, setSelectedBranch] = useState(null);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
 
   useEffect(() => {
     fetchBranches();
@@ -18,7 +25,7 @@ export default function Home() {
 
   async function fetchBranches() {
     const { data } = await supabase.from('branches').select('*');
-    if (data) setBranches(data);
+    if (data) setBranches(data as Branch[]);
   }
 
   if (!selectedBranch) {
