@@ -10,13 +10,14 @@ const supabase = createClient(
 export default function AdminPage() {
   const [products, setProducts] = useState([]);
   const [branches, setBranches] = useState([]);
+  const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState('add');
   const [editProduct, setEditProduct] = useState(null);
   const [form, setForm] = useState({
     name: '', name_bn: '', product_code: '', description: '',
     price_per_unit: '', unit: 'Kg', branch_id: '',
-    category: '', category_bn: '', stock: ''
+    category: '', category_bn: '', stock: '', page_id: ''
   });
 
   useEffect(() => {
@@ -24,12 +25,13 @@ export default function AdminPage() {
     if (role !== 'admin') window.location.href = '/';
     fetchProducts();
     fetchBranches();
+    fetchPages();
   }, []);
 
   async function fetchProducts() {
     const { data } = await supabase
       .from('products')
-      .select('*, stock(*)')
+      .select('*, stock(*), pages(name_bn, name)')
       .order('id', { ascending: false });
     if (data) setProducts(data);
   }
@@ -37,6 +39,11 @@ export default function AdminPage() {
   async function fetchBranches() {
     const { data } = await supabase.from('branches').select('*');
     if (data) setBranches(data);
+  }
+
+  async function fetchPages() {
+    const { data } = await supabase.from('pages').select('*');
+    if (data) setPages(data);
   }
 
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
@@ -55,6 +62,7 @@ export default function AdminPage() {
         price_per_unit: parseFloat(form.price_per_unit),
         unit: form.unit, branch_id: parseInt(form.branch_id),
         category: form.category, category_bn: form.category_bn,
+        page_id: form.page_id ? parseInt(form.page_id) : null,
         is_active: true
       }).select().single();
 
@@ -64,7 +72,7 @@ export default function AdminPage() {
       await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) });
     }
     alert('পণ্য যোগ হয়েছে!');
-    setForm({ name: '', name_bn: '', product_code: '', description: '', price_per_unit: '', unit: 'Kg', branch_id: '', category: '', category_bn: '', stock: '' });
+    setForm({ name: '', name_bn: '', product_code: '', description: '', price_per_unit: '', unit: 'Kg', branch_id: '', category: '', category_bn: '', stock: '', page_id: '' });
     fetchProducts();
     setLoading(false);
   }
@@ -76,7 +84,9 @@ export default function AdminPage() {
       name: editProduct.name, name_bn: editProduct.name_bn,
       price_per_unit: parseFloat(editProduct.price_per_unit),
       unit: editProduct.unit, category: editProduct.category,
-      category_bn: editProduct.category_bn, description: editProduct.description
+      category_bn: editProduct.category_bn, description: editProduct.description,
+      image_url: editProduct.image_url,
+      page_id: editProduct.page_id ? parseInt(editProduct.page_id) : null
     }).eq('id', editProduct.id);
     alert('আপডেট হয়েছে!');
     setEditProduct(null);
@@ -130,23 +140,26 @@ export default function AdminPage() {
           <div className="bg-white rounded-xl shadow p-4 space-y-3">
             <h2 className="font-bold text-gray-700 text-lg">নতুন পণ্য যোগ করুন</h2>
             <div className="grid grid-cols-2 gap-3">
-              {[
-                { name: 'name', label: 'ইংরেজি নাম *', placeholder: 'Anchor Dal' },
-                { name: 'name_bn', label: 'বাংলা নাম', placeholder: 'এ্যাংকর ডাল' },
-                { name: 'product_code', label: 'পণ্য কোড *', placeholder: 'P001' },
-                { name: 'price_per_unit', label: 'দাম *', placeholder: '120', type: 'number' },
-                { name: 'category', label: 'ক্যাটাগরি (ইং)', placeholder: 'dal' },
-                { name: 'category_bn', label: 'ক্যাটাগরি (বাং)', placeholder: 'ডাল' },
-                { name: 'stock', label: 'প্রাথমিক স্টক', placeholder: '50', type: 'number' },
-                { name: 'description', label: 'বিবরণ', placeholder: 'পণ্যের বিবরণ' },
-              ].map(field => (
-                <div key={field.name}>
-                  <label className="text-xs text-gray-500">{field.label}</label>
-                  <input name={field.name} value={form[field.name]} onChange={handle}
-                    type={field.type || 'text'} placeholder={field.placeholder}
-                    className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
-                </div>
-              ))}
+              <div>
+                <label className="text-xs text-gray-500">ইংরেজি নাম *</label>
+                <input name="name" value={form.name} onChange={handle} placeholder="Anchor Dal"
+                  className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">বাংলা নাম</label>
+                <input name="name_bn" value={form.name_bn} onChange={handle} placeholder="এ্যাংকর ডাল"
+                  className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">পণ্য কোড *</label>
+                <input name="product_code" value={form.product_code} onChange={handle} placeholder="P001"
+                  className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">দাম *</label>
+                <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} placeholder="120"
+                  className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+              </div>
               <div>
                 <label className="text-xs text-gray-500">ইউনিট</label>
                 <select name="unit" value={form.unit} onChange={handle}
@@ -164,6 +177,35 @@ export default function AdminPage() {
                   <option value="">শাখা সিলেক্ট করুন</option>
                   {branches.map(b => <option key={b.id} value={b.id}>{b.name_bn || b.name}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">পেজ</label>
+                <select name="page_id" value={form.page_id} onChange={handle}
+                  className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
+                  <option value="">পেজ সিলেক্ট করুন</option>
+                  {pages.map(p => <option key={p.id} value={p.id}>{p.name_bn || p.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">ক্যাটাগরি (ইং)</label>
+                <input name="category" value={form.category} onChange={handle} placeholder="dal"
+                  className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">ক্যাটাগরি (বাং)</label>
+                <input name="category_bn" value={form.category_bn} onChange={handle} placeholder="ডাল"
+                  className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">প্রাথমিক স্টক</label>
+                <input name="stock" type="number" value={form.stock} onChange={handle} placeholder="50"
+                  className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+              </div>
+              <div className="col-span-2">
+                <label className="text-xs text-gray-500">বৈশিষ্ট্য / বিবরণ</label>
+                <textarea name="description" value={form.description} onChange={handle} rows={2}
+                  placeholder="পণ্যের বৈশিষ্ট্য লিখুন"
+                  className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
               </div>
             </div>
             <button onClick={addProduct} disabled={loading}
@@ -198,6 +240,18 @@ export default function AdminPage() {
                       className="border-2 border-gray-300 rounded-lg px-2 py-1 text-sm" placeholder="ক্যাটাগরি (ইং)" />
                     <input value={editProduct.category_bn || ''} onChange={e => setEditProduct({...editProduct, category_bn: e.target.value})}
                       className="border-2 border-gray-300 rounded-lg px-2 py-1 text-sm" placeholder="ক্যাটাগরি (বাং)" />
+                    <input value={editProduct.image_url || ''} onChange={e => setEditProduct({...editProduct, image_url: e.target.value})}
+                      className="border-2 border-gray-300 rounded-lg px-2 py-1 text-sm col-span-2" placeholder="ছবির URL" />
+                    <textarea value={editProduct.description || ''} onChange={e => setEditProduct({...editProduct, description: e.target.value})}
+                      className="border-2 border-gray-300 rounded-lg px-2 py-1 text-sm col-span-2" placeholder="বৈশিষ্ট্য" rows={2} />
+                    <div className="col-span-2">
+                      <label className="text-xs text-gray-500">পেজ</label>
+                      <select value={editProduct.page_id || ''} onChange={e => setEditProduct({...editProduct, page_id: e.target.value})}
+                        className="border-2 border-gray-300 rounded-lg px-2 py-1 text-sm w-full mt-1">
+                        <option value="">পেজ সিলেক্ট করুন</option>
+                        {pages.map(p => <option key={p.id} value={p.id}>{p.name_bn || p.name}</option>)}
+                      </select>
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <button onClick={updateProduct} className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm flex-1">সেভ</button>
@@ -212,6 +266,7 @@ export default function AdminPage() {
                       <p className="text-xs text-gray-500">{product.name} | {product.product_code}</p>
                       <p className="text-green-700 font-bold text-sm">{product.price_per_unit} Tk/{product.unit}</p>
                       <p className="text-xs text-gray-400">Stock: {product.stock?.[0]?.quantity || 0} {product.unit}</p>
+                      <p className="text-xs text-blue-500">পেজ: {product.pages?.name_bn || product.pages?.name || 'কোনো পেজ নেই'}</p>
                     </div>
                     <div className="flex flex-col gap-1">
                       <button onClick={() => toggleProduct(product.id, product.is_active)}
@@ -252,11 +307,15 @@ function StockAdder({ productId, unit, onAdd }) {
 
 function OrderList() {
   const [orders, setOrders] = useState([]);
+  const supabaseClient = createClient(
+    'https://jthdtmqrapnfmmmeuqsw.supabase.co',
+    'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
+  );
 
   useEffect(() => { fetchOrders(); }, []);
 
   async function fetchOrders() {
-    const { data } = await supabase
+    const { data } = await supabaseClient
       .from('orders')
       .select('*, order_items(*, products(name_bn, name))')
       .order('created_at', { ascending: false });
@@ -264,7 +323,7 @@ function OrderList() {
   }
 
   async function updateStatus(id, status) {
-    await supabase.from('orders').update({ status }).eq('id', id);
+    await supabaseClient.from('orders').update({ status }).eq('id', id);
     fetchOrders();
   }
 
