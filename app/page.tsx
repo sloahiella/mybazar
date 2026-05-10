@@ -44,7 +44,6 @@ export default function Home() {
       setShowLoginModal(false);
       setPassword('');
       setLoginError('');
-      window.location.href = '/admin';
     } else if (password === EDITOR_PASSWORD) {
       setRole('editor');
       localStorage.setItem('role', 'editor');
@@ -64,7 +63,6 @@ export default function Home() {
   if (!selectedBranch) {
     return (
       <div className="min-h-screen bg-green-50 flex items-center justify-center relative">
-
         <div className="absolute top-4 right-4">
           <button
             onClick={() => setShowLoginModal(true)}
@@ -153,14 +151,14 @@ export default function Home() {
             </button>
           )}
           <button
-            onClick={() => setSelectedBranch(null)}
+            onClick={() => { setSelectedBranch(null); }}
             className="text-sm bg-green-600 px-3 py-1 rounded-lg"
           >
             {selectedBranch.name_bn || selectedBranch.name} ✕
           </button>
         </div>
       </div>
-      <ProductList branch={selectedBranch} />
+      <ProductList branch={selectedBranch} role={role} />
     </div>
   );
 }
