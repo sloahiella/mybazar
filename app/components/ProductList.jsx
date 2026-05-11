@@ -165,12 +165,13 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick }) {
 
 function EditProductModal({ product, onClose, onSave }) {
   const [form, setForm] = useState({
-    name: product.name || '', name_bn: product.name_bn || '',
-    price_per_unit: product.price_per_unit || '', unit: product.unit || 'Kg',
-    category: product.category || '', category_bn: product.category_bn || '',
-    description: product.description || '', image_url: product.image_url || '',
-    is_active: product.is_active,
-  });
+  name: product.name || '', name_bn: product.name_bn || '',
+  product_code: product.product_code || '',
+  price_per_unit: product.price_per_unit || '', unit: product.unit || 'Kg',
+  category: product.category || '', category_bn: product.category_bn || '',
+  description: product.description || '', image_url: product.image_url || '',
+  is_active: product.is_active,
+});
   const [stockQty, setStockQty] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
