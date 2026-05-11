@@ -172,8 +172,21 @@ function EditProductModal({ product, onClose, onSave }) {
   });
   const [stockQty, setStockQty] = useState('');
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const currentStock = product.stock?.[0]?.quantity || 0;
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
+
+  async function uploadImage(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const fileName = `${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from('products').upload(fileName, file);
+    if (error) { alert('ছবি আপলোড সমস্যা: ' + error.message); setUploading(false); return; }
+    const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName);
+    setForm(prev => ({ ...prev, image_url: urlData.publicUrl }));
+    setUploading(false);
+  }
 
   async function save() {
     setLoading(true);
@@ -220,8 +233,15 @@ function EditProductModal({ product, onClose, onSave }) {
             <input name="category" value={form.category} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">ক্যাটাগরি (বাং)</label>
             <input name="category_bn" value={form.category_bn} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">ছবির URL</label>
-            <input name="image_url" value={form.image_url} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="https://..." /></div>
+          <div>
+            <label className="text-xs text-gray-500">ছবি</label>
+            {form.image_url && (
+              <img src={form.image_url} alt="product" className="w-full h-32 object-cover rounded-lg mt-1 mb-1" />
+            )}
+            <input type="file" accept="image/*" onChange={uploadImage}
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+            {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
+          </div>
           <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
             <textarea name="description" value={form.description} onChange={handle} rows={3}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
@@ -239,7 +259,7 @@ function EditProductModal({ product, onClose, onSave }) {
           </div>
         </div>
         <div className="flex gap-2 mt-4">
-          <button onClick={save} disabled={loading}
+          <button onClick={save} disabled={loading || uploading}
             className="bg-green-700 text-white px-4 py-2 rounded-xl flex-1 font-bold disabled:opacity-50">
             {loading ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
           </button>
@@ -258,7 +278,20 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
     page_id: defaultPage?.id || ''
   });
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
+
+  async function uploadImage(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const fileName = `${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from('products').upload(fileName, file);
+    if (error) { alert('ছবি আপলোড সমস্যা: ' + error.message); setUploading(false); return; }
+    const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName);
+    setForm(prev => ({ ...prev, image_url: urlData.publicUrl }));
+    setUploading(false);
+  }
 
   async function save() {
     if (!form.name || !form.product_code || !form.price_per_unit) {
@@ -329,16 +362,22 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           <div><label className="text-xs text-gray-500">প্রাথমিক স্টক</label>
             <input name="stock" type="number" value={form.stock} onChange={handle} placeholder="50"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">ছবির URL</label>
-            <input name="image_url" value={form.image_url} onChange={handle} placeholder="https://..."
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div>
+            <label className="text-xs text-gray-500">ছবি</label>
+            {form.image_url && (
+              <img src={form.image_url} alt="product" className="w-full h-32 object-cover rounded-lg mt-1 mb-1" />
+            )}
+            <input type="file" accept="image/*" onChange={uploadImage}
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+            {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
+          </div>
           <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
             <textarea name="description" value={form.description} onChange={handle} rows={2}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
               placeholder="পণ্যের বৈশিষ্ট্য লিখুন" /></div>
         </div>
         <div className="flex gap-2 mt-4">
-          <button onClick={save} disabled={loading}
+          <button onClick={save} disabled={loading || uploading}
             className="bg-green-700 text-white px-4 py-2 rounded-xl flex-1 font-bold disabled:opacity-50">
             {loading ? 'যোগ হচ্ছে...' : '+ পণ্য যোগ করুন'}
           </button>
@@ -369,21 +408,15 @@ export default function ProductList({ branch, role }) {
 
   useEffect(() => {
     fetchProducts();
-  }, [branch, selectedPage]);
+  }, [branch]);
 
   async function fetchProducts() {
     setLoading(true);
-    let query = supabase
+    const { data } = await supabase
       .from('products')
       .select('*, stock(*)')
       .eq('branch_id', branch.id)
       .eq('is_active', true);
-
-    if (selectedPage) {
-      query = query.eq('page_id', selectedPage.id);
-    }
-
-    const { data } = await query;
     if (data) setProducts(data);
     setLoading(false);
   }
@@ -391,7 +424,13 @@ export default function ProductList({ branch, role }) {
   const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
 
   const getDisplayProducts = () => {
-    let filtered = products.filter(p => {
+    const baseProducts = (search !== '' || selectedName)
+      ? products
+      : selectedPage
+        ? products.filter(p => p.page_id === selectedPage.id)
+        : products;
+
+    let filtered = baseProducts.filter(p => {
       const matchSearch = search === '' ||
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         (p.name_bn && p.name_bn.includes(search)) ||
@@ -505,7 +544,7 @@ export default function ProductList({ branch, role }) {
         />
       )}
 
-      <div className="px-4 pt-4 flex items-center gap-2">
+      <div className="px-4 pt-4 flex items-center gap-2 flex-wrap">
         <PageMenu
           branch={branch}
           selectedPage={selectedPage}
