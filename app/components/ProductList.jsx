@@ -250,6 +250,105 @@ function EditProductModal({ product, onClose, onSave }) {
   );
 }
 
+function AddProductModal({ branch, defaultPage, onClose, onSave }) {
+  const [form, setForm] = useState({
+    name: '', name_bn: '', product_code: '', description: '',
+    price_per_unit: '', unit: 'Kg',
+    category: '', category_bn: '', stock: '', image_url: '',
+    page_id: defaultPage?.id || ''
+  });
+  const [loading, setLoading] = useState(false);
+  const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
+
+  async function save() {
+    if (!form.name || !form.product_code || !form.price_per_unit) {
+      alert('নাম, কোড, দাম আবশ্যক!');
+      return;
+    }
+    setLoading(true);
+    const { data: product, error } = await supabase
+      .from('products')
+      .insert({
+        name: form.name, name_bn: form.name_bn,
+        product_code: form.product_code, description: form.description,
+        price_per_unit: parseFloat(form.price_per_unit),
+        unit: form.unit, branch_id: branch.id,
+        category: form.category, category_bn: form.category_bn,
+        image_url: form.image_url,
+        page_id: form.page_id ? parseInt(form.page_id) : null,
+        is_active: true
+      }).select().single();
+
+    if (error) { alert('সমস্যা: ' + error.message); setLoading(false); return; }
+
+    if (form.stock && parseFloat(form.stock) > 0) {
+      await supabase.from('stock').insert({
+        product_id: product.id, quantity: parseFloat(form.stock)
+      });
+    }
+    alert('পণ্য যোগ হয়েছে!');
+    setLoading(false);
+    onSave();
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-lg p-4 w-full max-w-md max-h-screen overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold text-green-700">+ নতুন পণ্য যোগ</h2>
+          <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
+        </div>
+        <div className="space-y-2">
+          <div><label className="text-xs text-gray-500">ইংরেজি নাম *</label>
+            <input name="name" value={form.name} onChange={handle} placeholder="Anchor Dal"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">বাংলা নাম</label>
+            <input name="name_bn" value={form.name_bn} onChange={handle} placeholder="এ্যাংকর ডাল"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">পণ্য কোড *</label>
+            <input name="product_code" value={form.product_code} onChange={handle} placeholder="P001"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">দাম *</label>
+            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} placeholder="120"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">ইউনিট</label>
+            <select name="unit" value={form.unit} onChange={handle}
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
+              <option value="Kg">Kg</option>
+              <option value="Liter">Liter</option>
+              <option value="pcs">pcs</option>
+              <option value="packet">Packet</option>
+            </select></div>
+          <div><label className="text-xs text-gray-500">ক্যাটাগরি (ইং)</label>
+            <input name="category" value={form.category} onChange={handle} placeholder="dal"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">ক্যাটাগরি (বাং)</label>
+            <input name="category_bn" value={form.category_bn} onChange={handle} placeholder="ডাল"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">প্রাথমিক স্টক</label>
+            <input name="stock" type="number" value={form.stock} onChange={handle} placeholder="50"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">ছবির URL</label>
+            <input name="image_url" value={form.image_url} onChange={handle} placeholder="https://..."
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
+            <textarea name="description" value={form.description} onChange={handle} rows={2}
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
+              placeholder="পণ্যের বৈশিষ্ট্য লিখুন" /></div>
+        </div>
+        <div className="flex gap-2 mt-4">
+          <button onClick={save} disabled={loading}
+            className="bg-green-700 text-white px-4 py-2 rounded-xl flex-1 font-bold disabled:opacity-50">
+            {loading ? 'যোগ হচ্ছে...' : '+ পণ্য যোগ করুন'}
+          </button>
+          <button onClick={onClose} className="bg-gray-200 text-gray-600 px-4 py-2 rounded-xl">বাতিল</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProductList({ branch, role }) {
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
@@ -263,6 +362,8 @@ export default function ProductList({ branch, role }) {
   const [editingProduct, setEditingProduct] = useState(null);
   const [selectedName, setSelectedName] = useState(null);
   const [selectedPage, setSelectedPage] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addModalPage, setAddModalPage] = useState(null);
 
   const isAdmin = role === 'admin';
 
@@ -395,6 +496,14 @@ export default function ProductList({ branch, role }) {
       {editingProduct && (
         <EditProductModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={fetchProducts} />
       )}
+      {showAddModal && (
+        <AddProductModal
+          branch={branch}
+          defaultPage={addModalPage}
+          onClose={() => setShowAddModal(false)}
+          onSave={fetchProducts}
+        />
+      )}
 
       <div className="px-4 pt-4 flex items-center gap-2">
         <PageMenu
@@ -402,11 +511,19 @@ export default function ProductList({ branch, role }) {
           selectedPage={selectedPage}
           onSelectPage={(page) => { setSelectedPage(page); setSelectedName(null); setSelectedCategory(null); }}
           isAdmin={isAdmin}
+          onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }}
         />
         {selectedPage && (
           <span className="text-sm font-medium text-green-700 bg-green-50 border border-green-300 px-3 py-1 rounded-full">
             {selectedPage.name_bn || selectedPage.name}
           </span>
+        )}
+        {isAdmin && (
+          <button
+            onClick={() => { setAddModalPage(selectedPage); setShowAddModal(true); }}
+            className="bg-green-700 text-white text-xs px-3 py-2 rounded-xl font-medium">
+            + পণ্য যোগ
+          </button>
         )}
       </div>
 
