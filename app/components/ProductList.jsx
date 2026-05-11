@@ -108,12 +108,14 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick }) {
       )}
       {product.image_url && (
         <img src={product.image_url} alt={product.name_bn || product.name}
-          className="w-full h-24 object-cover rounded-lg mb-2" />
+          className="w-full object-contain rounded-lg mb-2 max-h-40" />
       )}
       <div onDoubleClick={() => onDoubleClick(product)} className="cursor-pointer select-none">
         <h3 className="font-bold text-gray-800 text-sm pr-8">{product.name_bn || product.name}</h3>
         <p className="text-xs text-gray-400">{product.name}</p>
-        <p className="text-xs text-blue-500 font-medium">কোড: {product.product_code}</p>
+        {product.product_code && (
+          <p className="text-xs text-blue-500 font-medium">কোড: {product.product_code}</p>
+        )}
       </div>
       <p className="text-green-700 font-bold text-sm mt-1">1 {product.unit} = {product.price_per_unit} Tk</p>
       <p className="text-xs text-gray-400">Stock: {stock} {product.unit}</p>
@@ -134,18 +136,17 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick }) {
             onChange={e => setQty(e.target.value)}
             className="border-2 border-gray-300 rounded-lg px-2 py-2 w-full text-sm text-gray-900 font-medium focus:border-green-500 focus:outline-none"
             placeholder="পরিমাণ লিখুন" />
-          {isPiece ? (
-            <select value={qty} onChange={e => setQty(e.target.value)}
-              className="border-2 border-gray-300 rounded-lg px-2 py-2 text-sm bg-white">
-              <option value="">pcs</option>
-              {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n}</option>)}
-            </select>
-          ) : (
+          {!isPiece && (
             <select value={unit} onChange={e => setUnit(e.target.value)}
               className="border-2 border-gray-300 rounded-lg px-2 py-2 text-sm bg-white">
               {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
               {isLiter && <><option value={product.unit}>Liter</option><option value="ml">ml</option></>}
             </select>
+          )}
+          {isPiece && (
+            <span className="border-2 border-gray-200 rounded-lg px-2 py-2 text-sm bg-gray-50 text-gray-500">
+              pcs
+            </span>
           )}
         </div>
         {qty && parseFloat(qty) > 0 && (
@@ -236,7 +237,7 @@ function EditProductModal({ product, onClose, onSave }) {
           <div>
             <label className="text-xs text-gray-500">ছবি</label>
             {form.image_url && (
-              <img src={form.image_url} alt="product" className="w-full h-32 object-cover rounded-lg mt-1 mb-1" />
+              <img src={form.image_url} alt="product" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-48" />
             )}
             <input type="file" accept="image/*" onChange={uploadImage}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
@@ -365,7 +366,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           <div>
             <label className="text-xs text-gray-500">ছবি</label>
             {form.image_url && (
-              <img src={form.image_url} alt="product" className="w-full h-32 object-cover rounded-lg mt-1 mb-1" />
+              <img src={form.image_url} alt="product" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-48" />
             )}
             <input type="file" accept="image/*" onChange={uploadImage}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
