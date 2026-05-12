@@ -85,11 +85,28 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, dragHandl
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
   const [showDesc, setShowDesc] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const stock = product.stock?.[0]?.quantity || 0;
   const u = (product.unit || '').toLowerCase().trim();
   const isKg = u === 'kg';
   const isLiter = u === 'liter' || u === 'l';
   const isPiece = !isKg && !isLiter;
+
+  const allImages = [];
+  if (product.image_url) allImages.push(product.image_url);
+  if (product.product_images) {
+    product.product_images.forEach(img => {
+      if (img.image_url && img.image_url !== product.image_url) {
+        allImages.push(img.image_url);
+      }
+    });
+  }
+
+  const handleImageTap = () => {
+    if (allImages.length > 1) {
+      setCurrentImageIndex((currentImageIndex + 1) % allImages.length);
+    }
+  };
 
   const getActualQty = () => {
     const q = parseFloat(qty);
@@ -102,20 +119,32 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, dragHandl
   return (
     <div className="bg-white rounded-xl shadow p-3 relative">
       {isAdmin && (
-        <div className="absolute top-2 right-2 flex gap-1">
-          <span {...dragHandleProps} className="bg-gray-200 text-gray-500 text-xs px-1 py-1 rounded cursor-grab">
-            ⠿
-          </span>
-          <button onClick={() => onEdit(product)}
-            className="bg-yellow-400 text-white text-xs px-2 py-1 rounded-lg">
-            ✏️
-          </button>
+        <div className="absolute top-2 right-2 flex gap-1 z-10">
+          <span {...dragHandleProps} className="bg-gray-200 text-gray-500 text-xs px-1 py-1 rounded cursor-grab">⠿</span>
+          <button onClick={() => onEdit(product)} className="bg-yellow-400 text-white text-xs px-2 py-1 rounded-lg">✏️</button>
         </div>
       )}
-      {product.image_url && (
-        <img src={product.image_url} alt={product.name}
-          className="w-full object-contain rounded-lg mb-2 max-h-40" />
+
+      {allImages.length > 0 && (
+        <div className="relative mb-2" onClick={handleImageTap}>
+          <img src={allImages[currentImageIndex]} alt={product.name}
+            className="w-full object-contain rounded-lg max-h-40 cursor-pointer" />
+          {allImages.length > 1 && (
+            <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1">
+              {allImages.map((_, i) => (
+                <div key={i}
+                  className={`w-1.5 h-1.5 rounded-full ${i === currentImageIndex ? 'bg-green-700' : 'bg-gray-300'}`} />
+              ))}
+            </div>
+          )}
+          {allImages.length > 1 && (
+            <div className="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+              {currentImageIndex + 1}/{allImages.length}
+            </div>
+          )}
+        </div>
       )}
+
       <div onDoubleClick={() => onDoubleClick(product)} className="cursor-pointer select-none">
         <h3 className="font-bold text-gray-800 text-sm pr-14">{product.name}</h3>
         {product.product_code && (
@@ -126,13 +155,10 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, dragHandl
       <p className="text-xs text-gray-400">Stock: {stock} {product.unit}</p>
       {product.description && (
         <>
-          <button onClick={() => setShowDesc(!showDesc)}
-            className="text-xs text-blue-600 underline mt-1 block">
+          <button onClick={() => setShowDesc(!showDesc)} className="text-xs text-blue-600 underline mt-1 block">
             বৈশিষ্ট্য {showDesc ? '▲' : '▼'}
           </button>
-          {showDesc && (
-            <p className="text-xs text-gray-600 bg-blue-50 p-2 rounded-lg mt-1">{product.description}</p>
-          )}
+          {showDesc && <p className="text-xs text-gray-600 bg-blue-50 p-2 rounded-lg mt-1">{product.description}</p>}
         </>
       )}
       <div className="mt-2">
@@ -148,11 +174,7 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, dragHandl
               {isLiter && <><option value={product.unit}>Liter</option><option value="ml">ml</option></>}
             </select>
           )}
-          {isPiece && (
-            <span className="border-2 border-gray-200 rounded-lg px-2 py-2 text-sm bg-gray-50 text-gray-500">
-              pcs
-            </span>
-          )}
+          {isPiece && <span className="border-2 border-gray-200 rounded-lg px-2 py-2 text-sm bg-gray-50 text-gray-500">pcs</span>}
         </div>
         {qty && parseFloat(qty) > 0 && (
           <p className="text-xs text-green-700 mb-1 font-bold bg-green-50 p-1 rounded border border-green-200">
@@ -170,48 +192,79 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, dragHandl
 
 function EditProductModal({ product, onClose, onSave }) {
   const [form, setForm] = useState({
-    name: product.name || '',
-    name_bn: product.name_bn || '',
+    name: product.name || '', name_bn: product.name_bn || '',
     product_code: product.product_code || '',
-    price_per_unit: product.price_per_unit || '',
-    unit: product.unit || 'Kg',
-    category: product.category || '',
-    category_bn: product.category_bn || '',
-    description: product.description || '',
-    image_url: product.image_url || '',
+    price_per_unit: product.price_per_unit || '', unit: product.unit || 'Kg',
+    category: product.category || '', category_bn: product.category_bn || '',
+    description: product.description || '', image_url: product.image_url || '',
     is_active: product.is_active,
   });
   const [stockQty, setStockQty] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [extraImages, setExtraImages] = useState([]);
+  const [loadingImages, setLoadingImages] = useState(false);
   const currentStock = product.stock?.[0]?.quantity || 0;
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
 
-  async function uploadImage(e) {
+  useEffect(() => {
+    fetchExtraImages();
+  }, []);
+
+  async function fetchExtraImages() {
+    setLoadingImages(true);
+    const { data } = await supabase
+      .from('product_images')
+      .select('*')
+      .eq('product_id', product.id)
+      .order('sort_order');
+    if (data) setExtraImages(data);
+    setLoadingImages(false);
+  }
+
+  async function uploadMainImage(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
     const fileName = `${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from('products').upload(fileName, file);
-    if (error) { alert('ছবি আপলোড সমস্যা: ' + error.message); setUploading(false); return; }
+    if (error) { alert('সমস্যা: ' + error.message); setUploading(false); return; }
     const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName);
     setForm(prev => ({ ...prev, image_url: urlData.publicUrl }));
     setUploading(false);
   }
 
+  async function uploadExtraImage(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const fileName = `${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from('products').upload(fileName, file);
+    if (error) { alert('সমস্যা: ' + error.message); setUploading(false); return; }
+    const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName);
+    await supabase.from('product_images').insert({
+      product_id: product.id,
+      image_url: urlData.publicUrl,
+      sort_order: extraImages.length
+    });
+    fetchExtraImages();
+    setUploading(false);
+  }
+
+  async function deleteExtraImage(id) {
+    await supabase.from('product_images').delete().eq('id', id);
+    fetchExtraImages();
+  }
+
   async function save() {
     setLoading(true);
     await supabase.from('products').update({
-      name: form.name,
-      name_bn: form.name_bn,
+      name: form.name, name_bn: form.name_bn,
       product_code: form.product_code,
       price_per_unit: parseFloat(form.price_per_unit),
-      unit: form.unit,
-      category: form.category,
-      category_bn: form.category_bn,
-      description: form.description,
-      image_url: form.image_url,
-      is_active: form.is_active
+      unit: form.unit, category: form.category,
+      category_bn: form.category_bn, description: form.description,
+      image_url: form.image_url, is_active: form.is_active
     }).eq('id', product.id);
     if (stockQty && parseFloat(stockQty) > 0) {
       const { data: existing } = await supabase.from('stock').select('*').eq('product_id', product.id).single();
@@ -237,20 +290,17 @@ function EditProductModal({ product, onClose, onSave }) {
           <div>
             <label className="text-xs text-gray-500">নাম (কাস্টমার দেখবে) *</label>
             <input name="name" value={form.name} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="এ্যাংকর ডাল" />
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="এ্যাংকর ডাল" />
           </div>
           <div>
             <label className="text-xs text-gray-500">বিকল্প নাম (শুধু সার্চের জন্য)</label>
             <input name="name_bn" value={form.name_bn} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="Anchor Dal" />
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="Anchor Dal" />
           </div>
           <div>
             <label className="text-xs text-gray-500">পণ্য কোড</label>
             <input name="product_code" value={form.product_code} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="P001" />
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="P001" />
           </div>
           <div>
             <label className="text-xs text-gray-500">দাম (Tk)</label>
@@ -261,34 +311,55 @@ function EditProductModal({ product, onClose, onSave }) {
             <label className="text-xs text-gray-500">ইউনিট</label>
             <select name="unit" value={form.unit} onChange={handle}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
-              <option value="Kg">Kg</option>
-              <option value="Liter">Liter</option>
-              <option value="pcs">pcs</option>
-              <option value="packet">Packet</option>
+              <option value="Kg">Kg</option><option value="Liter">Liter</option>
+              <option value="pcs">pcs</option><option value="packet">Packet</option>
             </select>
           </div>
           <div>
             <label className="text-xs text-gray-500">ক্যাটাগরি (সার্চের জন্য)</label>
             <input name="category" value={form.category} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="dal" />
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="dal" />
           </div>
           <div>
             <label className="text-xs text-gray-500">ক্যাটাগরি বাংলা</label>
             <input name="category_bn" value={form.category_bn} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="ডাল" />
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="ডাল" />
           </div>
-          <div>
-            <label className="text-xs text-gray-500">ছবি</label>
+
+          {/* প্রধান ছবি */}
+          <div className="bg-green-50 rounded-lg p-3">
+            <label className="text-xs text-green-700 font-bold">প্রধান ছবি (সবসময় দেখাবে)</label>
             {form.image_url && (
-              <img src={form.image_url} alt="product"
-                className="w-full object-contain rounded-lg mt-1 mb-1 max-h-48" />
+              <img src={form.image_url} alt="main" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-32" />
             )}
-            <input type="file" accept="image/*" onChange={uploadImage}
+            <input type="file" accept="image/*" onChange={uploadMainImage}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+          </div>
+
+          {/* অতিরিক্ত ছবি */}
+          <div className="bg-blue-50 rounded-lg p-3">
+            <label className="text-xs text-blue-700 font-bold">অতিরিক্ত ছবি (ট্যাপ করলে দেখাবে)</label>
+            {loadingImages ? (
+              <p className="text-xs text-gray-400 mt-1">লোড হচ্ছে...</p>
+            ) : (
+              <div className="flex gap-2 flex-wrap mt-2">
+                {extraImages.map(img => (
+                  <div key={img.id} className="relative">
+                    <img src={img.image_url} alt="extra"
+                      className="w-16 h-16 object-cover rounded-lg" />
+                    <button onClick={() => deleteExtraImage(img.id)}
+                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <input type="file" accept="image/*" onChange={uploadExtraImage}
+              className="border-2 border-blue-300 rounded-lg px-3 py-2 w-full text-sm mt-2" />
             {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
           </div>
+
           <div>
             <label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
             <textarea name="description" value={form.description} onChange={handle} rows={3}
@@ -296,12 +367,9 @@ function EditProductModal({ product, onClose, onSave }) {
               placeholder="পণ্যের বৈশিষ্ট্য লিখুন" />
           </div>
           <div className="bg-blue-50 rounded-lg p-3">
-            <label className="text-xs text-blue-700 font-bold">
-              স্টক যোগ (বর্তমান: {currentStock} {product.unit})
-            </label>
+            <label className="text-xs text-blue-700 font-bold">স্টক যোগ (বর্তমান: {currentStock} {product.unit})</label>
             <input type="number" value={stockQty} onChange={e => setStockQty(e.target.value)}
-              className="border-2 border-blue-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="কত যোগ করবেন?" />
+              className="border-2 border-blue-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="কত যোগ করবেন?" />
           </div>
           <div className="flex items-center gap-2">
             <label className="text-xs text-gray-500">Status:</label>
@@ -368,9 +436,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
     if (error) { alert('সমস্যা: ' + error.message); setLoading(false); return; }
 
     if (form.stock && parseFloat(form.stock) > 0) {
-      await supabase.from('stock').insert({
-        product_id: product.id, quantity: parseFloat(form.stock)
-      });
+      await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) });
     }
     alert('পণ্য যোগ হয়েছে!');
     setLoading(false);
@@ -386,67 +452,44 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
         </div>
         <div className="space-y-2">
-          <div>
-            <label className="text-xs text-gray-500">নাম (কাস্টমার দেখবে) *</label>
+          <div><label className="text-xs text-gray-500">নাম *</label>
             <input name="name" value={form.name} onChange={handle} placeholder="এ্যাংকর ডাল"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">বিকল্প নাম (শুধু সার্চের জন্য)</label>
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">বিকল্প নাম (সার্চের জন্য)</label>
             <input name="name_bn" value={form.name_bn} onChange={handle} placeholder="Anchor Dal"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">পণ্য কোড *</label>
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">পণ্য কোড *</label>
             <input name="product_code" value={form.product_code} onChange={handle} placeholder="P001"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">দাম *</label>
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">দাম *</label>
             <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} placeholder="120"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">ইউনিট</label>
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">ইউনিট</label>
             <select name="unit" value={form.unit} onChange={handle}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
-              <option value="Kg">Kg</option>
-              <option value="Liter">Liter</option>
-              <option value="pcs">pcs</option>
-              <option value="packet">Packet</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">ক্যাটাগরি (সার্চের জন্য)</label>
+              <option value="Kg">Kg</option><option value="Liter">Liter</option>
+              <option value="pcs">pcs</option><option value="packet">Packet</option>
+            </select></div>
+          <div><label className="text-xs text-gray-500">ক্যাটাগরি (ইং)</label>
             <input name="category" value={form.category} onChange={handle} placeholder="dal"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">ক্যাটাগরি বাংলা</label>
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">ক্যাটাগরি (বাং)</label>
             <input name="category_bn" value={form.category_bn} onChange={handle} placeholder="ডাল"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">প্রাথমিক স্টক</label>
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">প্রাথমিক স্টক</label>
             <input name="stock" type="number" value={form.stock} onChange={handle} placeholder="50"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
-          </div>
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div>
-            <label className="text-xs text-gray-500">ছবি</label>
-            {form.image_url && (
-              <img src={form.image_url} alt="product"
-                className="w-full object-contain rounded-lg mt-1 mb-1 max-h-48" />
-            )}
+            <label className="text-xs text-gray-500">প্রধান ছবি</label>
+            {form.image_url && <img src={form.image_url} alt="product" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-32" />}
             <input type="file" accept="image/*" onChange={uploadImage}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
             {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
           </div>
-          <div>
-            <label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
+          <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
             <textarea name="description" value={form.description} onChange={handle} rows={2}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="পণ্যের বৈশিষ্ট্য লিখুন" />
-          </div>
+              placeholder="পণ্যের বৈশিষ্ট্য লিখুন" /></div>
         </div>
         <div className="flex gap-2 mt-4">
           <button onClick={save} disabled={loading || uploading}
@@ -482,11 +525,29 @@ export default function ProductList({ branch, role }) {
     fetchProducts();
   }, [branch]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      if (editingProduct) { setEditingProduct(null); return; }
+      if (showAddModal) { setShowAddModal(false); return; }
+      if (showOrder) { setShowOrder(false); return; }
+      if (showCart) { setShowCart(false); return; }
+      if (selectedName) { setSelectedName(null); return; }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [editingProduct, showAddModal, showCart, showOrder, selectedName]);
+
+  useEffect(() => {
+    if (editingProduct || showAddModal || showCart || showOrder) {
+      window.history.pushState(null, '', window.location.href);
+    }
+  }, [editingProduct, showAddModal, showCart, showOrder]);
+
   async function fetchProducts() {
     setLoading(true);
     const { data } = await supabase
       .from('products')
-      .select('*, stock(*)')
+      .select('*, stock(*), product_images(*)')
       .eq('branch_id', branch.id)
       .eq('is_active', true)
       .order('sort_order', { ascending: true });
@@ -502,9 +563,7 @@ export default function ProductList({ branch, role }) {
 
     const updatedProducts = products.map(p => {
       const newIndex = items.findIndex(item => item.id === p.id);
-      if (newIndex !== -1) {
-        return { ...p, sort_order: newIndex };
-      }
+      if (newIndex !== -1) return { ...p, sort_order: newIndex };
       return p;
     });
     setProducts(updatedProducts);
@@ -534,10 +593,7 @@ export default function ProductList({ branch, role }) {
       return matchSearch && matchCategory;
     });
 
-    if (selectedName) {
-      return filtered.filter(p => p.name === selectedName);
-    }
-
+    if (selectedName) return filtered.filter(p => p.name === selectedName);
     if (search !== '') return filtered;
 
     const seen = new Set();
@@ -630,30 +686,22 @@ export default function ProductList({ branch, role }) {
         <EditProductModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={fetchProducts} />
       )}
       {showAddModal && (
-        <AddProductModal
-          branch={branch}
-          defaultPage={addModalPage}
-          onClose={() => setShowAddModal(false)}
-          onSave={fetchProducts}
-        />
+        <AddProductModal branch={branch} defaultPage={addModalPage}
+          onClose={() => setShowAddModal(false)} onSave={fetchProducts} />
       )}
 
       <div className="px-4 pt-4 flex items-center gap-2 flex-wrap">
-        <PageMenu
-          branch={branch}
-          selectedPage={selectedPage}
+        <PageMenu branch={branch} selectedPage={selectedPage}
           onSelectPage={(page) => { setSelectedPage(page); setSelectedName(null); setSelectedCategory(null); }}
           isAdmin={isAdmin}
-          onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }}
-        />
+          onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }} />
         {selectedPage && (
           <span className="text-sm font-medium text-green-700 bg-green-50 border border-green-300 px-3 py-1 rounded-full">
             {selectedPage.name_bn || selectedPage.name}
           </span>
         )}
         {isAdmin && (
-          <button
-            onClick={() => { setAddModalPage(selectedPage); setShowAddModal(true); }}
+          <button onClick={() => { setAddModalPage(selectedPage); setShowAddModal(true); }}
             className="bg-green-700 text-white text-xs px-3 py-2 rounded-xl font-medium">
             + পণ্য যোগ
           </button>
@@ -693,10 +741,7 @@ export default function ProductList({ branch, role }) {
         })}
       </div>
 
-      {isAdmin && (
-        <p className="text-xs text-center text-yellow-600 mb-1">⠿ আইকন ধরে Drag করে পণ্য সাজান</p>
-      )}
-
+      {isAdmin && <p className="text-xs text-center text-yellow-600 mb-1">⠿ আইকন ধরে Drag করে পণ্য সাজান</p>}
       {!search && !selectedName && !isAdmin && (
         <p className="text-xs text-center text-gray-400 mb-1">💡 একই পণ্যের সব ভ্যারিয়েন্ট দেখতে ডাবল ক্লিক করুন</p>
       )}
@@ -707,26 +752,16 @@ export default function ProductList({ branch, role }) {
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="products" direction="horizontal">
             {(provided) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4"
-              >
+              <div {...provided.droppableProps} ref={provided.innerRef}
+                className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
                 {displayProducts.map((product, index) => (
                   <Draggable key={product.id} draggableId={String(product.id)} index={index}>
                     {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                      >
-                        <ProductCard
-                          product={product}
-                          onAdd={addToCart}
-                          isAdmin={isAdmin}
-                          onEdit={setEditingProduct}
+                      <div ref={provided.innerRef} {...provided.draggableProps}>
+                        <ProductCard product={product} onAdd={addToCart}
+                          isAdmin={isAdmin} onEdit={setEditingProduct}
                           onDoubleClick={(p) => setSelectedName(p.name)}
-                          dragHandleProps={provided.dragHandleProps}
-                        />
+                          dragHandleProps={provided.dragHandleProps} />
                       </div>
                     )}
                   </Draggable>
@@ -739,15 +774,10 @@ export default function ProductList({ branch, role }) {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
           {displayProducts.map(product => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAdd={addToCart}
-              isAdmin={isAdmin}
-              onEdit={setEditingProduct}
+            <ProductCard key={product.id} product={product} onAdd={addToCart}
+              isAdmin={isAdmin} onEdit={setEditingProduct}
               onDoubleClick={(p) => setSelectedName(p.name)}
-              dragHandleProps={null}
-            />
+              dragHandleProps={null} />
           ))}
           {!loading && displayProducts.length === 0 && (
             <p className="col-span-4 text-center text-gray-400 mt-10">কোনো পণ্য পাওয়া যায়নি</p>
