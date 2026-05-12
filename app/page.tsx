@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import ProductList from './components/ProductList';
+import { requestNotificationPermission, messaging, onMessage } from './firebase';
 
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
@@ -34,7 +35,6 @@ export default function Home() {
   const [autoPrint, setAutoPrint] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     fetchBranches();
@@ -48,6 +48,27 @@ export default function Home() {
     if (role === 'admin') {
       fetchOrders();
       fetchNotifications();
+
+      requestNotificationPermission().then(token => {
+        if (token) {
+          localStorage.setItem('fcm_token', token);
+          saveFCMToken(token);
+        }
+      });
+
+      if (messaging) {
+        onMessage(messaging, (payload: any) => {
+          const title = payload.notification?.title || 'নতুন অর্ডার!';
+          const body = payload.notification?.body || '';
+          if (Notification.permission === 'granted') {
+            new Notification(title, { body });
+          }
+          fetchOrders();
+          fetchNotifications();
+          playNotificationSound();
+        });
+      }
+
       const channel = supabase
         .channel('orders')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
@@ -63,10 +84,25 @@ export default function Home() {
     }
   }, [role, autoPrint]);
 
+  async function saveFCMToken(token: string) {
+    try {
+      await supabase.from('fcm_tokens').upsert({ token, created_at: new Date().toISOString() });
+    } catch (e) {}
+  }
+
   function playNotificationSound() {
     try {
-      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2ozLS5hs+Dvp1kyKiZfrO7xnk4oIR1XqPPyj0AgGhROo/byfzcYEApGmfn1cjARC');
-      audio.play().catch(() => {});
+      const audioContext = new AudioContext();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = 880;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
     } catch (e) {}
   }
 
@@ -363,8 +399,8 @@ ${order.order_items?.map((item: any) =>
             <div className="flex gap-2 px-4 pb-2 overflow-x-auto">
               {[
                 { key: 'orders', label: '📋 Orders' },
-                { key: 'notifications', label: `🔔 Notifications ${unreadCount > 0 ? `(${unreadCount})` : ''}` },
-                { key: 'add_product', label: '+ Add Product' },
+                { key: 'notifications', label: `🔔 ${unreadCount > 0 ? `(${unreadCount})` : ''}` },
+                { key: 'add_product', label: '+ Product' },
               ].map(t => (
                 <button key={t.key} onClick={() => { setAdminTab(t.key); if (t.key === 'notifications') markAllRead(); }}
                   className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap ${adminTab === t.key ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-700'}`}>
@@ -510,8 +546,12 @@ function AddProductPanel({ branches, onDone }: { branches: any[], onDone: () => 
       alert('নাম, কোড, দাম এবং শাখা আবশ্যক!');
       return;
     }
+    const supabaseClient = createClient(
+      'https://jthdtmqrapnfmmmeuqsw.supabase.co',
+      'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
+    );
     setLoading(true);
-    const { data: product, error } = await supabase
+    const { data: product, error } = await supabaseClient
       .from('products')
       .insert({
         name: form.name, name_bn: form.name_bn,
@@ -527,7 +567,7 @@ function AddProductPanel({ branches, onDone }: { branches: any[], onDone: () => 
     if (error) { alert('সমস্যা: ' + error.message); setLoading(false); return; }
 
     if (form.stock && parseFloat(form.stock) > 0) {
-      await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) });
+      await supabaseClient.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) });
     }
     alert('পণ্য যোগ হয়েছে!');
     setForm({
