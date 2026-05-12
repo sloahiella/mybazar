@@ -36,7 +36,7 @@ function CartItem({ item, onUpdate, onRemove }) {
     <div className="bg-white rounded-xl shadow p-3">
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="font-bold text-gray-800">{item.name_bn || item.name}</h3>
+          <h3 className="font-bold text-gray-800">{item.name}</h3>
           <p className="text-xs text-gray-400">{item.price_per_unit} Tk/{item.unit}</p>
         </div>
         <div className="flex gap-2">
@@ -107,12 +107,11 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick }) {
         </button>
       )}
       {product.image_url && (
-        <img src={product.image_url} alt={product.name_bn || product.name}
+        <img src={product.image_url} alt={product.name}
           className="w-full object-contain rounded-lg mb-2 max-h-40" />
       )}
       <div onDoubleClick={() => onDoubleClick(product)} className="cursor-pointer select-none">
-        <h3 className="font-bold text-gray-800 text-sm pr-8">{product.name_bn || product.name}</h3>
-        <p className="text-xs text-gray-400">{product.name}</p>
+        <h3 className="font-bold text-gray-800 text-sm pr-8">{product.name}</h3>
         {product.product_code && (
           <p className="text-xs text-blue-500 font-medium">কোড: {product.product_code}</p>
         )}
@@ -165,13 +164,17 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick }) {
 
 function EditProductModal({ product, onClose, onSave }) {
   const [form, setForm] = useState({
-  name: product.name || '', name_bn: product.name_bn || '',
-  product_code: product.product_code || '',
-  price_per_unit: product.price_per_unit || '', unit: product.unit || 'Kg',
-  category: product.category || '', category_bn: product.category_bn || '',
-  description: product.description || '', image_url: product.image_url || '',
-  is_active: product.is_active,
-});
+    name: product.name || '',
+    name_bn: product.name_bn || '',
+    product_code: product.product_code || '',
+    price_per_unit: product.price_per_unit || '',
+    unit: product.unit || 'Kg',
+    category: product.category || '',
+    category_bn: product.category_bn || '',
+    description: product.description || '',
+    image_url: product.image_url || '',
+    is_active: product.is_active,
+  });
   const [stockQty, setStockQty] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -193,11 +196,16 @@ function EditProductModal({ product, onClose, onSave }) {
   async function save() {
     setLoading(true);
     await supabase.from('products').update({
-      name: form.name, name_bn: form.name_bn,
+      name: form.name,
+      name_bn: form.name_bn,
+      product_code: form.product_code,
       price_per_unit: parseFloat(form.price_per_unit),
-      unit: form.unit, category: form.category,
-      category_bn: form.category_bn, description: form.description,
-      image_url: form.image_url, is_active: form.is_active
+      unit: form.unit,
+      category: form.category,
+      category_bn: form.category_bn,
+      description: form.description,
+      image_url: form.image_url,
+      is_active: form.is_active
     }).eq('id', product.id);
     if (stockQty && parseFloat(stockQty) > 0) {
       const { data: existing } = await supabase.from('stock').select('*').eq('product_id', product.id).single();
@@ -220,38 +228,75 @@ function EditProductModal({ product, onClose, onSave }) {
           <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
         </div>
         <div className="space-y-2">
-          <div><label className="text-xs text-gray-500">ইংরেজি নাম</label>
-            <input name="name" value={form.name} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">বাংলা নাম</label>
-            <input name="name_bn" value={form.name_bn} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">দাম (Tk)</label>
-            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">ইউনিট</label>
-            <select name="unit" value={form.unit} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
-              <option value="Kg">Kg</option><option value="Liter">Liter</option>
-              <option value="pcs">pcs</option><option value="packet">Packet</option>
-            </select></div>
-          <div><label className="text-xs text-gray-500">ক্যাটাগরি (ইং)</label>
-            <input name="category" value={form.category} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">ক্যাটাগরি (বাং)</label>
-            <input name="category_bn" value={form.category_bn} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div>
+            <label className="text-xs text-gray-500">নাম (কাস্টমার দেখবে) *</label>
+            <input name="name" value={form.name} onChange={handle}
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
+              placeholder="এ্যাংকর ডাল" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">বিকল্প নাম (শুধু সার্চের জন্য, কাস্টমার দেখবে না)</label>
+            <input name="name_bn" value={form.name_bn} onChange={handle}
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
+              placeholder="Anchor Dal / আংকর ডাল" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">পণ্য কোড</label>
+            <input name="product_code" value={form.product_code} onChange={handle}
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
+              placeholder="P001" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">দাম (Tk)</label>
+            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle}
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">ইউনিট</label>
+            <select name="unit" value={form.unit} onChange={handle}
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
+              <option value="Kg">Kg</option>
+              <option value="Liter">Liter</option>
+              <option value="pcs">pcs</option>
+              <option value="packet">Packet</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">ক্যাটাগরি (সার্চের জন্য)</label>
+            <input name="category" value={form.category} onChange={handle}
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
+              placeholder="dal" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">ক্যাটাগরি বাংলা (সার্চের জন্য)</label>
+            <input name="category_bn" value={form.category_bn} onChange={handle}
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
+              placeholder="ডাল" />
+          </div>
           <div>
             <label className="text-xs text-gray-500">ছবি</label>
             {form.image_url && (
-              <img src={form.image_url} alt="product" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-48" />
+              <img src={form.image_url} alt="product"
+                className="w-full object-contain rounded-lg mt-1 mb-1 max-h-48" />
             )}
             <input type="file" accept="image/*" onChange={uploadImage}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
             {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
           </div>
-          <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
+          <div>
+            <label className="text-xs text-gray-500">বৈশিষ্ট্য (দিলে কাস্টমার দেখবে)</label>
             <textarea name="description" value={form.description} onChange={handle} rows={3}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="পণ্যের বৈশিষ্ট্য লিখুন" /></div>
+              placeholder="পণ্যের বৈশিষ্ট্য লিখুন" />
+          </div>
           <div className="bg-blue-50 rounded-lg p-3">
-            <label className="text-xs text-blue-700 font-bold">স্টক যোগ (বর্তমান: {currentStock} {product.unit})</label>
+            <label className="text-xs text-blue-700 font-bold">
+              স্টক যোগ (বর্তমান: {currentStock} {product.unit})
+            </label>
             <input type="number" value={stockQty} onChange={e => setStockQty(e.target.value)}
-              className="border-2 border-blue-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="কত যোগ করবেন?" /></div>
+              className="border-2 border-blue-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
+              placeholder="কত যোগ করবেন?" />
+          </div>
           <div className="flex items-center gap-2">
             <label className="text-xs text-gray-500">Status:</label>
             <button onClick={() => setForm({...form, is_active: !form.is_active})}
@@ -304,11 +349,15 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
     const { data: product, error } = await supabase
       .from('products')
       .insert({
-        name: form.name, name_bn: form.name_bn,
-        product_code: form.product_code, description: form.description,
+        name: form.name,
+        name_bn: form.name_bn,
+        product_code: form.product_code,
+        description: form.description,
         price_per_unit: parseFloat(form.price_per_unit),
-        unit: form.unit, branch_id: branch.id,
-        category: form.category, category_bn: form.category_bn,
+        unit: form.unit,
+        branch_id: branch.id,
+        category: form.category,
+        category_bn: form.category_bn,
         image_url: form.image_url,
         page_id: form.page_id ? parseInt(form.page_id) : null,
         is_active: true
@@ -335,48 +384,74 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
         </div>
         <div className="space-y-2">
-          <div><label className="text-xs text-gray-500">ইংরেজি নাম *</label>
-            <input name="name" value={form.name} onChange={handle} placeholder="Anchor Dal"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">বাংলা নাম</label>
-            <input name="name_bn" value={form.name_bn} onChange={handle} placeholder="এ্যাংকর ডাল"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">পণ্য কোড *</label>
-            <input name="product_code" value={form.product_code} onChange={handle} placeholder="P001"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">দাম *</label>
-            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} placeholder="120"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">ইউনিট</label>
+          <div>
+            <label className="text-xs text-gray-500">নাম (কাস্টমার দেখবে) *</label>
+            <input name="name" value={form.name} onChange={handle}
+              placeholder="এ্যাংকর ডাল"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">বিকল্প নাম (শুধু সার্চের জন্য)</label>
+            <input name="name_bn" value={form.name_bn} onChange={handle}
+              placeholder="Anchor Dal / আংকর ডাল"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">পণ্য কোড *</label>
+            <input name="product_code" value={form.product_code} onChange={handle}
+              placeholder="P001"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">দাম *</label>
+            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle}
+              placeholder="120"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">ইউনিট</label>
             <select name="unit" value={form.unit} onChange={handle}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
               <option value="Kg">Kg</option>
               <option value="Liter">Liter</option>
               <option value="pcs">pcs</option>
               <option value="packet">Packet</option>
-            </select></div>
-          <div><label className="text-xs text-gray-500">ক্যাটাগরি (ইং)</label>
-            <input name="category" value={form.category} onChange={handle} placeholder="dal"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">ক্যাটাগরি (বাং)</label>
-            <input name="category_bn" value={form.category_bn} onChange={handle} placeholder="ডাল"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">প্রাথমিক স্টক</label>
-            <input name="stock" type="number" value={form.stock} onChange={handle} placeholder="50"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">ক্যাটাগরি (সার্চের জন্য)</label>
+            <input name="category" value={form.category} onChange={handle}
+              placeholder="dal"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">ক্যাটাগরি বাংলা (সার্চের জন্য)</label>
+            <input name="category_bn" value={form.category_bn} onChange={handle}
+              placeholder="ডাল"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">প্রাথমিক স্টক</label>
+            <input name="stock" type="number" value={form.stock} onChange={handle}
+              placeholder="50"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+          </div>
           <div>
             <label className="text-xs text-gray-500">ছবি</label>
             {form.image_url && (
-              <img src={form.image_url} alt="product" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-48" />
+              <img src={form.image_url} alt="product"
+                className="w-full object-contain rounded-lg mt-1 mb-1 max-h-48" />
             )}
             <input type="file" accept="image/*" onChange={uploadImage}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
             {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
           </div>
-          <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
+          <div>
+            <label className="text-xs text-gray-500">বৈশিষ্ট্য (দিলে কাস্টমার দেখবে)</label>
             <textarea name="description" value={form.description} onChange={handle} rows={2}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="পণ্যের বৈশিষ্ট্য লিখুন" /></div>
+              placeholder="পণ্যের বৈশিষ্ট্য লিখুন" />
+          </div>
         </div>
         <div className="flex gap-2 mt-4">
           <button onClick={save} disabled={loading || uploading}
@@ -435,22 +510,23 @@ export default function ProductList({ branch, role }) {
     let filtered = baseProducts.filter(p => {
       const matchSearch = search === '' ||
         p.name.toLowerCase().includes(search.toLowerCase()) ||
-        (p.name_bn && p.name_bn.includes(search)) ||
+        (p.name_bn && p.name_bn.toLowerCase().includes(search.toLowerCase())) ||
         (p.product_code && p.product_code.toLowerCase().includes(search.toLowerCase())) ||
+        (p.category && p.category.toLowerCase().includes(search.toLowerCase())) ||
         (p.category_bn && p.category_bn.includes(search));
       const matchCategory = !selectedCategory || p.category === selectedCategory;
       return matchSearch && matchCategory;
     });
 
     if (selectedName) {
-      return filtered.filter(p => (p.name_bn || p.name) === selectedName);
+      return filtered.filter(p => p.name === selectedName);
     }
 
     if (search !== '') return filtered;
 
     const seen = new Set();
     return filtered.filter(p => {
-      const key = p.name_bn || p.name;
+      const key = p.name;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -611,7 +687,7 @@ export default function ProductList({ branch, role }) {
         {displayProducts.map(product => (
           <ProductCard key={product.id} product={product} onAdd={addToCart}
             isAdmin={isAdmin} onEdit={setEditingProduct}
-            onDoubleClick={(p) => setSelectedName(p.name_bn || p.name)} />
+            onDoubleClick={(p) => setSelectedName(p.name)} />
         ))}
         {!loading && displayProducts.length === 0 && (
           <p className="col-span-4 text-center text-gray-400 mt-10">কোনো পণ্য পাওয়া যায়নি</p>
