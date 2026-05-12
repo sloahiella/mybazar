@@ -95,16 +95,18 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, dragHandl
   const allImages = [];
   if (product.image_url) allImages.push(product.image_url);
   if (product.product_images) {
-    product.product_images.forEach(img => {
-      if (img.image_url && img.image_url !== product.image_url) {
-        allImages.push(img.image_url);
-      }
-    });
+    product.product_images
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .forEach(img => {
+        if (img.image_url && img.image_url !== product.image_url) {
+          allImages.push(img.image_url);
+        }
+      });
   }
 
   const handleImageTap = () => {
     if (allImages.length > 1) {
-      setCurrentImageIndex((currentImageIndex + 1) % allImages.length);
+      setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
     }
   };
 
@@ -116,75 +118,88 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, dragHandl
     return q;
   };
 
+  const isOutOfStock = !isAdmin && stock <= 0;
+  if (isOutOfStock) return null;
+
   return (
-    <div className="bg-white rounded-xl shadow p-3 relative">
+    <div className="bg-white rounded-xl shadow p-3 relative flex flex-col h-full">
       {isAdmin && (
         <div className="absolute top-2 right-2 flex gap-1 z-10">
-          <span {...dragHandleProps} className="bg-gray-200 text-gray-500 text-xs px-1 py-1 rounded cursor-grab">⠿</span>
-          <button onClick={() => onEdit(product)} className="bg-yellow-400 text-white text-xs px-2 py-1 rounded-lg">✏️</button>
+          <span {...dragHandleProps}
+            className="bg-gray-200 text-gray-500 text-xs px-1 py-1 rounded cursor-grab active:cursor-grabbing">⠿</span>
+          <button onClick={() => onEdit(product)}
+            className="bg-yellow-400 text-white text-xs px-2 py-1 rounded-lg">✏️</button>
         </div>
       )}
 
       {allImages.length > 0 && (
-        <div className="relative mb-2" onClick={handleImageTap}>
+        <div className="relative mb-2 cursor-pointer" onClick={handleImageTap}>
           <img src={allImages[currentImageIndex]} alt={product.name}
-            className="w-full object-contain rounded-lg max-h-40 cursor-pointer" />
+            className="w-full object-contain rounded-lg" style={{ height: '120px' }} />
           {allImages.length > 1 && (
             <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1">
               {allImages.map((_, i) => (
-                <div key={i}
-                  className={`w-1.5 h-1.5 rounded-full ${i === currentImageIndex ? 'bg-green-700' : 'bg-gray-300'}`} />
+                <div key={i} className={`rounded-full transition-all ${i === currentImageIndex ? 'bg-green-700 w-2 h-2' : 'bg-gray-300 w-1.5 h-1.5'}`} />
               ))}
-            </div>
-          )}
-          {allImages.length > 1 && (
-            <div className="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
-              {currentImageIndex + 1}/{allImages.length}
             </div>
           )}
         </div>
       )}
 
-      <div onDoubleClick={() => onDoubleClick(product)} className="cursor-pointer select-none">
-        <h3 className="font-bold text-gray-800 text-sm pr-14">{product.name}</h3>
-        {product.product_code && (
-          <p className="text-xs text-blue-500 font-medium">কোড: {product.product_code}</p>
-        )}
-      </div>
-      <p className="text-green-700 font-bold text-sm mt-1">1 {product.unit} = {product.price_per_unit} Tk</p>
-      <p className="text-xs text-gray-400">Stock: {stock} {product.unit}</p>
-      {product.description && (
-        <>
-          <button onClick={() => setShowDesc(!showDesc)} className="text-xs text-blue-600 underline mt-1 block">
-            বৈশিষ্ট্য {showDesc ? '▲' : '▼'}
-          </button>
-          {showDesc && <p className="text-xs text-gray-600 bg-blue-50 p-2 rounded-lg mt-1">{product.description}</p>}
-        </>
-      )}
-      <div className="mt-2">
-        <div className="flex gap-1 mb-1">
-          <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty}
-            onChange={e => setQty(e.target.value)}
-            className="border-2 border-gray-300 rounded-lg px-2 py-2 w-full text-sm text-gray-900 font-medium focus:border-green-500 focus:outline-none"
-            placeholder="পরিমাণ লিখুন" />
-          {!isPiece && (
-            <select value={unit} onChange={e => setUnit(e.target.value)}
-              className="border-2 border-gray-300 rounded-lg px-2 py-2 text-sm bg-white">
-              {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
-              {isLiter && <><option value={product.unit}>Liter</option><option value="ml">ml</option></>}
-            </select>
+      <div className="flex-1 flex flex-col min-w-0">
+        <div onDoubleClick={() => onDoubleClick(product)} className="cursor-pointer select-none mb-1 min-w-0">
+          <p className="font-bold text-gray-800 text-xs leading-tight break-all pr-12 min-w-0">{product.name}</p>
+          {product.product_code && (
+            <p className="text-xs text-blue-500 font-medium">কোড: {product.product_code}</p>
           )}
-          {isPiece && <span className="border-2 border-gray-200 rounded-lg px-2 py-2 text-sm bg-gray-50 text-gray-500">pcs</span>}
         </div>
-        {qty && parseFloat(qty) > 0 && (
-          <p className="text-xs text-green-700 mb-1 font-bold bg-green-50 p-1 rounded border border-green-200">
-            {qty} {isPiece ? product.unit : unit} = {(getActualQty() * product.price_per_unit).toFixed(0)} Tk
+
+        <p className="text-green-700 font-bold text-xs mt-1">1 {product.unit} = {product.price_per_unit} Tk</p>
+
+        {isAdmin ? (
+          <p className={`text-xs font-medium ${stock <= 0 ? 'text-red-500' : 'text-gray-400'}`}>
+            Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}
           </p>
+        ) : (
+          <p className="text-xs text-gray-400">Stock: {stock} {product.unit}</p>
         )}
-        <button onClick={() => { const a = getActualQty(); if (a > 0) onAdd(product, a); }}
-          className="bg-green-600 text-white px-2 py-2 rounded-lg text-sm w-full font-medium">
-          🛒 ঝুড়িতে যোগ করুন
-        </button>
+
+        {product.description && (
+          <div className="mt-1">
+            <button onClick={() => setShowDesc(!showDesc)} className="text-xs text-blue-600 underline">
+              বৈশিষ্ট্য {showDesc ? '▲' : '▼'}
+            </button>
+            {showDesc && <p className="text-xs text-gray-600 bg-blue-50 p-2 rounded-lg mt-1">{product.description}</p>}
+          </div>
+        )}
+
+        <div className="mt-2">
+          <div className="flex gap-1 mb-1">
+            <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty}
+              onChange={e => setQty(e.target.value)}
+              className="border-2 border-gray-300 rounded-lg px-1 py-2 w-full text-xs text-gray-900 font-medium focus:border-green-500 focus:outline-none min-w-0"
+              placeholder="পরিমাণ" />
+            {!isPiece && (
+              <select value={unit} onChange={e => setUnit(e.target.value)}
+                className="border-2 border-gray-300 rounded-lg px-1 py-2 text-xs bg-white flex-shrink-0">
+                {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
+                {isLiter && <><option value={product.unit}>L</option><option value="ml">ml</option></>}
+              </select>
+            )}
+            {isPiece && (
+              <span className="border-2 border-gray-200 rounded-lg px-1 py-2 text-xs bg-gray-50 text-gray-500 flex-shrink-0">pcs</span>
+            )}
+          </div>
+          {qty && parseFloat(qty) > 0 && (
+            <p className="text-xs text-green-700 mb-1 font-bold bg-green-50 p-1 rounded border border-green-200">
+              = {(getActualQty() * product.price_per_unit).toFixed(0)} Tk
+            </p>
+          )}
+          <button onClick={() => { const a = getActualQty(); if (a > 0) onAdd(product, a); }}
+            className="bg-green-600 text-white px-1 py-2 rounded-lg text-xs w-full font-medium">
+            🛒 ঝুড়িতে
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -207,17 +222,12 @@ function EditProductModal({ product, onClose, onSave }) {
   const currentStock = product.stock?.[0]?.quantity || 0;
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
 
-  useEffect(() => {
-    fetchExtraImages();
-  }, []);
+  useEffect(() => { fetchExtraImages(); }, []);
 
   async function fetchExtraImages() {
     setLoadingImages(true);
-    const { data } = await supabase
-      .from('product_images')
-      .select('*')
-      .eq('product_id', product.id)
-      .order('sort_order');
+    const { data } = await supabase.from('product_images').select('*')
+      .eq('product_id', product.id).order('sort_order');
     if (data) setExtraImages(data);
     setLoadingImages(false);
   }
@@ -243,9 +253,7 @@ function EditProductModal({ product, onClose, onSave }) {
     if (error) { alert('সমস্যা: ' + error.message); setUploading(false); return; }
     const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName);
     await supabase.from('product_images').insert({
-      product_id: product.id,
-      image_url: urlData.publicUrl,
-      sort_order: extraImages.length
+      product_id: product.id, image_url: urlData.publicUrl, sort_order: extraImages.length
     });
     fetchExtraImages();
     setUploading(false);
@@ -259,12 +267,10 @@ function EditProductModal({ product, onClose, onSave }) {
   async function save() {
     setLoading(true);
     await supabase.from('products').update({
-      name: form.name, name_bn: form.name_bn,
-      product_code: form.product_code,
-      price_per_unit: parseFloat(form.price_per_unit),
-      unit: form.unit, category: form.category,
-      category_bn: form.category_bn, description: form.description,
-      image_url: form.image_url, is_active: form.is_active
+      name: form.name, name_bn: form.name_bn, product_code: form.product_code,
+      price_per_unit: parseFloat(form.price_per_unit), unit: form.unit,
+      category: form.category, category_bn: form.category_bn,
+      description: form.description, image_url: form.image_url, is_active: form.is_active
     }).eq('id', product.id);
     if (stockQty && parseFloat(stockQty) > 0) {
       const { data: existing } = await supabase.from('stock').select('*').eq('product_id', product.id).single();
@@ -287,46 +293,31 @@ function EditProductModal({ product, onClose, onSave }) {
           <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
         </div>
         <div className="space-y-2">
-          <div>
-            <label className="text-xs text-gray-500">নাম (কাস্টমার দেখবে) *</label>
-            <input name="name" value={form.name} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="এ্যাংকর ডাল" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">বিকল্প নাম (শুধু সার্চের জন্য)</label>
-            <input name="name_bn" value={form.name_bn} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="Anchor Dal" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">পণ্য কোড</label>
-            <input name="product_code" value={form.product_code} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="P001" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">দাম (Tk)</label>
+          <div><label className="text-xs text-gray-500">নাম (কাস্টমার দেখবে) *</label>
+            <input name="name" value={form.name} onChange={handle} placeholder="এ্যাংকর ডাল"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">বিকল্প নাম (শুধু সার্চের জন্য)</label>
+            <input name="name_bn" value={form.name_bn} onChange={handle} placeholder="Anchor Dal"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">পণ্য কোড</label>
+            <input name="product_code" value={form.product_code} onChange={handle} placeholder="P001"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">দাম (Tk)</label>
             <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">ইউনিট</label>
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">ইউনিট</label>
             <select name="unit" value={form.unit} onChange={handle}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
               <option value="Kg">Kg</option><option value="Liter">Liter</option>
               <option value="pcs">pcs</option><option value="packet">Packet</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">ক্যাটাগরি (সার্চের জন্য)</label>
-            <input name="category" value={form.category} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="dal" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500">ক্যাটাগরি বাংলা</label>
-            <input name="category_bn" value={form.category_bn} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="ডাল" />
-          </div>
+            </select></div>
+          <div><label className="text-xs text-gray-500">ক্যাটাগরি (সার্চের জন্য)</label>
+            <input name="category" value={form.category} onChange={handle} placeholder="dal"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+          <div><label className="text-xs text-gray-500">ক্যাটাগরি বাংলা</label>
+            <input name="category_bn" value={form.category_bn} onChange={handle} placeholder="ডাল"
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
 
-          {/* প্রধান ছবি */}
           <div className="bg-green-50 rounded-lg p-3">
             <label className="text-xs text-green-700 font-bold">প্রধান ছবি (সবসময় দেখাবে)</label>
             {form.image_url && (
@@ -336,7 +327,6 @@ function EditProductModal({ product, onClose, onSave }) {
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
           </div>
 
-          {/* অতিরিক্ত ছবি */}
           <div className="bg-blue-50 rounded-lg p-3">
             <label className="text-xs text-blue-700 font-bold">অতিরিক্ত ছবি (ট্যাপ করলে দেখাবে)</label>
             {loadingImages ? (
@@ -345,12 +335,9 @@ function EditProductModal({ product, onClose, onSave }) {
               <div className="flex gap-2 flex-wrap mt-2">
                 {extraImages.map(img => (
                   <div key={img.id} className="relative">
-                    <img src={img.image_url} alt="extra"
-                      className="w-16 h-16 object-cover rounded-lg" />
+                    <img src={img.image_url} alt="extra" className="w-16 h-16 object-cover rounded-lg" />
                     <button onClick={() => deleteExtraImage(img.id)}
-                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
-                      ✕
-                    </button>
+                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">✕</button>
                   </div>
                 ))}
               </div>
@@ -360,12 +347,10 @@ function EditProductModal({ product, onClose, onSave }) {
             {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
           </div>
 
-          <div>
-            <label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
+          <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
             <textarea name="description" value={form.description} onChange={handle} rows={3}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="পণ্যের বৈশিষ্ট্য লিখুন" />
-          </div>
+              placeholder="পণ্যের বৈশিষ্ট্য লিখুন" /></div>
           <div className="bg-blue-50 rounded-lg p-3">
             <label className="text-xs text-blue-700 font-bold">স্টক যোগ (বর্তমান: {currentStock} {product.unit})</label>
             <input type="number" value={stockQty} onChange={e => setStockQty(e.target.value)}
@@ -394,9 +379,8 @@ function EditProductModal({ product, onClose, onSave }) {
 function AddProductModal({ branch, defaultPage, onClose, onSave }) {
   const [form, setForm] = useState({
     name: '', name_bn: '', product_code: '', description: '',
-    price_per_unit: '', unit: 'Kg',
-    category: '', category_bn: '', stock: '', image_url: '',
-    page_id: defaultPage?.id || ''
+    price_per_unit: '', unit: 'Kg', category: '', category_bn: '',
+    stock: '', image_url: '', page_id: defaultPage?.id || ''
   });
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -408,7 +392,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
     setUploading(true);
     const fileName = `${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from('products').upload(fileName, file);
-    if (error) { alert('ছবি আপলোড সমস্যা: ' + error.message); setUploading(false); return; }
+    if (error) { alert('সমস্যা: ' + error.message); setUploading(false); return; }
     const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName);
     setForm(prev => ({ ...prev, image_url: urlData.publicUrl }));
     setUploading(false);
@@ -420,18 +404,13 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
       return;
     }
     setLoading(true);
-    const { data: product, error } = await supabase
-      .from('products')
-      .insert({
-        name: form.name, name_bn: form.name_bn,
-        product_code: form.product_code, description: form.description,
-        price_per_unit: parseFloat(form.price_per_unit),
-        unit: form.unit, branch_id: branch.id,
-        category: form.category, category_bn: form.category_bn,
-        image_url: form.image_url,
-        page_id: form.page_id ? parseInt(form.page_id) : null,
-        is_active: true
-      }).select().single();
+    const { data: product, error } = await supabase.from('products').insert({
+      name: form.name, name_bn: form.name_bn, product_code: form.product_code,
+      description: form.description, price_per_unit: parseFloat(form.price_per_unit),
+      unit: form.unit, branch_id: branch.id, category: form.category,
+      category_bn: form.category_bn, image_url: form.image_url,
+      page_id: form.page_id ? parseInt(form.page_id) : null, is_active: true
+    }).select().single();
 
     if (error) { alert('সমস্যা: ' + error.message); setLoading(false); return; }
 
@@ -452,7 +431,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
         </div>
         <div className="space-y-2">
-          <div><label className="text-xs text-gray-500">নাম *</label>
+          <div><label className="text-xs text-gray-500">নাম (কাস্টমার দেখবে) *</label>
             <input name="name" value={form.name} onChange={handle} placeholder="এ্যাংকর ডাল"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">বিকল্প নাম (সার্চের জন্য)</label>
@@ -521,9 +500,7 @@ export default function ProductList({ branch, role }) {
 
   const isAdmin = role === 'admin';
 
-  useEffect(() => {
-    fetchProducts();
-  }, [branch]);
+  useEffect(() => { fetchProducts(); }, [branch]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -557,17 +534,11 @@ export default function ProductList({ branch, role }) {
 
   async function handleDragEnd(result) {
     if (!result.destination) return;
-    const items = Array.from(displayProducts);
+    if (result.source.index === result.destination.index) return;
+    const items = Array.from(products);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
-
-    const updatedProducts = products.map(p => {
-      const newIndex = items.findIndex(item => item.id === p.id);
-      if (newIndex !== -1) return { ...p, sort_order: newIndex };
-      return p;
-    });
-    setProducts(updatedProducts);
-
+    setProducts(items);
     for (let i = 0; i < items.length; i++) {
       await supabase.from('products').update({ sort_order: i }).eq('id', items[i].id);
     }
@@ -576,6 +547,9 @@ export default function ProductList({ branch, role }) {
   const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
 
   const getDisplayProducts = () => {
+    // সার্চ বা নাম সিলেক্ট থাকলে সব পণ্য থেকে খুঁজবে
+    // পেজ সিলেক্ট থাকলে সেই পেজের পণ্য দেখাবে
+    // হোম পেজে সব পণ্য দেখাবে
     const baseProducts = (search !== '' || selectedName)
       ? products
       : selectedPage
@@ -750,14 +724,15 @@ export default function ProductList({ branch, role }) {
 
       {isAdmin ? (
         <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="products" direction="horizontal">
+          <Droppable droppableId="products">
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef}
                 className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
-                {displayProducts.map((product, index) => (
+                {products.map((product, index) => (
                   <Draggable key={product.id} draggableId={String(product.id)} index={index}>
-                    {(provided) => (
-                      <div ref={provided.innerRef} {...provided.draggableProps}>
+                    {(provided, snapshot) => (
+                      <div ref={provided.innerRef} {...provided.draggableProps}
+                        style={{ ...provided.draggableProps.style, opacity: snapshot.isDragging ? 0.8 : 1 }}>
                         <ProductCard product={product} onAdd={addToCart}
                           isAdmin={isAdmin} onEdit={setEditingProduct}
                           onDoubleClick={(p) => setSelectedName(p.name)}
