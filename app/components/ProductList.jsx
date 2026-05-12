@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import OrderForm from './OrderForm';
 import PageMenu from './PageMenu';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
@@ -80,7 +81,7 @@ function CartItem({ item, onUpdate, onRemove }) {
   );
 }
 
-function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick }) {
+function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, dragHandleProps }) {
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
   const [showDesc, setShowDesc] = useState(false);
@@ -101,17 +102,22 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick }) {
   return (
     <div className="bg-white rounded-xl shadow p-3 relative">
       {isAdmin && (
-        <button onClick={() => onEdit(product)}
-          className="absolute top-2 right-2 bg-yellow-400 text-white text-xs px-2 py-1 rounded-lg z-10">
-          ✏️
-        </button>
+        <div className="absolute top-2 right-2 flex gap-1">
+          <span {...dragHandleProps} className="bg-gray-200 text-gray-500 text-xs px-1 py-1 rounded cursor-grab">
+            ⠿
+          </span>
+          <button onClick={() => onEdit(product)}
+            className="bg-yellow-400 text-white text-xs px-2 py-1 rounded-lg">
+            ✏️
+          </button>
+        </div>
       )}
       {product.image_url && (
         <img src={product.image_url} alt={product.name}
           className="w-full object-contain rounded-lg mb-2 max-h-40" />
       )}
       <div onDoubleClick={() => onDoubleClick(product)} className="cursor-pointer select-none">
-        <h3 className="font-bold text-gray-800 text-sm pr-8">{product.name}</h3>
+        <h3 className="font-bold text-gray-800 text-sm pr-14">{product.name}</h3>
         {product.product_code && (
           <p className="text-xs text-blue-500 font-medium">কোড: {product.product_code}</p>
         )}
@@ -235,10 +241,10 @@ function EditProductModal({ product, onClose, onSave }) {
               placeholder="এ্যাংকর ডাল" />
           </div>
           <div>
-            <label className="text-xs text-gray-500">বিকল্প নাম (শুধু সার্চের জন্য, কাস্টমার দেখবে না)</label>
+            <label className="text-xs text-gray-500">বিকল্প নাম (শুধু সার্চের জন্য)</label>
             <input name="name_bn" value={form.name_bn} onChange={handle}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="Anchor Dal / আংকর ডাল" />
+              placeholder="Anchor Dal" />
           </div>
           <div>
             <label className="text-xs text-gray-500">পণ্য কোড</label>
@@ -268,7 +274,7 @@ function EditProductModal({ product, onClose, onSave }) {
               placeholder="dal" />
           </div>
           <div>
-            <label className="text-xs text-gray-500">ক্যাটাগরি বাংলা (সার্চের জন্য)</label>
+            <label className="text-xs text-gray-500">ক্যাটাগরি বাংলা</label>
             <input name="category_bn" value={form.category_bn} onChange={handle}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
               placeholder="ডাল" />
@@ -284,7 +290,7 @@ function EditProductModal({ product, onClose, onSave }) {
             {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
           </div>
           <div>
-            <label className="text-xs text-gray-500">বৈশিষ্ট্য (দিলে কাস্টমার দেখবে)</label>
+            <label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
             <textarea name="description" value={form.description} onChange={handle} rows={3}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
               placeholder="পণ্যের বৈশিষ্ট্য লিখুন" />
@@ -349,15 +355,11 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
     const { data: product, error } = await supabase
       .from('products')
       .insert({
-        name: form.name,
-        name_bn: form.name_bn,
-        product_code: form.product_code,
-        description: form.description,
+        name: form.name, name_bn: form.name_bn,
+        product_code: form.product_code, description: form.description,
         price_per_unit: parseFloat(form.price_per_unit),
-        unit: form.unit,
-        branch_id: branch.id,
-        category: form.category,
-        category_bn: form.category_bn,
+        unit: form.unit, branch_id: branch.id,
+        category: form.category, category_bn: form.category_bn,
         image_url: form.image_url,
         page_id: form.page_id ? parseInt(form.page_id) : null,
         is_active: true
@@ -386,26 +388,22 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
         <div className="space-y-2">
           <div>
             <label className="text-xs text-gray-500">নাম (কাস্টমার দেখবে) *</label>
-            <input name="name" value={form.name} onChange={handle}
-              placeholder="এ্যাংকর ডাল"
+            <input name="name" value={form.name} onChange={handle} placeholder="এ্যাংকর ডাল"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
           </div>
           <div>
             <label className="text-xs text-gray-500">বিকল্প নাম (শুধু সার্চের জন্য)</label>
-            <input name="name_bn" value={form.name_bn} onChange={handle}
-              placeholder="Anchor Dal / আংকর ডাল"
+            <input name="name_bn" value={form.name_bn} onChange={handle} placeholder="Anchor Dal"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
           </div>
           <div>
             <label className="text-xs text-gray-500">পণ্য কোড *</label>
-            <input name="product_code" value={form.product_code} onChange={handle}
-              placeholder="P001"
+            <input name="product_code" value={form.product_code} onChange={handle} placeholder="P001"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
           </div>
           <div>
             <label className="text-xs text-gray-500">দাম *</label>
-            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle}
-              placeholder="120"
+            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} placeholder="120"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
           </div>
           <div>
@@ -420,20 +418,17 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           </div>
           <div>
             <label className="text-xs text-gray-500">ক্যাটাগরি (সার্চের জন্য)</label>
-            <input name="category" value={form.category} onChange={handle}
-              placeholder="dal"
+            <input name="category" value={form.category} onChange={handle} placeholder="dal"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
           </div>
           <div>
-            <label className="text-xs text-gray-500">ক্যাটাগরি বাংলা (সার্চের জন্য)</label>
-            <input name="category_bn" value={form.category_bn} onChange={handle}
-              placeholder="ডাল"
+            <label className="text-xs text-gray-500">ক্যাটাগরি বাংলা</label>
+            <input name="category_bn" value={form.category_bn} onChange={handle} placeholder="ডাল"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
           </div>
           <div>
             <label className="text-xs text-gray-500">প্রাথমিক স্টক</label>
-            <input name="stock" type="number" value={form.stock} onChange={handle}
-              placeholder="50"
+            <input name="stock" type="number" value={form.stock} onChange={handle} placeholder="50"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
           </div>
           <div>
@@ -447,7 +442,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
             {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
           </div>
           <div>
-            <label className="text-xs text-gray-500">বৈশিষ্ট্য (দিলে কাস্টমার দেখবে)</label>
+            <label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
             <textarea name="description" value={form.description} onChange={handle} rows={2}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
               placeholder="পণ্যের বৈশিষ্ট্য লিখুন" />
@@ -493,9 +488,30 @@ export default function ProductList({ branch, role }) {
       .from('products')
       .select('*, stock(*)')
       .eq('branch_id', branch.id)
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
     if (data) setProducts(data);
     setLoading(false);
+  }
+
+  async function handleDragEnd(result) {
+    if (!result.destination) return;
+    const items = Array.from(displayProducts);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    const updatedProducts = products.map(p => {
+      const newIndex = items.findIndex(item => item.id === p.id);
+      if (newIndex !== -1) {
+        return { ...p, sort_order: newIndex };
+      }
+      return p;
+    });
+    setProducts(updatedProducts);
+
+    for (let i = 0; i < items.length; i++) {
+      await supabase.from('products').update({ sort_order: i }).eq('id', items[i].id);
+    }
   }
 
   const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
@@ -677,22 +693,67 @@ export default function ProductList({ branch, role }) {
         })}
       </div>
 
-      {!search && !selectedName && (
+      {isAdmin && (
+        <p className="text-xs text-center text-yellow-600 mb-1">⠿ আইকন ধরে Drag করে পণ্য সাজান</p>
+      )}
+
+      {!search && !selectedName && !isAdmin && (
         <p className="text-xs text-center text-gray-400 mb-1">💡 একই পণ্যের সব ভ্যারিয়েন্ট দেখতে ডাবল ক্লিক করুন</p>
       )}
 
       {loading && <p className="text-center text-gray-400 mt-10">লোড হচ্ছে...</p>}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
-        {displayProducts.map(product => (
-          <ProductCard key={product.id} product={product} onAdd={addToCart}
-            isAdmin={isAdmin} onEdit={setEditingProduct}
-            onDoubleClick={(p) => setSelectedName(p.name)} />
-        ))}
-        {!loading && displayProducts.length === 0 && (
-          <p className="col-span-4 text-center text-gray-400 mt-10">কোনো পণ্য পাওয়া যায়নি</p>
-        )}
-      </div>
+      {isAdmin ? (
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="products" direction="horizontal">
+            {(provided) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4"
+              >
+                {displayProducts.map((product, index) => (
+                  <Draggable key={product.id} draggableId={String(product.id)} index={index}>
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                      >
+                        <ProductCard
+                          product={product}
+                          onAdd={addToCart}
+                          isAdmin={isAdmin}
+                          onEdit={setEditingProduct}
+                          onDoubleClick={(p) => setSelectedName(p.name)}
+                          dragHandleProps={provided.dragHandleProps}
+                        />
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
+          {displayProducts.map(product => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onAdd={addToCart}
+              isAdmin={isAdmin}
+              onEdit={setEditingProduct}
+              onDoubleClick={(p) => setSelectedName(p.name)}
+              dragHandleProps={null}
+            />
+          ))}
+          {!loading && displayProducts.length === 0 && (
+            <p className="col-span-4 text-center text-gray-400 mt-10">কোনো পণ্য পাওয়া যায়নি</p>
+          )}
+        </div>
+      )}
 
       {cart.length > 0 && (
         <div onClick={() => setShowCart(true)}
