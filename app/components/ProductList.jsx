@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import OrderForm from './OrderForm';
 import PageMenu from './PageMenu';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
@@ -81,7 +80,7 @@ function CartItem({ item, onUpdate, onRemove }) {
   );
 }
 
-function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, dragHandleProps }) {
+function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDragging, onDragStart }) {
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
   const [showDesc, setShowDesc] = useState(false);
@@ -122,84 +121,130 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, dragHandl
   if (isOutOfStock) return null;
 
   return (
-    <div className="bg-white rounded-xl shadow p-3 relative flex flex-col h-full">
+    <div style={{
+      background: 'white',
+      borderRadius: '12px',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+      padding: '10px',
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
+      opacity: isDragging ? 0.5 : 1,
+      border: isDragging ? '2px solid #16a34a' : '1px solid #e5e7eb',
+    }}>
+
       {isAdmin && (
-        <div className="absolute top-2 right-2 flex gap-1 z-10">
-          <span {...dragHandleProps}
-            className="bg-gray-200 text-gray-500 text-xs px-1 py-1 rounded cursor-grab active:cursor-grabbing">⠿</span>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', marginBottom: '4px' }}>
+          <span
+            onMouseDown={onDragStart}
+            onTouchStart={onDragStart}
+            style={{ background: '#e5e7eb', color: '#6b7280', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', cursor: 'grab' }}>
+            ⠿
+          </span>
           <button onClick={() => onEdit(product)}
-            className="bg-yellow-400 text-white text-xs px-2 py-1 rounded-lg">✏️</button>
+            style={{ background: '#facc15', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+            ✏️
+          </button>
         </div>
       )}
 
       {allImages.length > 0 && (
-        <div className="relative mb-2 cursor-pointer" onClick={handleImageTap}>
+        <div style={{ position: 'relative', marginBottom: '8px', cursor: 'pointer' }} onClick={handleImageTap}>
           <img src={allImages[currentImageIndex]} alt={product.name}
-            className="w-full object-contain rounded-lg" style={{ height: '120px' }} />
+            style={{ width: '100%', height: '110px', objectFit: 'contain', borderRadius: '8px' }} />
           {allImages.length > 1 && (
-            <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1">
+            <div style={{ position: 'absolute', bottom: '4px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '4px' }}>
               {allImages.map((_, i) => (
-                <div key={i} className={`rounded-full transition-all ${i === currentImageIndex ? 'bg-green-700 w-2 h-2' : 'bg-gray-300 w-1.5 h-1.5'}`} />
+                <div key={i} style={{
+                  borderRadius: '50%',
+                  width: i === currentImageIndex ? '8px' : '6px',
+                  height: i === currentImageIndex ? '8px' : '6px',
+                  background: i === currentImageIndex ? '#16a34a' : '#d1d5db',
+                }} />
               ))}
             </div>
           )}
         </div>
       )}
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <div onDoubleClick={() => onDoubleClick(product)} className="cursor-pointer select-none mb-1 min-w-0">
-          <p className="font-bold text-gray-800 text-xs leading-tight break-all pr-12 min-w-0">{product.name}</p>
-          {product.product_code && (
-            <p className="text-xs text-blue-500 font-medium">কোড: {product.product_code}</p>
-          )}
-        </div>
-
-        <p className="text-green-700 font-bold text-xs mt-1">1 {product.unit} = {product.price_per_unit} Tk</p>
-
-        {isAdmin ? (
-          <p className={`text-xs font-medium ${stock <= 0 ? 'text-red-500' : 'text-gray-400'}`}>
-            Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}
+      <div onDoubleClick={() => onDoubleClick(product)} style={{ cursor: 'pointer', userSelect: 'none', marginBottom: '4px' }}>
+        <p style={{
+          fontWeight: 'bold',
+          color: '#1f2937',
+          fontSize: '13px',
+          lineHeight: '1.4',
+          wordBreak: 'break-word',
+          overflowWrap: 'anywhere',
+          margin: 0,
+        }}>{product.name}</p>
+        {product.product_code && (
+          <p style={{ fontSize: '11px', color: '#3b82f6', fontWeight: '500', margin: '2px 0 0 0' }}>
+            কোড: {product.product_code}
           </p>
-        ) : (
-          <p className="text-xs text-gray-400">Stock: {stock} {product.unit}</p>
         )}
+      </div>
 
-        {product.description && (
-          <div className="mt-1">
-            <button onClick={() => setShowDesc(!showDesc)} className="text-xs text-blue-600 underline">
-              বৈশিষ্ট্য {showDesc ? '▲' : '▼'}
-            </button>
-            {showDesc && <p className="text-xs text-gray-600 bg-blue-50 p-2 rounded-lg mt-1">{product.description}</p>}
-          </div>
-        )}
+      <p style={{ color: '#16a34a', fontWeight: 'bold', fontSize: '12px', margin: '2px 0' }}>
+        1 {product.unit} = {product.price_per_unit} Tk
+      </p>
 
-        <div className="mt-2">
-          <div className="flex gap-1 mb-1">
-            <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty}
-              onChange={e => setQty(e.target.value)}
-              className="border-2 border-gray-300 rounded-lg px-1 py-2 w-full text-xs text-gray-900 font-medium focus:border-green-500 focus:outline-none min-w-0"
-              placeholder="পরিমাণ" />
-            {!isPiece && (
-              <select value={unit} onChange={e => setUnit(e.target.value)}
-                className="border-2 border-gray-300 rounded-lg px-1 py-2 text-xs bg-white flex-shrink-0">
-                {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
-                {isLiter && <><option value={product.unit}>L</option><option value="ml">ml</option></>}
-              </select>
-            )}
-            {isPiece && (
-              <span className="border-2 border-gray-200 rounded-lg px-1 py-2 text-xs bg-gray-50 text-gray-500 flex-shrink-0">pcs</span>
-            )}
-          </div>
-          {qty && parseFloat(qty) > 0 && (
-            <p className="text-xs text-green-700 mb-1 font-bold bg-green-50 p-1 rounded border border-green-200">
-              = {(getActualQty() * product.price_per_unit).toFixed(0)} Tk
+      {isAdmin ? (
+        <p style={{ fontSize: '11px', color: stock <= 0 ? '#ef4444' : '#9ca3af', margin: '0 0 4px 0' }}>
+          Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}
+        </p>
+      ) : (
+        <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 4px 0' }}>
+          Stock: {stock} {product.unit}
+        </p>
+      )}
+
+      {product.description && (
+        <div style={{ marginBottom: '4px' }}>
+          <button onClick={() => setShowDesc(!showDesc)}
+            style={{ fontSize: '11px', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+            বৈশিষ্ট্য {showDesc ? '▲' : '▼'}
+          </button>
+          {showDesc && (
+            <p style={{ fontSize: '11px', color: '#4b5563', background: '#eff6ff', padding: '6px', borderRadius: '6px', margin: '4px 0 0 0' }}>
+              {product.description}
             </p>
           )}
-          <button onClick={() => { const a = getActualQty(); if (a > 0) onAdd(product, a); }}
-            className="bg-green-600 text-white px-1 py-2 rounded-lg text-xs w-full font-medium">
-            🛒 ঝুড়িতে
-          </button>
         </div>
+      )}
+
+      <div style={{ marginTop: 'auto' }}>
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+          <input
+            type="number" min="0"
+            step={isPiece ? '1' : '0.001'}
+            value={qty}
+            onChange={e => setQty(e.target.value)}
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', width: '100%', fontSize: '12px', color: '#1f2937', outline: 'none', minWidth: 0 }}
+            placeholder="পরিমাণ"
+          />
+          {!isPiece && (
+            <select value={unit} onChange={e => setUnit(e.target.value)}
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 2px', fontSize: '11px', background: 'white', flexShrink: 0 }}>
+              {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
+              {isLiter && <><option value={product.unit}>L</option><option value="ml">ml</option></>}
+            </select>
+          )}
+          {isPiece && (
+            <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', color: '#6b7280', background: '#f9fafb', flexShrink: 0 }}>
+              pcs
+            </span>
+          )}
+        </div>
+        {qty && parseFloat(qty) > 0 && (
+          <p style={{ fontSize: '11px', color: '#16a34a', fontWeight: 'bold', background: '#f0fdf4', padding: '3px 6px', borderRadius: '6px', border: '1px solid #bbf7d0', margin: '0 0 4px 0' }}>
+            = {(getActualQty() * product.price_per_unit).toFixed(0)} Tk
+          </p>
+        )}
+        <button
+          onClick={() => { const a = getActualQty(); if (a > 0) onAdd(product, a); }}
+          style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '7px 4px', fontSize: '12px', width: '100%', cursor: 'pointer', fontWeight: '500' }}>
+          🛒 ঝুড়িতে
+        </button>
       </div>
     </div>
   );
@@ -431,7 +476,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
         </div>
         <div className="space-y-2">
-          <div><label className="text-xs text-gray-500">নাম (কাস্টমার দেখবে) *</label>
+          <div><label className="text-xs text-gray-500">নাম *</label>
             <input name="name" value={form.name} onChange={handle} placeholder="এ্যাংকর ডাল"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">বিকল্প নাম (সার্চের জন্য)</label>
@@ -497,6 +542,8 @@ export default function ProductList({ branch, role }) {
   const [selectedPage, setSelectedPage] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalPage, setAddModalPage] = useState(null);
+  const [dragIndex, setDragIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
 
   const isAdmin = role === 'admin';
 
@@ -532,13 +579,27 @@ export default function ProductList({ branch, role }) {
     setLoading(false);
   }
 
-  async function handleDragEnd(result) {
-    if (!result.destination) return;
-    if (result.source.index === result.destination.index) return;
+  function handleDragStart(index) {
+    setDragIndex(index);
+  }
+
+  function handleDragOver(index) {
+    if (dragIndex === null) return;
+    setDragOverIndex(index);
+  }
+
+  async function handleDrop(dropIndex) {
+    if (dragIndex === null || dragIndex === dropIndex) {
+      setDragIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
     const items = Array.from(products);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+    const [removed] = items.splice(dragIndex, 1);
+    items.splice(dropIndex, 0, removed);
     setProducts(items);
+    setDragIndex(null);
+    setDragOverIndex(null);
     for (let i = 0; i < items.length; i++) {
       await supabase.from('products').update({ sort_order: i }).eq('id', items[i].id);
     }
@@ -547,9 +608,6 @@ export default function ProductList({ branch, role }) {
   const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
 
   const getDisplayProducts = () => {
-    // সার্চ বা নাম সিলেক্ট থাকলে সব পণ্য থেকে খুঁজবে
-    // পেজ সিলেক্ট থাকলে সেই পেজের পণ্য দেখাবে
-    // হোম পেজে সব পণ্য দেখাবে
     const baseProducts = (search !== '' || selectedName)
       ? products
       : selectedPage
@@ -722,43 +780,32 @@ export default function ProductList({ branch, role }) {
 
       {loading && <p className="text-center text-gray-400 mt-10">লোড হচ্ছে...</p>}
 
-      {isAdmin ? (
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="products">
-            {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef}
-                className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
-                {products.map((product, index) => (
-                  <Draggable key={product.id} draggableId={String(product.id)} index={index}>
-                    {(provided, snapshot) => (
-                      <div ref={provided.innerRef} {...provided.draggableProps}
-                        style={{ ...provided.draggableProps.style, opacity: snapshot.isDragging ? 0.8 : 1 }}>
-                        <ProductCard product={product} onAdd={addToCart}
-                          isAdmin={isAdmin} onEdit={setEditingProduct}
-                          onDoubleClick={(p) => setSelectedName(p.name)}
-                          dragHandleProps={provided.dragHandleProps} />
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
-          {displayProducts.map(product => (
-            <ProductCard key={product.id} product={product} onAdd={addToCart}
-              isAdmin={isAdmin} onEdit={setEditingProduct}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
+        {(isAdmin ? products : displayProducts).map((product, index) => (
+          <div
+            key={product.id}
+            onDragOver={(e) => { e.preventDefault(); if (isAdmin) handleDragOver(index); }}
+            onDrop={() => { if (isAdmin) handleDrop(index); }}
+            style={{
+              outline: isAdmin && dragOverIndex === index && dragIndex !== index ? '2px solid #16a34a' : 'none',
+              borderRadius: '12px',
+            }}
+          >
+            <ProductCard
+              product={product}
+              onAdd={addToCart}
+              isAdmin={isAdmin}
+              onEdit={setEditingProduct}
               onDoubleClick={(p) => setSelectedName(p.name)}
-              dragHandleProps={null} />
-          ))}
-          {!loading && displayProducts.length === 0 && (
-            <p className="col-span-4 text-center text-gray-400 mt-10">কোনো পণ্য পাওয়া যায়নি</p>
-          )}
-        </div>
-      )}
+              isDragging={dragIndex === index}
+              onDragStart={() => handleDragStart(index)}
+            />
+          </div>
+        ))}
+        {!loading && displayProducts.length === 0 && !isAdmin && (
+          <p className="col-span-4 text-center text-gray-400 mt-10">কোনো পণ্য পাওয়া যায়নি</p>
+        )}
+      </div>
 
       {cart.length > 0 && (
         <div onClick={() => setShowCart(true)}
