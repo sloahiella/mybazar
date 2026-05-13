@@ -165,7 +165,7 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
         </div>
       )}
 
-      {/* নাম - উপরে থাকবে */}
+      {/* নাম - উপরে */}
       <div onDoubleClick={() => onDoubleClick(product)}
         style={{ cursor: 'pointer', userSelect: 'none', flexShrink: 0 }}>
         <p style={{
@@ -179,10 +179,10 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
         }}>{product.name}</p>
       </div>
 
-      {/* স্পেস - নামের নিচে অটো */}
-      <div style={{ flex: 1 }}></div>
+      {/* অটো স্পেস - নামের নিচে */}
+      <div style={{ flex: 1 }} />
 
-      {/* কোড, দাম, স্টক - নিচে */}
+      {/* কোড, দাম, স্টক, বাটন - নিচে */}
       <div style={{ flexShrink: 0 }}>
         {product.product_code && (
           <p style={{ fontSize: '11px', color: '#3b82f6', fontWeight: '500', margin: '0 0 2px 0' }}>
@@ -340,10 +340,10 @@ function EditProductModal({ product, onClose, onSave }) {
           <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
         </div>
         <div className="space-y-2">
-          <div><label className="text-xs text-gray-500">নাম (কাস্টমার দেখবে) *</label>
+          <div><label className="text-xs text-gray-500">নাম *</label>
             <input name="name" value={form.name} onChange={handle} placeholder="এ্যাংকর ডাল"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">বিকল্প নাম (শুধু সার্চের জন্য)</label>
+          <div><label className="text-xs text-gray-500">বিকল্প নাম</label>
             <input name="name_bn" value={form.name_bn} onChange={handle} placeholder="Anchor Dal"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">পণ্য কোড</label>
@@ -358,20 +358,20 @@ function EditProductModal({ product, onClose, onSave }) {
               <option value="Kg">Kg</option><option value="Liter">Liter</option>
               <option value="pcs">pcs</option><option value="packet">Packet</option>
             </select></div>
-          <div><label className="text-xs text-gray-500">ক্যাটাগরি (সার্চের জন্য)</label>
+          <div><label className="text-xs text-gray-500">ক্যাটাগরি (ইং)</label>
             <input name="category" value={form.category} onChange={handle} placeholder="dal"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">ক্যাটাগরি বাংলা</label>
+          <div><label className="text-xs text-gray-500">ক্যাটাগরি (বাং)</label>
             <input name="category_bn" value={form.category_bn} onChange={handle} placeholder="ডাল"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div className="bg-green-50 rounded-lg p-3">
-            <label className="text-xs text-green-700 font-bold">প্রধান ছবি (সবসময় দেখাবে)</label>
+            <label className="text-xs text-green-700 font-bold">প্রধান ছবি</label>
             {form.image_url && <img src={form.image_url} alt="main" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-32" />}
             <input type="file" accept="image/*" onChange={uploadMainImage}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
           </div>
           <div className="bg-blue-50 rounded-lg p-3">
-            <label className="text-xs text-blue-700 font-bold">অতিরিক্ত ছবি (ট্যাপ করলে দেখাবে)</label>
+            <label className="text-xs text-blue-700 font-bold">অতিরিক্ত ছবি</label>
             {loadingImages ? <p className="text-xs text-gray-400 mt-1">লোড হচ্ছে...</p> : (
               <div className="flex gap-2 flex-wrap mt-2">
                 {extraImages.map(img => (
@@ -474,7 +474,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           <div><label className="text-xs text-gray-500">নাম *</label>
             <input name="name" value={form.name} onChange={handle} placeholder="এ্যাংকর ডাল"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">বিকল্প নাম (সার্চের জন্য)</label>
+          <div><label className="text-xs text-gray-500">বিকল্প নাম</label>
             <input name="name_bn" value={form.name_bn} onChange={handle} placeholder="Anchor Dal"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">পণ্য কোড *</label>
@@ -522,7 +522,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
   );
 }
 
-export default function ProductList({ branch, role }) {
+export default function ProductList({ branch, role, onOrderSuccess }) {
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState([]);
@@ -597,7 +597,7 @@ export default function ProductList({ branch, role }) {
     const baseProducts = (search !== '' || selectedName)
       ? products
       : selectedPage
-        ? products.filter(p => p.page_id === selectedPage.id)
+        ? products.filter(p => String(p.page_id) === String(selectedPage.id))
         : products;
 
     let filtered = baseProducts.filter(p => {
@@ -648,7 +648,13 @@ export default function ProductList({ branch, role }) {
   if (showOrder) {
     return <OrderForm cart={cart} branch={branch} total={total}
       onBack={() => setShowOrder(false)}
-      onSuccess={(id) => { setOrderId(id); setShowOrder(false); setCart([]); setShowCart(false); }} />;
+      onSuccess={(id, phone) => {
+        setOrderId(id);
+        setShowOrder(false);
+        setCart([]);
+        setShowCart(false);
+        if (onOrderSuccess) onOrderSuccess(id, phone);
+      }} />;
   }
 
   if (orderId) {

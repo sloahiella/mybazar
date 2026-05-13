@@ -19,7 +19,7 @@ interface Branch {
   is_active: boolean;
 }
 
-function OrderReceipt({ order, onClose }: { order: any, onClose: () => void }) {
+function OrderReceipt({ order, onClose }: { order: any; onClose: () => void }) {
   const printRef = useRef<HTMLDivElement>(null);
 
   function handlePrint() {
@@ -27,56 +27,45 @@ function OrderReceipt({ order, onClose }: { order: any, onClose: () => void }) {
     const win = window.open('', '_blank');
     if (!win || !content) return;
     win.document.write(`
-      <html>
-      <head>
-        <title>Order #${order.id}</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: Arial, sans-serif; width: 210mm; min-height: 297mm; padding: 15mm; }
-          @media print { body { padding: 10mm; } }
-        </style>
-      </head>
-      <body>${content}</body>
-      </html>
+      <html><head><title>Order #${order.id}</title>
+      <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: Arial, sans-serif; width:210mm; padding:15mm; }
+        @media print { body { padding:10mm; } }
+      </style></head>
+      <body>${content}</body></html>
     `);
     win.document.close();
     win.print();
   }
 
   function handleSave() {
-    const content = `
-মাই বাজার
-mybazar.vercel.app | sohelmart.com
-WhatsApp: 01872149655
-শাখা: ${order.branch_name || 'লালমোহন'}
-
-অর্ডার #${order.id}
-তারিখ: ${new Date(order.created_at).toLocaleString('bn-BD')}
-
-কাস্টমার তথ্য:
-নাম: ${order.customer_name}
-ফোন: ${order.customer_phone}
-জেলা: ${order.district}
-উপজেলা: ${order.upazila}
-ঠিকানা: ${order.address}
-পেমেন্ট: ${order.payment_method}
-
-পণ্য তালিকা:
-${'─'.repeat(40)}
-${order.order_items?.map((item: any) => {
-  const name = item.products?.name || '';
-  const price = item.price;
-  const qty = item.quantity;
-  const unit = item.products?.unit || '';
-  const total = price * qty;
-  return `${name}\n${price} Tk/${unit}\n${qty} ${unit}   ${total} Tk`;
-}).join('\n─────────────────────\n')}
-${'─'.repeat(40)}
-মোট: ${order.total_amount} Tk
-
-ধন্যবাদ আমাদের সাথে কেনাকাটা করার জন্য!
-    `;
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const lines = [
+      '========================================',
+      '           🛒 মাই বাজার',
+      '  mybazar.vercel.app | sohelmart.com',
+      '       WhatsApp: 01872149655',
+      '========================================',
+      `শাখা: লালমোহন              অর্ডার #${order.id}`,
+      `তারিখ: ${new Date(order.created_at).toLocaleString('bn-BD')}`,
+      `পেমেন্ট: ${order.payment_method}`,
+      '----------------------------------------',
+      `নাম: ${order.customer_name}`,
+      `ফোন: ${order.customer_phone}`,
+      `জেলা: ${order.district}, ${order.upazila}`,
+      `ঠিকানা: ${order.address}`,
+      '========================================',
+      'পণ্য তালিকা:',
+      '----------------------------------------',
+      ...((order.order_items || []).map((item: any) =>
+        `${item.products?.name}\n${item.price} Tk/${item.products?.unit} × ${item.quantity} ${item.products?.unit} = ${item.price * item.quantity} Tk`
+      )),
+      '========================================',
+      `মোট: ${order.total_amount} Tk`,
+      '========================================',
+      'ধন্যবাদ আমাদের সাথে কেনাকাটা করার জন্য!',
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -86,81 +75,87 @@ ${'─'.repeat(40)}
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg max-h-screen overflow-y-auto">
-        <div className="flex justify-between items-center p-4 border-b">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-screen overflow-y-auto">
+        {/* বাটন */}
+        <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
           <h2 className="text-lg font-bold text-green-700">অর্ডার #{order.id}</h2>
           <div className="flex gap-2">
             <button onClick={handlePrint}
-              className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">🖨️ Print</button>
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium">🖨️ Print</button>
             <button onClick={handleSave}
-              className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm">💾 Save</button>
-            <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
+              className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium">💾 Save</button>
+            <button onClick={onClose}
+              className="bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm font-medium">✕</button>
           </div>
         </div>
 
-        <div ref={printRef} style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-          {/* হেডার */}
-          <div style={{ textAlign: 'center', borderBottom: '3px double #15803d', paddingBottom: '12px', marginBottom: '12px' }}>
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#15803d', margin: '0 0 4px 0' }}>🛒 মাই বাজার</h1>
-            <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>mybazar.vercel.app | sohelmart.com</p>
-            <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>📱 WhatsApp: 01872149655</p>
+        {/* A4 রিসিট */}
+        <div ref={printRef} style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
+          {/* হেডার প্যাড */}
+          <div style={{ textAlign: 'center', borderBottom: '3px double #15803d', paddingBottom: '14px', marginBottom: '14px' }}>
+            <h1 style={{ fontSize: '26px', fontWeight: 'bold', color: '#15803d', margin: '0 0 6px 0' }}>🛒 মাই বাজার</h1>
+            <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0' }}>🌐 mybazar.vercel.app | sohelmart.com</p>
+            <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0' }}>📱 WhatsApp: 01872149655</p>
           </div>
 
-          {/* শাখা ও কাস্টমার তথ্য পাশাপাশি */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+          {/* শাখা বাম, কাস্টমার ডান */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', gap: '20px' }}>
             <div>
-              <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151' }}>শাখা: লালমোহন</p>
-              <p style={{ fontSize: '12px', color: '#6b7280' }}>অর্ডার #: {order.id}</p>
-              <p style={{ fontSize: '12px', color: '#6b7280' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
-              <p style={{ fontSize: '12px', color: '#6b7280' }}>পেমেন্ট: {order.payment_method}</p>
+              <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151', margin: '0 0 3px 0' }}>📍 শাখা: লালমোহন</p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>অর্ডার #: <strong>{order.id}</strong></p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>সময়: {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>পেমেন্ট: {order.payment_method}</p>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151' }}>{order.customer_name}</p>
-              <p style={{ fontSize: '12px', color: '#6b7280' }}>{order.customer_phone}</p>
-              <p style={{ fontSize: '12px', color: '#6b7280' }}>{order.district}, {order.upazila}</p>
-              <p style={{ fontSize: '12px', color: '#6b7280' }}>{order.address}</p>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 3px 0' }}>{order.customer_name}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.customer_phone}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.district}, {order.upazila}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.address}</p>
             </div>
           </div>
 
           {/* দাগ */}
-          <hr style={{ border: 'none', borderTop: '2px solid #d1d5db', margin: '8px 0' }} />
+          <hr style={{ border: 'none', borderTop: '2px solid #374151', margin: '10px 0' }} />
 
-          {/* পণ্য তালিকা */}
-          <div>
-            {order.order_items?.map((item: any, i: number) => (
-              <div key={i} style={{ borderBottom: '1px dashed #e5e7eb', padding: '8px 0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                      {item.products?.name}
-                    </p>
-                    <p style={{ fontSize: '11px', color: '#6b7280', margin: '2px 0 0 0' }}>
-                      {item.price} Tk/{item.products?.unit}
-                    </p>
-                    <p style={{ fontSize: '11px', color: '#6b7280', margin: '1px 0 0 0' }}>
-                      {item.quantity} {item.products?.unit}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>
-                      {item.price * item.quantity} Tk
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          {/* পণ্য তালিকা হেডার */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
+            <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151', margin: 0 }}>মোট</p>
           </div>
 
+          {/* পণ্য লিস্ট */}
+          {(order.order_items || []).map((item: any, i: number) => (
+            <div key={i} style={{ borderBottom: '1px dashed #d1d5db', padding: '8px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1, paddingRight: '10px' }}>
+                  <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>
+                    {item.products?.name}
+                  </p>
+                  <p style={{ fontSize: '11px', color: '#6b7280', margin: '1px 0' }}>
+                    {item.price} Tk/{item.products?.unit}
+                  </p>
+                  <p style={{ fontSize: '11px', color: '#6b7280', margin: '1px 0' }}>
+                    {item.quantity} {item.products?.unit}
+                  </p>
+                </div>
+                <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#15803d', margin: 0, whiteSpace: 'nowrap' }}>
+                  {(item.price * item.quantity).toFixed(0)} Tk
+                </p>
+              </div>
+            </div>
+          ))}
+
           {/* মোট */}
-          <div style={{ borderTop: '2px solid #374151', marginTop: '8px', paddingTop: '8px', display: 'flex', justifyContent: 'space-between' }}>
-            <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#374151', margin: 0 }}>মোট:</p>
-            <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>{order.total_amount} Tk</p>
+          <div style={{ borderTop: '2px solid #374151', marginTop: '10px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#374151', margin: 0 }}>সর্বমোট:</p>
+            <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>{order.total_amount} Tk</p>
           </div>
 
           {/* ফুটার */}
-          <p style={{ textAlign: 'center', fontSize: '11px', color: '#9ca3af', marginTop: '16px' }}>
-            ধন্যবাদ আমাদের সাথে কেনাকাটা করার জন্য!
+          <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', marginTop: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '10px' }}>
+            ধন্যবাদ মাই বাজারে কেনাকাটা করার জন্য! 🙏
           </p>
         </div>
       </div>
@@ -188,7 +183,7 @@ export default function Home() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [myOrders, setMyOrders] = useState<any[]>([]);
   const [showMyOrders, setShowMyOrders] = useState(false);
-  const [myPhone, setMyPhone] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
 
   useEffect(() => {
     fetchBranches();
@@ -196,8 +191,12 @@ export default function Home() {
     if (savedRole) setRole(savedRole);
     const savedAutoPrint = localStorage.getItem('autoPrint');
     if (savedAutoPrint === 'true') setAutoPrint(true);
+    // কাস্টমারের ফোন নম্বর localStorage থেকে লোড
     const savedPhone = localStorage.getItem('customer_phone');
-    if (savedPhone) setMyPhone(savedPhone);
+    if (savedPhone) {
+      setCustomerPhone(savedPhone);
+      fetchMyOrders(savedPhone);
+    }
   }, []);
 
   useEffect(() => {
@@ -219,16 +218,15 @@ export default function Home() {
 
       const channel = supabase
         .channel('orders')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, () => {
           fetchOrders();
           fetchNotifications();
           playNotificationSound();
-          if (autoPrint) setTimeout(() => {}, 1000);
         })
         .subscribe();
       return () => { supabase.removeChannel(channel); };
     }
-  }, [role, autoPrint]);
+  }, [role]);
 
   function playNotificationSound() {
     try {
@@ -265,11 +263,12 @@ export default function Home() {
   }
 
   async function fetchMyOrders(phone: string) {
+    if (!phone) return;
     const { data } = await supabase
       .from('orders')
       .select('*, order_items(*, products(name, name_bn, unit))')
       .eq('customer_phone', phone)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false });
     if (data) setMyOrders(data);
   }
 
@@ -314,6 +313,13 @@ export default function Home() {
     localStorage.setItem('autoPrint', newVal.toString());
   }
 
+  // অর্ডার সফল হলে কাস্টমারের ফোন সেভ করে অর্ডার লোড করা
+  function handleOrderSuccess(orderId: number, phone: string) {
+    localStorage.setItem('customer_phone', phone);
+    setCustomerPhone(phone);
+    fetchMyOrders(phone);
+  }
+
   const filteredOrders = orders.filter(o =>
     orderSearch === '' ||
     o.customer_name?.toLowerCase().includes(orderSearch.toLowerCase()) ||
@@ -321,19 +327,20 @@ export default function Home() {
     String(o.id).includes(orderSearch)
   );
 
+  // শাখা সিলেক্ট পেজ
   if (!selectedBranch) {
     return (
       <div className="min-h-screen bg-green-50 flex items-center justify-center relative">
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
           <button onClick={() => setShowLoginModal(true)}
             className="bg-white shadow rounded-full w-10 h-10 flex items-center justify-center text-xl">👤</button>
           {role && (
-            <div className="mt-1 flex flex-col items-end gap-1">
+            <>
               <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
                 {role === 'admin' ? '👑 Admin' : '✏️ Editor'}
               </span>
               <button onClick={handleLogout} className="text-xs text-red-500">লগআউট</button>
-            </div>
+            </>
           )}
         </div>
 
@@ -348,60 +355,7 @@ export default function Home() {
               </button>
             ))}
           </div>
-
-          {/* কাস্টমার আগের অর্ডার দেখা */}
-          <div className="mt-6 border-t pt-4">
-            <p className="text-sm text-gray-500 text-center mb-2">আগের অর্ডার দেখুন</p>
-            <div className="flex gap-2">
-              <input type="tel" value={myPhone}
-                onChange={e => setMyPhone(e.target.value)}
-                placeholder="ফোন নম্বর দিন"
-                className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm focus:border-green-500 focus:outline-none" />
-              <button
-                onClick={() => { localStorage.setItem('customer_phone', myPhone); fetchMyOrders(myPhone); setShowMyOrders(true); }}
-                className="bg-green-700 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap">
-                দেখুন
-              </button>
-            </div>
-          </div>
         </div>
-
-        {/* কাস্টমারের পুরনো অর্ডার */}
-        {showMyOrders && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-lg w-full max-w-md max-h-screen overflow-y-auto">
-              <div className="flex justify-between items-center p-4 border-b">
-                <h2 className="text-lg font-bold text-green-700">আমার অর্ডার</h2>
-                <button onClick={() => setShowMyOrders(false)} className="text-gray-400 text-2xl">✕</button>
-              </div>
-              <div className="p-4 space-y-3">
-                {myOrders.length === 0 ? (
-                  <p className="text-center text-gray-400">কোনো অর্ডার নেই</p>
-                ) : (
-                  myOrders.map((order: any) => (
-                    <div key={order.id}
-                      onClick={() => setSelectedOrder(order)}
-                      className="bg-gray-50 rounded-xl p-3 cursor-pointer hover:bg-green-50 border border-gray-200">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-bold text-gray-800 text-sm">অর্ডার #{order.id}</p>
-                          <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
-                          <p className="text-xs text-gray-500">{order.order_items?.length} টি পণ্য</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-green-700">{order.total_amount} Tk</p>
-                          <span className={`text-xs px-2 py-1 rounded-full ${order.status === 'delivered' ? 'bg-green-100 text-green-700' : order.status === 'confirmed' ? 'bg-blue-100 text-blue-700' : order.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                            {order.status === 'delivered' ? 'ডেলিভারি হয়েছে' : order.status === 'confirmed' ? 'কনফার্ম' : order.status === 'cancelled' ? 'বাতিল' : 'পেন্ডিং'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        )}
 
         {showLoginModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -426,15 +380,78 @@ export default function Home() {
     );
   }
 
+  // মেইন পেজ
   return (
     <div className="min-h-screen bg-green-50">
       {selectedOrder && (
         <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} />
       )}
 
+      {/* কাস্টমারের পুরনো অর্ডার মডাল */}
+      {showMyOrders && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-lg w-full max-w-md max-h-screen overflow-y-auto">
+            <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
+              <h2 className="text-lg font-bold text-green-700">📋 আমার অর্ডার</h2>
+              <button onClick={() => setShowMyOrders(false)} className="text-gray-400 text-2xl">✕</button>
+            </div>
+            <div className="p-4 space-y-3">
+              {myOrders.length === 0 ? (
+                <p className="text-center text-gray-400 py-8">কোনো অর্ডার নেই</p>
+              ) : (
+                myOrders.map((order: any) => (
+                  <div key={order.id}
+                    onDoubleClick={() => setSelectedOrder(order)}
+                    onClick={() => setSelectedOrder(order)}
+                    className="bg-gray-50 rounded-xl p-3 cursor-pointer hover:bg-green-50 border border-gray-200 active:bg-green-100">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-bold text-gray-800 text-sm">অর্ডার #{order.id}</p>
+                        <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString('bn-BD')} {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
+                        <p className="text-xs text-gray-500 mt-1">{order.order_items?.length} টি পণ্য</p>
+                        <div className="mt-1">
+                          {order.order_items?.slice(0, 2).map((item: any, i: number) => (
+                            <p key={i} className="text-xs text-gray-400">{item.products?.name} × {item.quantity}</p>
+                          ))}
+                          {order.order_items?.length > 2 && (
+                            <p className="text-xs text-gray-400">আরো {order.order_items.length - 2} টি...</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-green-700 text-lg">{order.total_amount} Tk</p>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                          order.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
+                          order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                          'bg-yellow-100 text-yellow-700'}`}>
+                          {order.status === 'delivered' ? '✅ ডেলিভারি' :
+                           order.status === 'confirmed' ? '✔️ কনফার্ম' :
+                           order.status === 'cancelled' ? '❌ বাতিল' : '⏳ পেন্ডিং'}
+                        </span>
+                        <p className="text-xs text-gray-400 mt-1">ক্লিক করুন বিস্তারিত</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* হেডার */}
       <div className="bg-green-700 text-white p-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">🛒 মাই বাজার</h1>
         <div className="flex items-center gap-2">
+          {/* কাস্টমারের অর্ডার বাটন */}
+          {customerPhone && myOrders.length > 0 && role !== 'admin' && (
+            <button
+              onClick={() => { fetchMyOrders(customerPhone); setShowMyOrders(true); }}
+              className="bg-white text-green-700 text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1">
+              📋 অর্ডার ({myOrders.length})
+            </button>
+          )}
           {role === 'admin' && (
             <button onClick={() => { setShowAdminDrawer(true); fetchOrders(); fetchNotifications(); }}
               className="relative bg-yellow-500 text-white w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold">
@@ -453,8 +470,13 @@ export default function Home() {
         </div>
       </div>
 
-      <ProductList branch={selectedBranch} role={role} />
+      <ProductList
+        branch={selectedBranch}
+        role={role}
+        onOrderSuccess={(orderId: number, phone: string) => handleOrderSuccess(orderId, phone)}
+      />
 
+      {/* Admin Drawer */}
       {showAdminDrawer && (
         <div className="fixed inset-0 z-50 flex">
           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowAdminDrawer(false)} />
@@ -466,7 +488,7 @@ export default function Home() {
 
             <div className="grid grid-cols-2 gap-3 p-4">
               <div className="bg-green-50 rounded-xl p-3 text-center">
-                <p className="text-xs text-gray-500">Today's Sales</p>
+                <p className="text-xs text-gray-500">Today Sales</p>
                 <p className="text-2xl font-bold text-green-700">{todaySales} Tk</p>
               </div>
               <div className="bg-blue-50 rounded-xl p-3 text-center">
@@ -492,9 +514,9 @@ export default function Home() {
               {[
                 { key: 'orders', label: '📋 Orders' },
                 { key: 'notifications', label: `🔔 ${unreadCount > 0 ? `(${unreadCount})` : ''}` },
-                { key: 'add_product', label: '+ Product' },
               ].map(t => (
-                <button key={t.key} onClick={() => { setAdminTab(t.key); if (t.key === 'notifications') markAllRead(); }}
+                <button key={t.key}
+                  onClick={() => { setAdminTab(t.key); if (t.key === 'notifications') markAllRead(); }}
                   className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap ${adminTab === t.key ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-700'}`}>
                   {t.label}
                 </button>
@@ -507,19 +529,18 @@ export default function Home() {
 
             {adminTab === 'orders' && (
               <div className="p-4 space-y-3">
-                {/* সার্চ বক্স - শুধু Admin এর জন্য */}
-                <input
-                  type="text"
-                  value={orderSearch}
-                  onChange={e => setOrderSearch(e.target.value)}
+                <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)}
                   placeholder="🔍 নাম, ফোন বা অর্ডার নম্বর..."
-                  className="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-                />
+                  className="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm focus:border-green-500 focus:outline-none" />
+
                 {filteredOrders.length === 0 && (
-                  <p className="text-center text-gray-400 mt-10">No orders found</p>
+                  <p className="text-center text-gray-400 mt-10">কোনো অর্ডার নেই</p>
                 )}
+
                 {filteredOrders.map((order: any) => (
-                  <div key={order.id} className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                  <div key={order.id}
+                    onDoubleClick={() => setSelectedOrder(order)}
+                    className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm cursor-pointer hover:bg-green-50">
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-bold text-gray-800 text-sm">#{order.id} - {order.customer_name}</h3>
@@ -529,26 +550,35 @@ export default function Home() {
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         <p className="font-bold text-green-700">{order.total_amount} Tk</p>
-                        <select value={order.status} onChange={e => updateOrderStatus(order.id, e.target.value)}
+                        <select value={order.status}
+                          onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value); }}
                           className="border border-gray-300 rounded-lg px-1 py-1 text-xs">
                           <option value="pending">Pending</option>
                           <option value="confirmed">Confirmed</option>
                           <option value="delivered">Delivered</option>
                           <option value="cancelled">Cancelled</option>
                         </select>
-                        <button onClick={() => setSelectedOrder(order)}
+                        <button
+                          onClick={e => { e.stopPropagation(); setSelectedOrder(order); }}
                           className="bg-blue-600 text-white px-2 py-1 rounded-lg text-xs">
                           🖨️ Print/Save
                         </button>
                       </div>
                     </div>
+                    {/* পণ্য লিস্ট */}
                     <div className="mt-2 border-t pt-2">
                       {order.order_items?.map((item: any) => (
-                        <p key={item.id} className="text-xs text-gray-600">
-                          {item.products?.name} x {item.quantity} = {item.price * item.quantity} Tk
-                        </p>
+                        <div key={item.id} className="flex justify-between text-xs text-gray-600 py-1 border-b border-dashed border-gray-100">
+                          <span>{item.products?.name} × {item.quantity} {item.products?.unit}</span>
+                          <span className="font-medium">{item.price * item.quantity} Tk</span>
+                        </div>
                       ))}
+                      <div className="flex justify-between text-sm font-bold text-green-700 mt-1 pt-1">
+                        <span>মোট:</span>
+                        <span>{order.total_amount} Tk</span>
+                      </div>
                     </div>
+                    <p className="text-xs text-gray-400 text-center mt-1">ডাবল ক্লিক করুন পুরো রিসিট দেখতে</p>
                   </div>
                 ))}
               </div>
@@ -564,10 +594,6 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            )}
-
-            {adminTab === 'add_product' && (
-              <AddProductPanel branches={branches2} onDone={() => setAdminTab('orders')} />
             )}
           </div>
         </div>
@@ -625,7 +651,6 @@ function AddProductPanel({ branches, onDone }: { branches: any[], onDone: () => 
       await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) });
     }
     alert('পণ্য যোগ হয়েছে!');
-    setForm({ name: '', name_bn: '', product_code: '', description: '', price_per_unit: '', unit: 'Kg', branch_id: '', category: '', category_bn: '', stock: '', image_url: '', page_id: '' });
     setLoading(false);
     onDone();
   }
@@ -635,7 +660,7 @@ function AddProductPanel({ branches, onDone }: { branches: any[], onDone: () => 
       <h3 className="font-bold text-gray-700">Add New Product</h3>
       {[
         { name: 'name', label: 'নাম *', placeholder: 'এ্যাংকর ডাল' },
-        { name: 'name_bn', label: 'বিকল্প নাম (সার্চের জন্য)', placeholder: 'Anchor Dal' },
+        { name: 'name_bn', label: 'বিকল্প নাম', placeholder: 'Anchor Dal' },
         { name: 'product_code', label: 'পণ্য কোড *', placeholder: 'P001' },
         { name: 'price_per_unit', label: 'দাম *', placeholder: '120', type: 'number' },
         { name: 'category', label: 'ক্যাটাগরি (ইং)', placeholder: 'dal' },
@@ -649,11 +674,6 @@ function AddProductPanel({ branches, onDone }: { branches: any[], onDone: () => 
             className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
         </div>
       ))}
-      <div>
-        <label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
-        <textarea name="description" value={form.description} onChange={handle} rows={2}
-          className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
-      </div>
       <div>
         <label className="text-xs text-gray-500">ইউনিট</label>
         <select name="unit" value={form.unit} onChange={handle}
