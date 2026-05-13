@@ -123,7 +123,7 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
       )}
 
       {showAddSub && (
-        <div className="px-2 py-1 space-y-1 ml-3 bg-blue-50 rounded-lg p-2 mt-1">
+        <div className="ml-3 bg-blue-50 rounded-lg p-2 mt-1 space-y-1">
           <p className="text-xs text-blue-700 font-bold">সাব-পেজ যোগ করুন</p>
           <input value={subNameBn} onChange={e => setSubNameBn(e.target.value)}
             placeholder="বাংলা নাম (শাড়ী)"
@@ -183,11 +183,20 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
   const visiblePages = isAdmin ? pages : pages.filter(p => p.is_active !== false);
 
   return (
-    <div className="flex items-center gap-2">
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+
       {/* পেজ মেনু বাটন */}
       <div className="relative">
-        <button onClick={() => setShowMenu(!showMenu)}
-          className="flex items-center gap-1 bg-white text-green-700 border-2 border-green-700 px-3 py-2 rounded-xl font-medium text-sm">
+        <button
+          onClick={() => setShowMenu(!showMenu)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '4px',
+            background: 'white', color: '#15803d',
+            border: '2px solid #15803d',
+            padding: '8px 12px', borderRadius: '12px',
+            fontWeight: '600', fontSize: '13px',
+            whiteSpace: 'nowrap', cursor: 'pointer',
+          }}>
           ☰ পেজ
         </button>
 
@@ -249,13 +258,22 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
         )}
       </div>
 
-      {/* কাস্টমারের জন্য অর্ডার বাটন */}
+      {/* কাস্টমারের জন্য অর্ডার লিস্ট বাটন */}
       {!isAdmin && (
-        <button onClick={() => onShowOrders && onShowOrders()}
-          className="flex items-center gap-1 bg-white text-green-700 border-2 border-green-700 px-3 py-2 rounded-xl font-medium text-sm">
-          📋 অর্ডার
+        <button
+          onClick={() => onShowOrders && onShowOrders()}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '4px',
+            background: 'white', color: '#15803d',
+            border: '2px solid #15803d',
+            padding: '8px 12px', borderRadius: '12px',
+            fontWeight: '600', fontSize: '13px',
+            whiteSpace: 'nowrap', cursor: 'pointer',
+          }}>
+          📋 অর্ডার লিস্ট
         </button>
       )}
+
     </div>
   );
 }
