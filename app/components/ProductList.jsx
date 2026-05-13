@@ -946,7 +946,7 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
           onClose={() => setShowAddModal(false)} onSave={fetchProducts} />
       )}
 
-      <div className="px-4 pt-4 flex items-center gap-2 overflow-x-auto">
+      <div className="px-4 pt-4 flex items-center gap-2">
         <PageMenu
           branch={branch}
           selectedPage={selectedPage}
