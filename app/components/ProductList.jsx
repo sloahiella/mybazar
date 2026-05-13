@@ -145,7 +145,6 @@ function OrderReceiptModal({ order, onClose }) {
         </div>
 
         <div ref={printRef} style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
-          {/* হেডার - মাই বাজার বাম, কাস্টমার ডান */}
           <div style={{
             display: 'grid', gridTemplateColumns: '1fr 2px 1fr',
             border: '2px solid #15803d', borderRadius: '8px',
@@ -172,13 +171,11 @@ function OrderReceiptModal({ order, onClose }) {
             </div>
           </div>
 
-          {/* পণ্য হেডার */}
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 4px', marginBottom: '4px', borderBottom: '2px solid #374151', borderTop: '1px solid #e5e7eb' }}>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
           </div>
 
-          {/* পণ্য লিস্ট */}
           {(order.order_items || []).map((item, i) => (
             <div key={i} style={{ borderBottom: '1px dashed #d1d5db', padding: '8px 4px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -195,14 +192,13 @@ function OrderReceiptModal({ order, onClose }) {
             </div>
           ))}
 
-          {/* মোট */}
           <div style={{ borderTop: '2px solid #374151', marginTop: '8px', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#374151', margin: 0 }}>সর্বমোট:</p>
             <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>{order.total_amount} Tk</p>
           </div>
 
           <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', marginTop: '16px', borderTop: '1px solid #e5e7eb', paddingTop: '10px' }}>
-            ধন্যবাদ মাই বাজারে কেনাকাটা করার জন্য! 
+            ধন্যবাদ মাই বাজারে কেনাকাটা করার জন্য! 🙏
           </p>
         </div>
       </div>
@@ -261,7 +257,6 @@ function MyOrdersModal({ onClose }) {
         </div>
 
         <div style={{ padding: '16px' }}>
-          {/* ফোন নম্বর */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
               placeholder="ফোন নম্বর দিন"
@@ -272,7 +267,6 @@ function MyOrdersModal({ onClose }) {
             </button>
           </div>
 
-          {/* সার্চ */}
           {orders.length > 0 && (
             <input type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder="🔍 তারিখ বা অর্ডার নম্বর..."
@@ -286,23 +280,18 @@ function MyOrdersModal({ onClose }) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {filteredOrders.map((order) => (
-              <div
-                key={order.id}
+              <div key={order.id}
                 onClick={() => setSelectedOrder(order)}
                 style={{
                   background: '#f9fafb', borderRadius: '12px', padding: '12px',
                   cursor: 'pointer', border: '1px solid #e5e7eb',
-                  transition: 'background 0.2s',
                 }}
                 onMouseEnter={e => e.currentTarget.style.background = '#f0fdf4'}
-                onMouseLeave={e => e.currentTarget.style.background = '#f9fafb'}
-              >
+                onMouseLeave={e => e.currentTarget.style.background = '#f9fafb'}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '14px', margin: '0 0 4px 0' }}>অর্ডার #{order.id}</p>
-                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>
-                      {new Date(order.created_at).toLocaleDateString('bn-BD')}
-                    </p>
+                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>{new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
                     <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>{order.order_items?.length} টি পণ্য</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
@@ -465,11 +454,15 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
 
 function EditProductModal({ product, onClose, onSave }) {
   const [form, setForm] = useState({
-    name: product.name || '', name_bn: product.name_bn || '',
+    name: product.name || '',
+    name_bn: product.name_bn || '',
     product_code: product.product_code || '',
-    price_per_unit: product.price_per_unit || '', unit: product.unit || 'Kg',
-    category: product.category || '', category_bn: product.category_bn || '',
-    description: product.description || '', image_url: product.image_url || '',
+    price_per_unit: product.price_per_unit || '',
+    unit: product.unit || 'Kg',
+    category: product.category || '',
+    category_bn: product.category_bn || '',
+    description: product.description || '',
+    image_url: product.image_url || '',
     is_active: product.is_active,
   });
   const [stockQty, setStockQty] = useState('');
@@ -525,81 +518,147 @@ function EditProductModal({ product, onClose, onSave }) {
       category: form.category, category_bn: form.category_bn,
       description: form.description, image_url: form.image_url, is_active: form.is_active
     }).eq('id', product.id);
-    if (stockQty && parseFloat(stockQty) > 0) {
-      const { data: existing } = await supabase.from('stock').select('*').eq('product_id', product.id).single();
-      if (existing) {
-        await supabase.from('stock').update({ quantity: existing.quantity + parseFloat(stockQty) }).eq('product_id', product.id);
-      } else {
-        await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(stockQty) });
+
+    // স্টক সেট করা - যত লেখা হবে সেটাই হবে
+    if (stockQty !== '') {
+      const newQty = parseFloat(stockQty);
+      if (!isNaN(newQty) && newQty >= 0) {
+        const { data: existing } = await supabase.from('stock').select('*').eq('product_id', product.id).single();
+        if (existing) {
+          await supabase.from('stock').update({ quantity: newQty }).eq('product_id', product.id);
+        } else {
+          await supabase.from('stock').insert({ product_id: product.id, quantity: newQty });
+        }
       }
     }
     setLoading(false); onSave(); onClose();
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-lg p-4 w-full max-w-md max-h-screen overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold text-green-700">✏️ পণ্য Edit</h2>
-          <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }}>
+      <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '440px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>✏️ পণ্য Edit</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#9ca3af' }}>✕</button>
         </div>
-        <div className="space-y-2">
-          <div><label className="text-xs text-gray-500">নাম *</label>
-            <input name="name" value={form.name} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">বিকল্প নাম</label>
-            <input name="name_bn" value={form.name_bn} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">পণ্য কোড</label>
-            <input name="product_code" value={form.product_code} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">দাম (Tk)</label>
-            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">ইউনিট</label>
-            <select name="unit" value={form.unit} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
-              <option value="Kg">Kg</option><option value="Liter">Liter</option>
-              <option value="pcs">pcs</option><option value="packet">Packet</option>
-            </select></div>
-          <div><label className="text-xs text-gray-500">ক্যাটাগরি (ইং)</label>
-            <input name="category" value={form.category} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div><label className="text-xs text-gray-500">ক্যাটাগরি (বাং)</label>
-            <input name="category_bn" value={form.category_bn} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div className="bg-green-50 rounded-lg p-3">
-            <label className="text-xs text-green-700 font-bold">প্রধান ছবি</label>
-            {form.image_url && <img src={form.image_url} alt="main" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-32" />}
-            <input type="file" accept="image/*" onChange={uploadMainImage} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+          <div>
+            <label style={{ fontSize: '12px', color: '#6b7280' }}>নাম *</label>
+            <input name="name" value={form.name} onChange={handle}
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
           </div>
-          <div className="bg-blue-50 rounded-lg p-3">
-            <label className="text-xs text-blue-700 font-bold">অতিরিক্ত ছবি</label>
-            {loadingImages ? <p className="text-xs text-gray-400 mt-1">লোড হচ্ছে...</p> : (
-              <div className="flex gap-2 flex-wrap mt-2">
+          <div>
+            <label style={{ fontSize: '12px', color: '#6b7280' }}>বিকল্প নাম</label>
+            <input name="name_bn" value={form.name_bn} onChange={handle}
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
+          </div>
+          <div>
+            <label style={{ fontSize: '12px', color: '#6b7280' }}>পণ্য কোড</label>
+            <input name="product_code" value={form.product_code} onChange={handle}
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
+          </div>
+          <div>
+            <label style={{ fontSize: '12px', color: '#6b7280' }}>দাম (Tk)</label>
+            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle}
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
+          </div>
+          <div>
+            <label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label>
+            <select name="unit" value={form.unit} onChange={handle}
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white' }}>
+              <option value="Kg">Kg</option>
+              <option value="Liter">Liter</option>
+              <option value="pcs">pcs</option>
+              <option value="packet">Packet</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (ইং)</label>
+            <input name="category" value={form.category} onChange={handle}
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
+          </div>
+          <div>
+            <label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (বাং)</label>
+            <input name="category_bn" value={form.category_bn} onChange={handle}
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
+          </div>
+
+          {/* প্রধান ছবি */}
+          <div style={{ background: '#f0fdf4', borderRadius: '8px', padding: '12px' }}>
+            <label style={{ fontSize: '12px', color: '#15803d', fontWeight: 'bold' }}>প্রধান ছবি</label>
+            {form.image_url && <img src={form.image_url} alt="main" style={{ width: '100%', objectFit: 'contain', borderRadius: '8px', marginTop: '8px', maxHeight: '120px' }} />}
+            <input type="file" accept="image/*" onChange={uploadMainImage}
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
+          </div>
+
+          {/* অতিরিক্ত ছবি */}
+          <div style={{ background: '#eff6ff', borderRadius: '8px', padding: '12px' }}>
+            <label style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: 'bold' }}>অতিরিক্ত ছবি</label>
+            {loadingImages ? <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '8px' }}>লোড হচ্ছে...</p> : (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
                 {extraImages.map(img => (
-                  <div key={img.id} className="relative">
-                    <img src={img.image_url} alt="extra" className="w-16 h-16 object-cover rounded-lg" />
-                    <button onClick={() => deleteExtraImage(img.id)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">✕</button>
+                  <div key={img.id} style={{ position: 'relative' }}>
+                    <img src={img.image_url} alt="extra" style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }} />
+                    <button onClick={() => deleteExtraImage(img.id)}
+                      style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
                   </div>
                 ))}
               </div>
             )}
-            <input type="file" accept="image/*" onChange={uploadExtraImage} className="border-2 border-blue-300 rounded-lg px-3 py-2 w-full text-sm mt-2" />
-            {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
+            <input type="file" accept="image/*" onChange={uploadExtraImage}
+              style={{ border: '2px solid #bfdbfe', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
+            {uploading && <p style={{ fontSize: '12px', color: '#3b82f6', marginTop: '4px' }}>আপলোড হচ্ছে...</p>}
           </div>
-          <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
-            <textarea name="description" value={form.description} onChange={handle} rows={3} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-          <div className="bg-blue-50 rounded-lg p-3">
-            <label className="text-xs text-blue-700 font-bold">স্টক যোগ (বর্তমান: {currentStock} {product.unit})</label>
-            <input type="number" value={stockQty} onChange={e => setStockQty(e.target.value)} className="border-2 border-blue-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="কত যোগ করবেন?" />
+
+          {/* বৈশিষ্ট্য */}
+          <div>
+            <label style={{ fontSize: '12px', color: '#6b7280' }}>বৈশিষ্ট্য</label>
+            <textarea name="description" value={form.description} onChange={handle} rows={3}
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'vertical' }} />
           </div>
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-500">Status:</label>
+
+          {/* স্টক সেট */}
+          <div style={{ background: '#eff6ff', borderRadius: '8px', padding: '12px' }}>
+            <label style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: 'bold' }}>
+              স্টক সেট করুন (বর্তমান: {currentStock} {product.unit})
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.001"
+              value={stockQty}
+              onChange={e => setStockQty(e.target.value)}
+              placeholder={`নতুন স্টক লিখুন (যেমন: ${currentStock})`}
+              style={{ border: '2px solid #bfdbfe', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '8px', boxSizing: 'border-box', outline: 'none' }} />
+            <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>
+              * যা লিখবেন সেটাই নতুন স্টক হবে। বাড়াতে বা কমাতে পারবেন।
+            </p>
+          </div>
+
+          {/* Status */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <label style={{ fontSize: '12px', color: '#6b7280' }}>Status:</label>
             <button onClick={() => setForm({...form, is_active: !form.is_active})}
-              className={`px-3 py-1 rounded-lg text-xs font-medium ${form.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              style={{
+                padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '500', border: 'none', cursor: 'pointer',
+                background: form.is_active ? '#dcfce7' : '#fee2e2',
+                color: form.is_active ? '#15803d' : '#dc2626',
+              }}>
               {form.is_active ? '✅ Active' : '❌ Inactive'}
             </button>
           </div>
         </div>
-        <div className="flex gap-2 mt-4">
-          <button onClick={save} disabled={loading || uploading} className="bg-green-700 text-white px-4 py-2 rounded-xl flex-1 font-bold disabled:opacity-50">
+
+        <div style={{ display: 'flex', gap: '8px', padding: '16px', borderTop: '1px solid #e5e7eb' }}>
+          <button onClick={save} disabled={loading || uploading}
+            style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', flex: 1, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: (loading || uploading) ? 0.5 : 1 }}>
             {loading ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
           </button>
-          <button onClick={onClose} className="bg-gray-200 text-gray-600 px-4 py-2 rounded-xl">বাতিল</button>
+          <button onClick={onClose}
+            style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '12px', padding: '12px 20px', fontSize: '16px', cursor: 'pointer' }}>
+            বাতিল
+          </button>
         </div>
       </div>
     </div>
@@ -879,7 +938,6 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
   return (
     <div className="pb-24">
       {showMyOrders && <MyOrdersModal onClose={() => setShowMyOrders(false)} />}
-
       {editingProduct && (
         <EditProductModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={fetchProducts} />
       )}
