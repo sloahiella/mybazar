@@ -108,13 +108,11 @@ function OrderReceiptModal({ order, onClose }) {
       '════════════════════════════════════════',
       `শাখা: লালমোহন`,
       `তারিখ: ${new Date(order.created_at).toLocaleDateString('bn-BD')}`,
-      '════════════════════════════════════════',
       `নাম: ${order.customer_name}`,
       `ফোন: ${order.customer_phone}`,
       `জেলা: ${order.district}, ${order.upazila}`,
       `ঠিকানা: ${order.address}`,
       `অর্ডার #: ${order.id}`,
-      `তারিখ: ${new Date(order.created_at).toLocaleDateString('bn-BD')}`,
       '════════════════════════════════════════',
       'পণ্য                                টাকা',
       '────────────────────────────────────────',
@@ -124,7 +122,6 @@ function OrderReceiptModal({ order, onClose }) {
       '════════════════════════════════════════',
       `সর্বমোট:                        ${order.total_amount} Tk`,
       '════════════════════════════════════════',
-      'ধন্যবাদ মাই বাজারে কেনাকাটা করার জন্য!',
     ];
     const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -148,52 +145,45 @@ function OrderReceiptModal({ order, onClose }) {
         </div>
 
         <div ref={printRef} style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
-          {/* হেডার */}
-          <div style={{ textAlign: 'center', borderBottom: '3px double #15803d', paddingBottom: '12px', marginBottom: '12px' }}>
-            <h1 style={{ fontSize: '26px', fontWeight: 'bold', color: '#15803d', margin: '0 0 4px 0' }}>🛒 মাই বাজার</h1>
-            <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>🌐 mybazar.vercel.app | sohelmart.com</p>
-            <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>📱 WhatsApp: 01872149655</p>
-          </div>
-
-          {/* আমাদের তথ্য বাম | কাস্টমার তথ্য ডান */}
+          {/* হেডার - মাই বাজার বাম, কাস্টমার ঠিকানা ডান */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1px 1fr',
-            border: '1px solid #d1d5db',
+            border: '2px solid #15803d',
             borderRadius: '8px',
             overflow: 'hidden',
-            marginBottom: '12px',
+            marginBottom: '16px',
           }}>
             {/* বাম - আমাদের তথ্য */}
-            <div style={{ padding: '12px', background: '#f9fafb' }}>
-              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#15803d', margin: '0 0 8px 0' }}>📍 আমাদের তথ্য</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>শাখা: <strong>লালমোহন</strong></p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>সময়: {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
+            <div style={{ padding: '14px', background: '#f0fdf4' }}>
+              <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', margin: '0 0 6px 0' }}>🛒 মাই বাজার</h1>
+              <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 mybazar.vercel.app</p>
+              <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 sohelmart.com</p>
+              <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>📱 WhatsApp: 01872149655</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 2px 0', fontWeight: 'bold' }}>📍 শাখা: লালমোহন</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>সময়: {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
             </div>
 
             {/* মাঝের দাগ */}
-            <div style={{ background: '#d1d5db' }} />
+            <div style={{ background: '#15803d' }} />
 
             {/* ডান - কাস্টমার তথ্য */}
-            <div style={{ padding: '12px' }}>
+            <div style={{ padding: '14px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1d4ed8', margin: '0 0 8px 0' }}>👤 কাস্টমার তথ্য</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>নাম: <strong>{order.customer_name}</strong></p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>ফোন: {order.customer_phone}</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>জেলা: {order.district}, {order.upazila}</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>ঠিকানা: {order.address}</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>অর্ডার #: <strong>{order.id}</strong></p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>নাম: <strong>{order.customer_name}</strong></p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ফোন: {order.customer_phone}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>জেলা: {order.district}, {order.upazila}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ঠিকানা: {order.address}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 3px 0', fontWeight: 'bold' }}>অর্ডার #: {order.id}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
             </div>
           </div>
 
-          {/* দাগ */}
-          <hr style={{ border: 'none', borderTop: '2px solid #374151', margin: '12px 0 8px 0' }} />
-
           {/* পণ্য হেডার */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', marginBottom: '4px' }}>
-            <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
-            <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 4px', marginBottom: '4px', borderBottom: '2px solid #374151' }}>
+            <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
+            <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
           </div>
 
           {/* পণ্য লিস্ট */}
@@ -222,7 +212,7 @@ function OrderReceiptModal({ order, onClose }) {
           </div>
 
           <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', marginTop: '16px', borderTop: '1px solid #e5e7eb', paddingTop: '10px' }}>
-            ধন্যবাদ মাই বাজারে কেনাকাটা করার জন্য! 🙏
+            ধন্যবাদ মাই বাজারে কেনাকাটা করার জন্য! 
           </p>
         </div>
       </div>
@@ -304,7 +294,7 @@ function MyOrdersModal({ onClose }) {
             <div className="space-y-3">
               {filteredOrders.map((order) => (
                 <div key={order.id}
-                  onClick={(e) => { e.stopPropagation(); setSelectedOrder(order); }}
+                  onClick={() => setSelectedOrder(order)}
                   className="bg-gray-50 rounded-xl p-3 cursor-pointer hover:bg-green-50 border border-gray-200 active:bg-green-100">
                   <div className="flex justify-between items-start">
                     <div>
