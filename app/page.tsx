@@ -30,7 +30,7 @@ function OrderReceipt({ order, onClose }: { order: any; onClose: () => void }) {
       <html><head><title>Order #${order.id}</title>
       <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: Arial, sans-serif; width:210mm; padding:15mm; }
+        body { font-family: Arial, sans-serif; width:210mm; min-height:297mm; padding:15mm; }
         @media print { body { padding:10mm; } }
       </style></head>
       <body>${content}</body></html>
@@ -41,29 +41,27 @@ function OrderReceipt({ order, onClose }: { order: any; onClose: () => void }) {
 
   function handleSave() {
     const lines = [
-      '========================================',
-      '           🛒 মাই বাজার',
-      '  mybazar.vercel.app | sohelmart.com',
-      '       WhatsApp: 01872149655',
-      '========================================',
-      `শাখা: লালমোহন              অর্ডার #${order.id}`,
-      `তারিখ: ${new Date(order.created_at).toLocaleString('bn-BD')}`,
-      `পেমেন্ট: ${order.payment_method}`,
-      '----------------------------------------',
+      '🛒 মাই বাজার',
+      'mybazar.vercel.app | sohelmart.com',
+      'WhatsApp: 01872149655',
+      '════════════════════════════════════════',
+      `শাখা: লালমোহন`,
+      `তারিখ: ${new Date(order.created_at).toLocaleDateString('bn-BD')}`,
+      '════════════════════════════════════════',
       `নাম: ${order.customer_name}`,
       `ফোন: ${order.customer_phone}`,
       `জেলা: ${order.district}, ${order.upazila}`,
       `ঠিকানা: ${order.address}`,
-      '========================================',
-      'পণ্য তালিকা:',
-      '----------------------------------------',
+      `অর্ডার #: ${order.id}`,
+      '════════════════════════════════════════',
+      'পণ্য                                টাকা',
+      '────────────────────────────────────────',
       ...((order.order_items || []).map((item: any) =>
-        `${item.products?.name}\n${item.price} Tk/${item.products?.unit} × ${item.quantity} ${item.products?.unit} = ${item.price * item.quantity} Tk`
+        `${item.products?.name}\n${item.price} Tk/${item.products?.unit} × ${item.quantity} ${item.products?.unit}     ${(item.price * item.quantity).toFixed(0)} Tk\n────────────────`
       )),
-      '========================================',
-      `মোট: ${order.total_amount} Tk`,
-      '========================================',
-      'ধন্যবাদ আমাদের সাথে কেনাকাটা করার জন্য!',
+      '════════════════════════════════════════',
+      `সর্বমোট:                        ${order.total_amount} Tk`,
+      '════════════════════════════════════════',
     ];
     const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -76,68 +74,60 @@ function OrderReceipt({ order, onClose }: { order: any; onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-screen overflow-y-auto">
-        {/* বাটন */}
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-screen overflow-y-auto">
         <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
           <h2 className="text-lg font-bold text-green-700">অর্ডার #{order.id}</h2>
           <div className="flex gap-2">
-            <button onClick={handlePrint}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium">🖨️ Print</button>
-            <button onClick={handleSave}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium">💾 Save</button>
-            <button onClick={onClose}
-              className="bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm font-medium">✕</button>
+            <button onClick={handlePrint} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium">🖨️ Print</button>
+            <button onClick={handleSave} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium">💾 Save</button>
+            <button onClick={onClose} className="bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm">✕</button>
           </div>
         </div>
 
-        {/* A4 রিসিট */}
         <div ref={printRef} style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
-          {/* হেডার প্যাড */}
-          <div style={{ textAlign: 'center', borderBottom: '3px double #15803d', paddingBottom: '14px', marginBottom: '14px' }}>
-            <h1 style={{ fontSize: '26px', fontWeight: 'bold', color: '#15803d', margin: '0 0 6px 0' }}>🛒 মাই বাজার</h1>
-            <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0' }}>🌐 mybazar.vercel.app | sohelmart.com</p>
-            <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0' }}>📱 WhatsApp: 01872149655</p>
+          <div style={{ textAlign: 'center', borderBottom: '3px double #15803d', paddingBottom: '12px', marginBottom: '12px' }}>
+            <h1 style={{ fontSize: '26px', fontWeight: 'bold', color: '#15803d', margin: '0 0 4px 0' }}>🛒 মাই বাজার</h1>
+            <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>🌐 mybazar.vercel.app | sohelmart.com</p>
+            <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>📱 WhatsApp: 01872149655</p>
           </div>
 
-          {/* শাখা বাম, কাস্টমার ডান */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', gap: '20px' }}>
-            <div>
-              <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151', margin: '0 0 3px 0' }}>📍 শাখা: লালমোহন</p>
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>অর্ডার #: <strong>{order.id}</strong></p>
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>সময়: {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>পেমেন্ট: {order.payment_method}</p>
+          <div style={{
+            display: 'grid', gridTemplateColumns: '1fr 1px 1fr',
+            border: '1px solid #d1d5db', borderRadius: '8px',
+            overflow: 'hidden', marginBottom: '12px',
+          }}>
+            <div style={{ padding: '12px', background: '#f9fafb' }}>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#15803d', margin: '0 0 8px 0' }}>📍 আমাদের তথ্য</p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>শাখা: <strong>লালমোহন</strong></p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>সময়: {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 3px 0' }}>{order.customer_name}</p>
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.customer_phone}</p>
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.district}, {order.upazila}</p>
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.address}</p>
+            <div style={{ background: '#d1d5db' }} />
+            <div style={{ padding: '12px' }}>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1d4ed8', margin: '0 0 8px 0' }}>👤 কাস্টমার তথ্য</p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>নাম: <strong>{order.customer_name}</strong></p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>ফোন: {order.customer_phone}</p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>জেলা: {order.district}, {order.upazila}</p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>ঠিকানা: {order.address}</p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>অর্ডার #: <strong>{order.id}</strong></p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
             </div>
           </div>
 
-          {/* দাগ */}
-          <hr style={{ border: 'none', borderTop: '2px solid #374151', margin: '10px 0' }} />
+          <hr style={{ border: 'none', borderTop: '2px solid #374151', margin: '12px 0 8px 0' }} />
 
-          {/* পণ্য তালিকা হেডার */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', marginBottom: '4px' }}>
             <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
-            <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151', margin: 0 }}>মোট</p>
+            <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
           </div>
 
-          {/* পণ্য লিস্ট */}
           {(order.order_items || []).map((item: any, i: number) => (
-            <div key={i} style={{ borderBottom: '1px dashed #d1d5db', padding: '8px 0' }}>
+            <div key={i} style={{ borderBottom: '1px dashed #d1d5db', padding: '8px 4px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1, paddingRight: '10px' }}>
-                  <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>
-                    {item.products?.name}
-                  </p>
-                  <p style={{ fontSize: '11px', color: '#6b7280', margin: '1px 0' }}>
-                    {item.price} Tk/{item.products?.unit}
-                  </p>
-                  <p style={{ fontSize: '11px', color: '#6b7280', margin: '1px 0' }}>
-                    {item.quantity} {item.products?.unit}
+                <div style={{ flex: 1, paddingRight: '16px' }}>
+                  <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{item.products?.name}</p>
+                  <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>
+                    {item.price} Tk/{item.products?.unit} × {item.quantity} {item.products?.unit}
                   </p>
                 </div>
                 <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#15803d', margin: 0, whiteSpace: 'nowrap' }}>
@@ -147,14 +137,12 @@ function OrderReceipt({ order, onClose }: { order: any; onClose: () => void }) {
             </div>
           ))}
 
-          {/* মোট */}
-          <div style={{ borderTop: '2px solid #374151', marginTop: '10px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ borderTop: '2px solid #374151', marginTop: '8px', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#374151', margin: 0 }}>সর্বমোট:</p>
             <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>{order.total_amount} Tk</p>
           </div>
 
-          {/* ফুটার */}
-          <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', marginTop: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '10px' }}>
+          <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', marginTop: '16px', borderTop: '1px solid #e5e7eb', paddingTop: '10px' }}>
             ধন্যবাদ মাই বাজারে কেনাকাটা করার জন্য! 🙏
           </p>
         </div>
@@ -181,9 +169,6 @@ export default function Home() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [orderSearch, setOrderSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [myOrders, setMyOrders] = useState<any[]>([]);
-  const [showMyOrders, setShowMyOrders] = useState(false);
-  const [customerPhone, setCustomerPhone] = useState('');
 
   useEffect(() => {
     fetchBranches();
@@ -191,12 +176,6 @@ export default function Home() {
     if (savedRole) setRole(savedRole);
     const savedAutoPrint = localStorage.getItem('autoPrint');
     if (savedAutoPrint === 'true') setAutoPrint(true);
-    // কাস্টমারের ফোন নম্বর localStorage থেকে লোড
-    const savedPhone = localStorage.getItem('customer_phone');
-    if (savedPhone) {
-      setCustomerPhone(savedPhone);
-      fetchMyOrders(savedPhone);
-    }
   }, []);
 
   useEffect(() => {
@@ -262,16 +241,6 @@ export default function Home() {
     }
   }
 
-  async function fetchMyOrders(phone: string) {
-    if (!phone) return;
-    const { data } = await supabase
-      .from('orders')
-      .select('*, order_items(*, products(name, name_bn, unit))')
-      .eq('customer_phone', phone)
-      .order('created_at', { ascending: false });
-    if (data) setMyOrders(data);
-  }
-
   async function fetchNotifications() {
     const { data } = await supabase.from('notifications').select('*')
       .order('created_at', { ascending: false }).limit(20);
@@ -313,13 +282,6 @@ export default function Home() {
     localStorage.setItem('autoPrint', newVal.toString());
   }
 
-  // অর্ডার সফল হলে কাস্টমারের ফোন সেভ করে অর্ডার লোড করা
-  function handleOrderSuccess(orderId: number, phone: string) {
-    localStorage.setItem('customer_phone', phone);
-    setCustomerPhone(phone);
-    fetchMyOrders(phone);
-  }
-
   const filteredOrders = orders.filter(o =>
     orderSearch === '' ||
     o.customer_name?.toLowerCase().includes(orderSearch.toLowerCase()) ||
@@ -327,7 +289,6 @@ export default function Home() {
     String(o.id).includes(orderSearch)
   );
 
-  // শাখা সিলেক্ট পেজ
   if (!selectedBranch) {
     return (
       <div className="min-h-screen bg-green-50 flex items-center justify-center relative">
@@ -380,78 +341,16 @@ export default function Home() {
     );
   }
 
-  // মেইন পেজ
   return (
     <div className="min-h-screen bg-green-50">
       {selectedOrder && (
         <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} />
       )}
 
-      {/* কাস্টমারের পুরনো অর্ডার মডাল */}
-      {showMyOrders && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-lg w-full max-w-md max-h-screen overflow-y-auto">
-            <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
-              <h2 className="text-lg font-bold text-green-700">📋 আমার অর্ডার</h2>
-              <button onClick={() => setShowMyOrders(false)} className="text-gray-400 text-2xl">✕</button>
-            </div>
-            <div className="p-4 space-y-3">
-              {myOrders.length === 0 ? (
-                <p className="text-center text-gray-400 py-8">কোনো অর্ডার নেই</p>
-              ) : (
-                myOrders.map((order: any) => (
-                  <div key={order.id}
-                    onDoubleClick={() => setSelectedOrder(order)}
-                    onClick={() => setSelectedOrder(order)}
-                    className="bg-gray-50 rounded-xl p-3 cursor-pointer hover:bg-green-50 border border-gray-200 active:bg-green-100">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-bold text-gray-800 text-sm">অর্ডার #{order.id}</p>
-                        <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString('bn-BD')} {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
-                        <p className="text-xs text-gray-500 mt-1">{order.order_items?.length} টি পণ্য</p>
-                        <div className="mt-1">
-                          {order.order_items?.slice(0, 2).map((item: any, i: number) => (
-                            <p key={i} className="text-xs text-gray-400">{item.products?.name} × {item.quantity}</p>
-                          ))}
-                          {order.order_items?.length > 2 && (
-                            <p className="text-xs text-gray-400">আরো {order.order_items.length - 2} টি...</p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-green-700 text-lg">{order.total_amount} Tk</p>
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                          order.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
-                          order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                          'bg-yellow-100 text-yellow-700'}`}>
-                          {order.status === 'delivered' ? '✅ ডেলিভারি' :
-                           order.status === 'confirmed' ? '✔️ কনফার্ম' :
-                           order.status === 'cancelled' ? '❌ বাতিল' : '⏳ পেন্ডিং'}
-                        </span>
-                        <p className="text-xs text-gray-400 mt-1">ক্লিক করুন বিস্তারিত</p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* হেডার */}
       <div className="bg-green-700 text-white p-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">🛒 মাই বাজার</h1>
         <div className="flex items-center gap-2">
-          {/* কাস্টমারের অর্ডার বাটন */}
-          {customerPhone && myOrders.length > 0 && role !== 'admin' && (
-            <button
-              onClick={() => { fetchMyOrders(customerPhone); setShowMyOrders(true); }}
-              className="bg-white text-green-700 text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1">
-              📋 অর্ডার ({myOrders.length})
-            </button>
-          )}
           {role === 'admin' && (
             <button onClick={() => { setShowAdminDrawer(true); fetchOrders(); fetchNotifications(); }}
               className="relative bg-yellow-500 text-white w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold">
@@ -473,7 +372,9 @@ export default function Home() {
       <ProductList
         branch={selectedBranch}
         role={role}
-        onOrderSuccess={(orderId: number, phone: string) => handleOrderSuccess(orderId, phone)}
+        onOrderSuccess={(orderId: number, phone: string) => {
+          localStorage.setItem('customer_phone', phone);
+        }}
       />
 
       {/* Admin Drawer */}
@@ -565,7 +466,6 @@ export default function Home() {
                         </button>
                       </div>
                     </div>
-                    {/* পণ্য লিস্ট */}
                     <div className="mt-2 border-t pt-2">
                       {order.order_items?.map((item: any) => (
                         <div key={item.id} className="flex justify-between text-xs text-gray-600 py-1 border-b border-dashed border-gray-100">
@@ -598,117 +498,6 @@ export default function Home() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function AddProductPanel({ branches, onDone }: { branches: any[], onDone: () => void }) {
-  const [form, setForm] = useState({
-    name: '', name_bn: '', product_code: '', description: '',
-    price_per_unit: '', unit: 'Kg', branch_id: '',
-    category: '', category_bn: '', stock: '', image_url: '', page_id: ''
-  });
-  const [pages, setPages] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-
-  useEffect(() => {
-    supabase.from('pages').select('*').then(({ data }) => { if (data) setPages(data); });
-  }, []);
-
-  const handle = (e: any) => setForm({ ...form, [e.target.name]: e.target.value });
-
-  async function uploadImage(e: any) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const fileName = `${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from('products').upload(fileName, file);
-    if (error) { alert('সমস্যা: ' + error.message); setUploading(false); return; }
-    const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName);
-    setForm(prev => ({ ...prev, image_url: urlData.publicUrl }));
-    setUploading(false);
-  }
-
-  async function addProduct() {
-    if (!form.name || !form.product_code || !form.price_per_unit || !form.branch_id) {
-      alert('নাম, কোড, দাম এবং শাখা আবশ্যক!');
-      return;
-    }
-    setLoading(true);
-    const { data: product, error } = await supabase.from('products').insert({
-      name: form.name, name_bn: form.name_bn, product_code: form.product_code,
-      description: form.description, price_per_unit: parseFloat(form.price_per_unit),
-      unit: form.unit, branch_id: parseInt(form.branch_id),
-      category: form.category, category_bn: form.category_bn,
-      image_url: form.image_url,
-      page_id: form.page_id ? parseInt(form.page_id) : null, is_active: true
-    }).select().single();
-
-    if (error) { alert('সমস্যা: ' + error.message); setLoading(false); return; }
-
-    if (form.stock && parseFloat(form.stock) > 0) {
-      await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) });
-    }
-    alert('পণ্য যোগ হয়েছে!');
-    setLoading(false);
-    onDone();
-  }
-
-  return (
-    <div className="p-4 space-y-2">
-      <h3 className="font-bold text-gray-700">Add New Product</h3>
-      {[
-        { name: 'name', label: 'নাম *', placeholder: 'এ্যাংকর ডাল' },
-        { name: 'name_bn', label: 'বিকল্প নাম', placeholder: 'Anchor Dal' },
-        { name: 'product_code', label: 'পণ্য কোড *', placeholder: 'P001' },
-        { name: 'price_per_unit', label: 'দাম *', placeholder: '120', type: 'number' },
-        { name: 'category', label: 'ক্যাটাগরি (ইং)', placeholder: 'dal' },
-        { name: 'category_bn', label: 'ক্যাটাগরি (বাং)', placeholder: 'ডাল' },
-        { name: 'stock', label: 'প্রাথমিক স্টক', placeholder: '50', type: 'number' },
-      ].map((field: any) => (
-        <div key={field.name}>
-          <label className="text-xs text-gray-500">{field.label}</label>
-          <input name={field.name} value={(form as any)[field.name]} onChange={handle}
-            type={field.type || 'text'} placeholder={field.placeholder}
-            className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
-        </div>
-      ))}
-      <div>
-        <label className="text-xs text-gray-500">ইউনিট</label>
-        <select name="unit" value={form.unit} onChange={handle}
-          className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
-          <option value="Kg">Kg</option><option value="Liter">Liter</option>
-          <option value="pcs">pcs</option><option value="packet">Packet</option>
-        </select>
-      </div>
-      <div>
-        <label className="text-xs text-gray-500">শাখা *</label>
-        <select name="branch_id" value={form.branch_id} onChange={handle}
-          className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
-          <option value="">Select Branch</option>
-          {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name_bn || b.name}</option>)}
-        </select>
-      </div>
-      <div>
-        <label className="text-xs text-gray-500">পেজ</label>
-        <select name="page_id" value={form.page_id} onChange={handle}
-          className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
-          <option value="">Select Page</option>
-          {pages.map((p: any) => <option key={p.id} value={p.id}>{p.name_bn || p.name}</option>)}
-        </select>
-      </div>
-      <div>
-        <label className="text-xs text-gray-500">ছবি</label>
-        {form.image_url && <img src={form.image_url} alt="product" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-32" />}
-        <input type="file" accept="image/*" onChange={uploadImage}
-          className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
-        {uploading && <p className="text-xs text-blue-500 mt-1">Uploading...</p>}
-      </div>
-      <button onClick={addProduct} disabled={loading || uploading}
-        className="w-full bg-green-700 text-white py-3 rounded-xl font-bold disabled:opacity-50">
-        {loading ? 'Adding...' : '+ Add Product'}
-      </button>
     </div>
   );
 }

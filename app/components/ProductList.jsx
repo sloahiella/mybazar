@@ -304,7 +304,7 @@ function MyOrdersModal({ onClose }) {
             <div className="space-y-3">
               {filteredOrders.map((order) => (
                 <div key={order.id}
-                  onClick={() => setSelectedOrder(order)}
+                  onClick={(e) => { e.stopPropagation(); setSelectedOrder(order); }}
                   className="bg-gray-50 rounded-xl p-3 cursor-pointer hover:bg-green-50 border border-gray-200 active:bg-green-100">
                   <div className="flex justify-between items-start">
                     <div>
