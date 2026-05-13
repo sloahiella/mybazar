@@ -38,12 +38,14 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
 
   async function togglePage() {
     await supabase.from('pages').update({ is_active: !page.is_active }).eq('id', page.id);
+    setShowMenu(false);
     onRefresh();
   }
 
   async function deletePage() {
     if (!confirm('এই পেজ মুছে দেবেন?')) return;
     await supabase.from('pages').delete().eq('id', page.id);
+    setShowMenu(false);
     onRefresh();
   }
 
@@ -64,54 +66,73 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
   return (
     <div style={{ marginLeft: depth * 12 }}>
       {showEdit ? (
-        <div className="px-2 py-1 space-y-1">
+        <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <input value={editNameBn} onChange={e => setEditNameBn(e.target.value)}
             placeholder="বাংলা নাম"
-            className="border-2 border-gray-300 rounded-lg px-2 py-1 w-full text-xs" />
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
           <input value={editName} onChange={e => setEditName(e.target.value)}
             placeholder="English name"
-            className="border-2 border-gray-300 rounded-lg px-2 py-1 w-full text-xs" />
-          <div className="flex gap-1">
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
+          <div style={{ display: 'flex', gap: '6px' }}>
             <button onClick={updatePage} disabled={loading}
-              className="bg-green-700 text-white px-2 py-1 rounded-lg text-xs flex-1">সেভ</button>
+              style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>সেভ</button>
             <button onClick={() => setShowEdit(false)}
-              className="bg-gray-200 text-gray-600 px-2 py-1 rounded-lg text-xs">বাতিল</button>
+              style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>বাতিল</button>
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-1 relative">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'relative' }}>
           <button
             onClick={() => onSelectPage(page)}
-            className={`flex-1 text-left px-3 py-2 rounded-lg text-sm font-medium ${selectedPage?.id === page.id ? 'bg-green-700 text-white' : 'hover:bg-gray-50 text-gray-700'} ${page.is_active === false ? 'opacity-50' : ''}`}>
-            {depth > 0 && <span className="text-gray-400 mr-1">└</span>}
+            style={{
+              flex: 1, textAlign: 'left', padding: '8px 12px', borderRadius: '8px',
+              fontSize: '14px', fontWeight: '500', border: 'none', cursor: 'pointer',
+              background: selectedPage?.id === page.id ? '#15803d' : 'transparent',
+              color: selectedPage?.id === page.id ? 'white' : '#374151',
+              opacity: page.is_active === false ? 0.5 : 1,
+            }}>
+            {depth > 0 && <span style={{ color: '#9ca3af', marginRight: '4px' }}>└</span>}
             {page.name_bn || page.name}
-            {page.is_active === false && <span className="text-xs text-red-400 ml-1">(বন্ধ)</span>}
+            {page.is_active === false && <span style={{ fontSize: '10px', color: '#ef4444', marginLeft: '4px' }}>(বন্ধ)</span>}
           </button>
 
           {isAdmin && (
-            <div className="relative">
-              <button onClick={() => setShowMenu(!showMenu)}
-                className="text-gray-400 hover:text-gray-600 px-2 py-1 rounded-lg text-sm font-bold">
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', fontSize: '16px', color: '#9ca3af', fontWeight: 'bold' }}>
                 ⋯
               </button>
               {showMenu && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                  <div className="absolute right-0 top-8 bg-white rounded-xl shadow-lg z-50 w-44 border border-gray-200">
-                    <button onClick={() => { setShowEdit(true); setShowMenu(false); }}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
+                  <div
+                    style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+                    onClick={() => setShowMenu(false)} />
+                  <div style={{
+                    position: 'absolute', right: 0, top: '32px',
+                    background: 'white', borderRadius: '12px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                    zIndex: 50, width: '180px',
+                    border: '1px solid #e5e7eb',
+                  }}>
+                    <button
+                      onClick={() => { setShowEdit(true); setShowMenu(false); }}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       ✏️ নাম পরিবর্তন
                     </button>
-                    <button onClick={() => { togglePage(); setShowMenu(false); }}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
+                    <button
+                      onClick={togglePage}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {page.is_active === false ? '👁️ চালু করুন' : '🚫 বন্ধ করুন'}
                     </button>
-                    <button onClick={() => { setShowAddSub(true); setShowMenu(false); }}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
+                    <button
+                      onClick={() => { setShowAddSub(true); setShowMenu(false); }}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       ➕ সাব-পেজ যোগ
                     </button>
-                    <button onClick={() => { deletePage(); setShowMenu(false); }}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2">
+                    <button
+                      onClick={deletePage}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#dc2626' }}>
                       🗑️ মুছুন
                     </button>
                   </div>
@@ -123,19 +144,19 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
       )}
 
       {showAddSub && (
-        <div className="ml-3 bg-blue-50 rounded-lg p-2 mt-1 space-y-1">
-          <p className="text-xs text-blue-700 font-bold">সাব-পেজ যোগ করুন</p>
+        <div style={{ marginLeft: '12px', background: '#eff6ff', borderRadius: '8px', padding: '10px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <p style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: 'bold', margin: 0 }}>সাব-পেজ যোগ করুন</p>
           <input value={subNameBn} onChange={e => setSubNameBn(e.target.value)}
             placeholder="বাংলা নাম (শাড়ী)"
-            className="border-2 border-gray-300 rounded-lg px-2 py-1 w-full text-xs" />
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
           <input value={subName} onChange={e => setSubName(e.target.value)}
             placeholder="English name (saree)"
-            className="border-2 border-gray-300 rounded-lg px-2 py-1 w-full text-xs" />
-          <div className="flex gap-1">
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
+          <div style={{ display: 'flex', gap: '6px' }}>
             <button onClick={addSubPage} disabled={loading}
-              className="bg-green-700 text-white px-2 py-1 rounded-lg text-xs flex-1">যোগ করুন</button>
+              style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>যোগ করুন</button>
             <button onClick={() => setShowAddSub(false)}
-              className="bg-gray-200 text-gray-600 px-2 py-1 rounded-lg text-xs">বাতিল</button>
+              style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>বাতিল</button>
           </div>
         </div>
       )}
@@ -186,15 +207,15 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
 
       {/* পেজ মেনু বাটন */}
-      <div className="relative">
+      <div style={{ position: 'relative' }}>
         <button
           onClick={() => setShowMenu(!showMenu)}
           style={{
-            display: 'flex', alignItems: 'center', gap: '4px',
+            display: 'flex', alignItems: 'center', gap: '6px',
             background: 'white', color: '#15803d',
             border: '2px solid #15803d',
-            padding: '8px 12px', borderRadius: '12px',
-            fontWeight: '600', fontSize: '13px',
+            padding: '8px 14px', borderRadius: '12px',
+            fontWeight: '600', fontSize: '14px',
             whiteSpace: 'nowrap', cursor: 'pointer',
           }}>
           ☰ পেজ
@@ -202,12 +223,28 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
 
         {showMenu && (
           <>
-            <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-            <div className="absolute left-0 top-12 bg-white rounded-xl shadow-lg z-50 w-72 border border-gray-200 max-h-96 overflow-y-auto">
-              <div className="p-2">
+            <div
+              style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+              onClick={() => setShowMenu(false)} />
+            <div style={{
+              position: 'absolute', left: 0, top: '48px',
+              background: 'white', borderRadius: '16px',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+              zIndex: 50, width: '300px',
+              border: '1px solid #e5e7eb',
+              maxHeight: '400px', overflowY: 'auto',
+            }}>
+              <div style={{ padding: '8px' }}>
+                {/* সব পণ্য বাটন */}
                 <button
                   onClick={() => { onSelectPage(null); setShowMenu(false); }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium mb-1 ${!selectedPage ? 'bg-green-700 text-white' : 'hover:bg-gray-50 text-gray-700'}`}>
+                  style={{
+                    width: '100%', textAlign: 'left', padding: '10px 14px',
+                    borderRadius: '8px', fontSize: '14px', fontWeight: '500',
+                    border: 'none', cursor: 'pointer', marginBottom: '4px',
+                    background: !selectedPage ? '#15803d' : 'transparent',
+                    color: !selectedPage ? 'white' : '#374151',
+                  }}>
                   🏠 সব পণ্য
                 </button>
 
@@ -219,34 +256,35 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
                 ))}
 
                 {isAdmin && selectedPage && (
-                  <div className="border-t mt-2 pt-2 px-2">
-                    <button onClick={() => { onAddProduct(selectedPage); setShowMenu(false); }}
-                      className="w-full text-left px-3 py-2 rounded-lg text-sm text-blue-600 hover:bg-blue-50 font-medium">
+                  <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '8px', paddingTop: '8px' }}>
+                    <button
+                      onClick={() => { onAddProduct(selectedPage); setShowMenu(false); }}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#1d4ed8', fontWeight: '500' }}>
                       + এই পেজে পণ্য যোগ করুন
                     </button>
                   </div>
                 )}
 
                 {isAdmin && (
-                  <div className="border-t mt-2 pt-2">
+                  <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '8px', paddingTop: '8px' }}>
                     {showAddPage ? (
-                      <div className="px-2 space-y-1">
+                      <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <input value={newPageNameBn} onChange={e => setNewPageNameBn(e.target.value)}
-                          placeholder="বাংলা নাম (মুদি সদয়)"
-                          className="border-2 border-gray-300 rounded-lg px-2 py-1 w-full text-xs" />
+                          placeholder="বাংলা নাম"
+                          style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
                         <input value={newPageName} onChange={e => setNewPageName(e.target.value)}
-                          placeholder="English name (grocery)"
-                          className="border-2 border-gray-300 rounded-lg px-2 py-1 w-full text-xs" />
-                        <div className="flex gap-1">
+                          placeholder="English name"
+                          style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
+                        <div style={{ display: 'flex', gap: '6px' }}>
                           <button onClick={addPage} disabled={loading}
-                            className="bg-green-700 text-white px-2 py-1 rounded-lg text-xs flex-1">যোগ করুন</button>
+                            style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>যোগ করুন</button>
                           <button onClick={() => setShowAddPage(false)}
-                            className="bg-gray-200 text-gray-600 px-2 py-1 rounded-lg text-xs">বাতিল</button>
+                            style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>বাতিল</button>
                         </div>
                       </div>
                     ) : (
                       <button onClick={() => setShowAddPage(true)}
-                        className="w-full text-left px-3 py-2 rounded-lg text-sm text-green-600 hover:bg-green-50 font-medium">
+                        style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#15803d', fontWeight: '500' }}>
                         + নতুন পেজ যোগ করুন
                       </button>
                     )}
@@ -258,16 +296,16 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
         )}
       </div>
 
-      {/* কাস্টমারের জন্য অর্ডার লিস্ট বাটন */}
+      {/* কাস্টমারের অর্ডার লিস্ট বাটন */}
       {!isAdmin && (
         <button
           onClick={() => onShowOrders && onShowOrders()}
           style={{
-            display: 'flex', alignItems: 'center', gap: '4px',
+            display: 'flex', alignItems: 'center', gap: '6px',
             background: 'white', color: '#15803d',
             border: '2px solid #15803d',
-            padding: '8px 12px', borderRadius: '12px',
-            fontWeight: '600', fontSize: '13px',
+            padding: '8px 14px', borderRadius: '12px',
+            fontWeight: '600', fontSize: '14px',
             whiteSpace: 'nowrap', cursor: 'pointer',
           }}>
           📋 অর্ডার লিস্ট

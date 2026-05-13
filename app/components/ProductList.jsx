@@ -133,55 +133,47 @@ function OrderReceiptModal({ order, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-screen overflow-y-auto">
-        <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
-          <h2 className="text-lg font-bold text-green-700">অর্ডার #{order.id}</h2>
-          <div className="flex gap-2">
-            <button onClick={handlePrint} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium">🖨️ Print</button>
-            <button onClick={handleSave} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium">💾 Save</button>
-            <button onClick={onClose} className="bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm">✕</button>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }}>
+      <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, background: 'white', zIndex: 10 }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>অর্ডার #{order.id}</h2>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={handlePrint} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>🖨️ Print</button>
+            <button onClick={handleSave} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>💾 Save</button>
+            <button onClick={onClose} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', cursor: 'pointer' }}>✕</button>
           </div>
         </div>
 
         <div ref={printRef} style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
-          {/* হেডার - মাই বাজার বাম, কাস্টমার ঠিকানা ডান */}
+          {/* হেডার - মাই বাজার বাম, কাস্টমার ডান */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1px 1fr',
-            border: '2px solid #15803d',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            marginBottom: '16px',
+            display: 'grid', gridTemplateColumns: '1fr 2px 1fr',
+            border: '2px solid #15803d', borderRadius: '8px',
+            overflow: 'hidden', marginBottom: '16px',
           }}>
-            {/* বাম - আমাদের তথ্য */}
             <div style={{ padding: '14px', background: '#f0fdf4' }}>
-              <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', margin: '0 0 6px 0' }}>🛒 মাই বাজার</h1>
+              <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', margin: '0 0 8px 0' }}>🛒 মাই বাজার</h1>
               <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 mybazar.vercel.app</p>
               <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 sohelmart.com</p>
               <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>📱 WhatsApp: 01872149655</p>
-              <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 2px 0', fontWeight: 'bold' }}>📍 শাখা: লালমোহন</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '8px 0 2px 0', fontWeight: 'bold' }}>📍 শাখা: লালমোহন</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>সময়: {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
             </div>
-
-            {/* মাঝের দাগ */}
             <div style={{ background: '#15803d' }} />
-
-            {/* ডান - কাস্টমার তথ্য */}
             <div style={{ padding: '14px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1d4ed8', margin: '0 0 8px 0' }}>👤 কাস্টমার তথ্য</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>নাম: <strong>{order.customer_name}</strong></p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ফোন: {order.customer_phone}</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>জেলা: {order.district}, {order.upazila}</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ঠিকানা: {order.address}</p>
-              <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 3px 0', fontWeight: 'bold' }}>অর্ডার #: {order.id}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '8px 0 3px 0', fontWeight: 'bold' }}>অর্ডার #: {order.id}</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
             </div>
           </div>
 
           {/* পণ্য হেডার */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 4px', marginBottom: '4px', borderBottom: '2px solid #374151' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 4px', marginBottom: '4px', borderBottom: '2px solid #374151', borderTop: '1px solid #e5e7eb' }}>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
           </div>
@@ -191,9 +183,7 @@ function OrderReceiptModal({ order, onClose }) {
             <div key={i} style={{ borderBottom: '1px dashed #d1d5db', padding: '8px 4px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1, paddingRight: '16px' }}>
-                  <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>
-                    {item.products?.name}
-                  </p>
+                  <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{item.products?.name}</p>
                   <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>
                     {item.price} Tk/{item.products?.unit} × {item.quantity} {item.products?.unit}
                   </p>
@@ -258,70 +248,80 @@ function MyOrdersModal({ onClose }) {
     );
   });
 
+  if (selectedOrder) {
+    return <OrderReceiptModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />;
+  }
+
   return (
-    <>
-      {selectedOrder && (
-        <OrderReceiptModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
-      )}
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-lg w-full max-w-md max-h-screen overflow-y-auto">
-          <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
-            <h2 className="text-lg font-bold text-green-700">📋 আমার অর্ডার</h2>
-            <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }}>
+      <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '440px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, background: 'white' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>📋 আমার অর্ডার</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#9ca3af' }}>✕</button>
+        </div>
+
+        <div style={{ padding: '16px' }}>
+          {/* ফোন নম্বর */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+              placeholder="ফোন নম্বর দিন"
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', outline: 'none' }} />
+            <button onClick={() => fetchOrders(phone)}
+              style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: '600' }}>
+              খুঁজুন
+            </button>
           </div>
-          <div className="p-4">
-            <div className="flex gap-2 mb-3">
-              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-                placeholder="ফোন নম্বর দিন"
-                className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm focus:border-green-500 focus:outline-none" />
-              <button onClick={() => fetchOrders(phone)}
-                className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap font-medium">
-                খুঁজুন
-              </button>
-            </div>
 
-            {orders.length > 0 && (
-              <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="🔍 তারিখ বা অর্ডার নম্বর লিখুন..."
-                className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm focus:border-green-500 focus:outline-none mb-3" />
-            )}
+          {/* সার্চ */}
+          {orders.length > 0 && (
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="🔍 তারিখ বা অর্ডার নম্বর..."
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }} />
+          )}
 
-            {loading && <p className="text-center text-gray-400 py-8">লোড হচ্ছে...</p>}
-            {!loading && searched && orders.length === 0 && (
-              <p className="text-center text-gray-400 py-8">কোনো অর্ডার পাওয়া যায়নি</p>
-            )}
+          {loading && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>লোড হচ্ছে...</p>}
+          {!loading && searched && orders.length === 0 && (
+            <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার পাওয়া যায়নি</p>
+          )}
 
-            <div className="space-y-3">
-              {filteredOrders.map((order) => (
-                <div key={order.id}
-                  onClick={() => setSelectedOrder(order)}
-                  className="bg-gray-50 rounded-xl p-3 cursor-pointer hover:bg-green-50 border border-gray-200 active:bg-green-100">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-bold text-gray-800 text-sm">অর্ডার #{order.id}</p>
-                      <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
-                      <p className="text-xs text-gray-500 mt-1">{order.order_items?.length} টি পণ্য</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-green-700 text-lg">{order.total_amount} Tk</p>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                        order.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
-                        order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                        'bg-yellow-100 text-yellow-700'}`}>
-                        {order.status === 'delivered' ? '✅ ডেলিভারি' :
-                         order.status === 'confirmed' ? '✔️ কনফার্ম' :
-                         order.status === 'cancelled' ? '❌ বাতিল' : '⏳ পেন্ডিং'}
-                      </span>
-                    </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {filteredOrders.map((order) => (
+              <div
+                key={order.id}
+                onClick={() => setSelectedOrder(order)}
+                style={{
+                  background: '#f9fafb', borderRadius: '12px', padding: '12px',
+                  cursor: 'pointer', border: '1px solid #e5e7eb',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#f0fdf4'}
+                onMouseLeave={e => e.currentTarget.style.background = '#f9fafb'}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '14px', margin: '0 0 4px 0' }}>অর্ডার #{order.id}</p>
+                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>
+                      {new Date(order.created_at).toLocaleDateString('bn-BD')}
+                    </p>
+                    <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>{order.order_items?.length} টি পণ্য</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontWeight: 'bold', color: '#15803d', fontSize: '18px', margin: '0 0 6px 0' }}>{order.total_amount} Tk</p>
+                    <span style={{
+                      fontSize: '11px', padding: '3px 8px', borderRadius: '20px',
+                      background: order.status === 'delivered' ? '#dcfce7' : order.status === 'confirmed' ? '#dbeafe' : order.status === 'cancelled' ? '#fee2e2' : '#fef9c3',
+                      color: order.status === 'delivered' ? '#15803d' : order.status === 'confirmed' ? '#1d4ed8' : order.status === 'cancelled' ? '#dc2626' : '#854d0e',
+                    }}>
+                      {order.status === 'delivered' ? '✅ ডেলিভারি' : order.status === 'confirmed' ? '✔️ কনফার্ম' : order.status === 'cancelled' ? '❌ বাতিল' : '⏳ পেন্ডিং'}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
