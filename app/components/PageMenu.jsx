@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -8,7 +8,7 @@ const supabase = createClient(
 );
 
 function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth = 0 }) {
-  const [showMenu, setShowMenu] = useState(false);
+  const [showDotMenu, setShowDotMenu] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showAddSub, setShowAddSub] = useState(false);
   const [editName, setEditName] = useState(page.name);
@@ -38,14 +38,14 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
 
   async function togglePage() {
     await supabase.from('pages').update({ is_active: !page.is_active }).eq('id', page.id);
-    setShowMenu(false);
+    setShowDotMenu(false);
     onRefresh();
   }
 
   async function deletePage() {
     if (!confirm('এই পেজ মুছে দেবেন?')) return;
     await supabase.from('pages').delete().eq('id', page.id);
-    setShowMenu(false);
+    setShowDotMenu(false);
     onRefresh();
   }
 
@@ -99,40 +99,36 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
           {isAdmin && (
             <div style={{ position: 'relative' }}>
               <button
-                onClick={() => setShowMenu(!showMenu)}
+                onClick={e => { e.stopPropagation(); setShowDotMenu(!showDotMenu); }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', fontSize: '16px', color: '#9ca3af', fontWeight: 'bold' }}>
                 ⋯
               </button>
-              {showMenu && (
+              {showDotMenu && (
                 <>
                   <div
                     style={{ position: 'fixed', inset: 0, zIndex: 40 }}
-                    onClick={() => setShowMenu(false)} />
+                    onClick={() => setShowDotMenu(false)} />
                   <div style={{
                     position: 'absolute', right: 0, top: '32px',
                     background: 'white', borderRadius: '12px',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                    zIndex: 50, width: '180px',
+                    zIndex: 9999, width: '180px',
                     border: '1px solid #e5e7eb',
                   }}>
-                    <button
-                      onClick={() => { setShowEdit(true); setShowMenu(false); }}
-                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button onClick={() => { setShowEdit(true); setShowDotMenu(false); }}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer' }}>
                       ✏️ নাম পরিবর্তন
                     </button>
-                    <button
-                      onClick={togglePage}
-                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button onClick={togglePage}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer' }}>
                       {page.is_active === false ? '👁️ চালু করুন' : '🚫 বন্ধ করুন'}
                     </button>
-                    <button
-                      onClick={() => { setShowAddSub(true); setShowMenu(false); }}
-                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button onClick={() => { setShowAddSub(true); setShowDotMenu(false); }}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer' }}>
                       ➕ সাব-পেজ যোগ
                     </button>
-                    <button
-                      onClick={deletePage}
-                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#dc2626' }}>
+                    <button onClick={deletePage}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#dc2626' }}>
                       🗑️ মুছুন
                     </button>
                   </div>
@@ -173,13 +169,28 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
 
 export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, onAddProduct, onShowOrders }) {
   const [pages, setPages] = useState([]);
-  const [showMenu, setShowMenu] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [showAddPage, setShowAddPage] = useState(false);
   const [newPageName, setNewPageName] = useState('');
   const [newPageNameBn, setNewPageNameBn] = useState('');
   const [loading, setLoading] = useState(false);
+  const menuRef = useRef(null);
 
   useEffect(() => { fetchPages(); }, [branch]);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   async function fetchPages() {
     const { data } = await supabase.from('pages').select('*')
@@ -206,13 +217,14 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
 
-      {/* পেজ মেনু বাটন */}
-      <div style={{ position: 'relative' }}>
+      {/* পেজ মেনু */}
+      <div ref={menuRef} style={{ position: 'relative' }}>
         <button
-          onClick={() => setShowMenu(!showMenu)}
+          onClick={() => setIsOpen(prev => !prev)}
           style={{
             display: 'flex', alignItems: 'center', gap: '6px',
-            background: 'white', color: '#15803d',
+            background: isOpen ? '#15803d' : 'white',
+            color: isOpen ? 'white' : '#15803d',
             border: '2px solid #15803d',
             padding: '8px 14px', borderRadius: '12px',
             fontWeight: '600', fontSize: '14px',
@@ -221,78 +233,72 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
           ☰ পেজ
         </button>
 
-        {showMenu && (
-          <>
-            <div
-              style={{ position: 'fixed', inset: 0, zIndex: 40 }}
-              onClick={() => setShowMenu(false)} />
-            <div style={{
-              position: 'absolute', left: 0, top: '48px',
-              background: 'white', borderRadius: '16px',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
-              zIndex: 50, width: '300px',
-              border: '1px solid #e5e7eb',
-              maxHeight: '400px', overflowY: 'auto',
-            }}>
-              <div style={{ padding: '8px' }}>
-                {/* সব পণ্য বাটন */}
-                <button
-                  onClick={() => { onSelectPage(null); setShowMenu(false); }}
-                  style={{
-                    width: '100%', textAlign: 'left', padding: '10px 14px',
-                    borderRadius: '8px', fontSize: '14px', fontWeight: '500',
-                    border: 'none', cursor: 'pointer', marginBottom: '4px',
-                    background: !selectedPage ? '#15803d' : 'transparent',
-                    color: !selectedPage ? 'white' : '#374151',
-                  }}>
-                  🏠 সব পণ্য
-                </button>
+        {isOpen && (
+          <div style={{
+            position: 'absolute', left: 0, top: '48px',
+            background: 'white', borderRadius: '16px',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
+            zIndex: 9999, width: '300px',
+            border: '1px solid #e5e7eb',
+            maxHeight: '400px', overflowY: 'auto',
+          }}>
+            <div style={{ padding: '8px' }}>
+              <button
+                onClick={() => { onSelectPage(null); setIsOpen(false); }}
+                style={{
+                  width: '100%', textAlign: 'left', padding: '10px 14px',
+                  borderRadius: '8px', fontSize: '14px', fontWeight: '500',
+                  border: 'none', cursor: 'pointer', marginBottom: '4px',
+                  background: !selectedPage ? '#15803d' : 'transparent',
+                  color: !selectedPage ? 'white' : '#374151',
+                }}>
+                🏠 সব পণ্য
+              </button>
 
-                {visiblePages.map(page => (
-                  <PageItem key={page.id} page={page}
-                    selectedPage={selectedPage}
-                    onSelectPage={(p) => { onSelectPage(p); setShowMenu(false); }}
-                    isAdmin={isAdmin} onRefresh={fetchPages} depth={0} />
-                ))}
+              {visiblePages.map(page => (
+                <PageItem key={page.id} page={page}
+                  selectedPage={selectedPage}
+                  onSelectPage={(p) => { onSelectPage(p); setIsOpen(false); }}
+                  isAdmin={isAdmin} onRefresh={fetchPages} depth={0} />
+              ))}
 
-                {isAdmin && selectedPage && (
-                  <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '8px', paddingTop: '8px' }}>
-                    <button
-                      onClick={() => { onAddProduct(selectedPage); setShowMenu(false); }}
-                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#1d4ed8', fontWeight: '500' }}>
-                      + এই পেজে পণ্য যোগ করুন
-                    </button>
-                  </div>
-                )}
+              {isAdmin && selectedPage && (
+                <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '8px', paddingTop: '8px' }}>
+                  <button
+                    onClick={() => { onAddProduct(selectedPage); setIsOpen(false); }}
+                    style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#1d4ed8', fontWeight: '500' }}>
+                    + এই পেজে পণ্য যোগ করুন
+                  </button>
+                </div>
+              )}
 
-                {isAdmin && (
-                  <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '8px', paddingTop: '8px' }}>
-                    {showAddPage ? (
-                      <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <input value={newPageNameBn} onChange={e => setNewPageNameBn(e.target.value)}
-                          placeholder="বাংলা নাম"
-                          style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
-                        <input value={newPageName} onChange={e => setNewPageName(e.target.value)}
-                          placeholder="English name"
-                          style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <button onClick={addPage} disabled={loading}
-                            style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>যোগ করুন</button>
-                          <button onClick={() => setShowAddPage(false)}
-                            style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>বাতিল</button>
-                        </div>
+              {isAdmin && (
+                <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '8px', paddingTop: '8px' }}>
+                  {showAddPage ? (
+                    <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <input value={newPageNameBn} onChange={e => setNewPageNameBn(e.target.value)}
+                        placeholder="বাংলা নাম"
+                        style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
+                      <input value={newPageName} onChange={e => setNewPageName(e.target.value)}
+                        placeholder="English name"
+                        style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button onClick={addPage} disabled={loading}
+                          style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>যোগ করুন</button>
+                        <button onClick={() => setShowAddPage(false)}
+                          style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>বাতিল</button>
                       </div>
-                    ) : (
-                      <button onClick={() => setShowAddPage(true)}
-                        style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#15803d', fontWeight: '500' }}>
-                        + নতুন পেজ যোগ করুন
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  ) : (
+                    <button onClick={() => setShowAddPage(true)}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#15803d', fontWeight: '500' }}>
+                      + নতুন পেজ যোগ করুন
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-          </>
+          </div>
         )}
       </div>
 
