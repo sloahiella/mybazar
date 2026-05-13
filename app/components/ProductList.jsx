@@ -126,18 +126,16 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
       borderRadius: '12px',
       boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
       padding: '10px',
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
       opacity: isDragging ? 0.5 : 1,
       border: isDragging ? '2px solid #16a34a' : '1px solid #e5e7eb',
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      boxSizing: 'border-box',
     }}>
-
       {isAdmin && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', marginBottom: '4px' }}>
-          <span
-            onMouseDown={onDragStart}
-            onTouchStart={onDragStart}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', marginBottom: '6px', flexShrink: 0 }}>
+          <span onMouseDown={onDragStart} onTouchStart={onDragStart}
             style={{ background: '#e5e7eb', color: '#6b7280', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', cursor: 'grab' }}>
             ⠿
           </span>
@@ -149,7 +147,7 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
       )}
 
       {allImages.length > 0 && (
-        <div style={{ position: 'relative', marginBottom: '8px', cursor: 'pointer' }} onClick={handleImageTap}>
+        <div style={{ position: 'relative', marginBottom: '8px', cursor: 'pointer', flexShrink: 0 }} onClick={handleImageTap}>
           <img src={allImages[currentImageIndex]} alt={product.name}
             style={{ width: '100%', height: '110px', objectFit: 'contain', borderRadius: '8px' }} />
           {allImages.length > 1 && (
@@ -167,7 +165,9 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
         </div>
       )}
 
-      <div onDoubleClick={() => onDoubleClick(product)} style={{ cursor: 'pointer', userSelect: 'none', marginBottom: '4px' }}>
+      {/* নাম - উপরে থাকবে */}
+      <div onDoubleClick={() => onDoubleClick(product)}
+        style={{ cursor: 'pointer', userSelect: 'none', flexShrink: 0 }}>
         <p style={{
           fontWeight: 'bold',
           color: '#1f2937',
@@ -177,74 +177,76 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
           overflowWrap: 'anywhere',
           margin: 0,
         }}>{product.name}</p>
+      </div>
+
+      {/* স্পেস - নামের নিচে অটো */}
+      <div style={{ flex: 1 }}></div>
+
+      {/* কোড, দাম, স্টক - নিচে */}
+      <div style={{ flexShrink: 0 }}>
         {product.product_code && (
-          <p style={{ fontSize: '11px', color: '#3b82f6', fontWeight: '500', margin: '2px 0 0 0' }}>
+          <p style={{ fontSize: '11px', color: '#3b82f6', fontWeight: '500', margin: '0 0 2px 0' }}>
             কোড: {product.product_code}
           </p>
         )}
-      </div>
 
-      <p style={{ color: '#16a34a', fontWeight: 'bold', fontSize: '12px', margin: '2px 0' }}>
-        1 {product.unit} = {product.price_per_unit} Tk
-      </p>
-
-      {isAdmin ? (
-        <p style={{ fontSize: '11px', color: stock <= 0 ? '#ef4444' : '#9ca3af', margin: '0 0 4px 0' }}>
-          Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}
+        <p style={{ color: '#16a34a', fontWeight: 'bold', fontSize: '12px', margin: '2px 0' }}>
+          1 {product.unit} = {product.price_per_unit} Tk
         </p>
-      ) : (
-        <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 4px 0' }}>
-          Stock: {stock} {product.unit}
-        </p>
-      )}
 
-      {product.description && (
-        <div style={{ marginBottom: '4px' }}>
-          <button onClick={() => setShowDesc(!showDesc)}
-            style={{ fontSize: '11px', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
-            বৈশিষ্ট্য {showDesc ? '▲' : '▼'}
-          </button>
-          {showDesc && (
-            <p style={{ fontSize: '11px', color: '#4b5563', background: '#eff6ff', padding: '6px', borderRadius: '6px', margin: '4px 0 0 0' }}>
-              {product.description}
-            </p>
-          )}
-        </div>
-      )}
-
-      <div style={{ marginTop: 'auto' }}>
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-          <input
-            type="number" min="0"
-            step={isPiece ? '1' : '0.001'}
-            value={qty}
-            onChange={e => setQty(e.target.value)}
-            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', width: '100%', fontSize: '12px', color: '#1f2937', outline: 'none', minWidth: 0 }}
-            placeholder="পরিমাণ"
-          />
-          {!isPiece && (
-            <select value={unit} onChange={e => setUnit(e.target.value)}
-              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 2px', fontSize: '11px', background: 'white', flexShrink: 0 }}>
-              {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
-              {isLiter && <><option value={product.unit}>L</option><option value="ml">ml</option></>}
-            </select>
-          )}
-          {isPiece && (
-            <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', color: '#6b7280', background: '#f9fafb', flexShrink: 0 }}>
-              pcs
-            </span>
-          )}
-        </div>
-        {qty && parseFloat(qty) > 0 && (
-          <p style={{ fontSize: '11px', color: '#16a34a', fontWeight: 'bold', background: '#f0fdf4', padding: '3px 6px', borderRadius: '6px', border: '1px solid #bbf7d0', margin: '0 0 4px 0' }}>
-            = {(getActualQty() * product.price_per_unit).toFixed(0)} Tk
+        {isAdmin ? (
+          <p style={{ fontSize: '11px', color: stock <= 0 ? '#ef4444' : '#9ca3af', margin: '0 0 4px 0' }}>
+            Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}
+          </p>
+        ) : (
+          <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 4px 0' }}>
+            Stock: {stock} {product.unit}
           </p>
         )}
-        <button
-          onClick={() => { const a = getActualQty(); if (a > 0) onAdd(product, a); }}
-          style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '7px 4px', fontSize: '12px', width: '100%', cursor: 'pointer', fontWeight: '500' }}>
-          🛒 ঝুড়িতে
-        </button>
+
+        {product.description && (
+          <div style={{ marginBottom: '4px' }}>
+            <button onClick={() => setShowDesc(!showDesc)}
+              style={{ fontSize: '11px', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+              বৈশিষ্ট্য {showDesc ? '▲' : '▼'}
+            </button>
+            {showDesc && (
+              <p style={{ fontSize: '11px', color: '#4b5563', background: '#eff6ff', padding: '6px', borderRadius: '6px', margin: '4px 0 0 0' }}>
+                {product.description}
+              </p>
+            )}
+          </div>
+        )}
+
+        <div style={{ marginTop: '8px' }}>
+          <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+            <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty}
+              onChange={e => setQty(e.target.value)}
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', width: '100%', fontSize: '12px', color: '#1f2937', outline: 'none', minWidth: 0 }}
+              placeholder="পরিমাণ" />
+            {!isPiece && (
+              <select value={unit} onChange={e => setUnit(e.target.value)}
+                style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 2px', fontSize: '11px', background: 'white', flexShrink: 0 }}>
+                {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
+                {isLiter && <><option value={product.unit}>L</option><option value="ml">ml</option></>}
+              </select>
+            )}
+            {isPiece && (
+              <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', color: '#6b7280', background: '#f9fafb', flexShrink: 0 }}>
+                pcs
+              </span>
+            )}
+          </div>
+          {qty && parseFloat(qty) > 0 && (
+            <p style={{ fontSize: '11px', color: '#16a34a', fontWeight: 'bold', background: '#f0fdf4', padding: '3px 6px', borderRadius: '6px', border: '1px solid #bbf7d0', margin: '0 0 4px 0' }}>
+              = {(getActualQty() * product.price_per_unit).toFixed(0)} Tk
+            </p>
+          )}
+          <button onClick={() => { const a = getActualQty(); if (a > 0) onAdd(product, a); }}
+            style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '7px 4px', fontSize: '12px', width: '100%', cursor: 'pointer', fontWeight: '500' }}>
+            🛒 ঝুড়িতে রাখুন
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -362,21 +364,15 @@ function EditProductModal({ product, onClose, onSave }) {
           <div><label className="text-xs text-gray-500">ক্যাটাগরি বাংলা</label>
             <input name="category_bn" value={form.category_bn} onChange={handle} placeholder="ডাল"
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
-
           <div className="bg-green-50 rounded-lg p-3">
             <label className="text-xs text-green-700 font-bold">প্রধান ছবি (সবসময় দেখাবে)</label>
-            {form.image_url && (
-              <img src={form.image_url} alt="main" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-32" />
-            )}
+            {form.image_url && <img src={form.image_url} alt="main" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-32" />}
             <input type="file" accept="image/*" onChange={uploadMainImage}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
           </div>
-
           <div className="bg-blue-50 rounded-lg p-3">
             <label className="text-xs text-blue-700 font-bold">অতিরিক্ত ছবি (ট্যাপ করলে দেখাবে)</label>
-            {loadingImages ? (
-              <p className="text-xs text-gray-400 mt-1">লোড হচ্ছে...</p>
-            ) : (
+            {loadingImages ? <p className="text-xs text-gray-400 mt-1">লোড হচ্ছে...</p> : (
               <div className="flex gap-2 flex-wrap mt-2">
                 {extraImages.map(img => (
                   <div key={img.id} className="relative">
@@ -391,7 +387,6 @@ function EditProductModal({ product, onClose, onSave }) {
               className="border-2 border-blue-300 rounded-lg px-3 py-2 w-full text-sm mt-2" />
             {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
           </div>
-
           <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
             <textarea name="description" value={form.description} onChange={handle} rows={3}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
@@ -579,27 +574,18 @@ export default function ProductList({ branch, role }) {
     setLoading(false);
   }
 
-  function handleDragStart(index) {
-    setDragIndex(index);
-  }
-
-  function handleDragOver(index) {
-    if (dragIndex === null) return;
-    setDragOverIndex(index);
-  }
+  function handleDragStart(index) { setDragIndex(index); }
+  function handleDragOver(index) { if (dragIndex !== null) setDragOverIndex(index); }
 
   async function handleDrop(dropIndex) {
     if (dragIndex === null || dragIndex === dropIndex) {
-      setDragIndex(null);
-      setDragOverIndex(null);
-      return;
+      setDragIndex(null); setDragOverIndex(null); return;
     }
     const items = Array.from(products);
     const [removed] = items.splice(dragIndex, 1);
     items.splice(dropIndex, 0, removed);
     setProducts(items);
-    setDragIndex(null);
-    setDragOverIndex(null);
+    setDragIndex(null); setDragOverIndex(null);
     for (let i = 0; i < items.length; i++) {
       await supabase.from('products').update({ sort_order: i }).eq('id', items[i].id);
     }
@@ -780,16 +766,17 @@ export default function ProductList({ branch, role }) {
 
       {loading && <p className="text-center text-gray-400 mt-10">লোড হচ্ছে...</p>}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 items-stretch">
         {(isAdmin ? products : displayProducts).map((product, index) => (
           <div
             key={product.id}
-            onDragOver={(e) => { e.preventDefault(); if (isAdmin) handleDragOver(index); }}
-            onDrop={() => { if (isAdmin) handleDrop(index); }}
             style={{
               outline: isAdmin && dragOverIndex === index && dragIndex !== index ? '2px solid #16a34a' : 'none',
               borderRadius: '12px',
+              height: '100%',
             }}
+            onDragOver={(e) => { e.preventDefault(); if (isAdmin) handleDragOver(index); }}
+            onDrop={() => { if (isAdmin) handleDrop(index); }}
           >
             <ProductCard
               product={product}

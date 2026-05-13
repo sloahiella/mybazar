@@ -19,6 +19,155 @@ interface Branch {
   is_active: boolean;
 }
 
+function OrderReceipt({ order, onClose }: { order: any, onClose: () => void }) {
+  const printRef = useRef<HTMLDivElement>(null);
+
+  function handlePrint() {
+    const content = printRef.current?.innerHTML;
+    const win = window.open('', '_blank');
+    if (!win || !content) return;
+    win.document.write(`
+      <html>
+      <head>
+        <title>Order #${order.id}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: Arial, sans-serif; width: 210mm; min-height: 297mm; padding: 15mm; }
+          @media print { body { padding: 10mm; } }
+        </style>
+      </head>
+      <body>${content}</body>
+      </html>
+    `);
+    win.document.close();
+    win.print();
+  }
+
+  function handleSave() {
+    const content = `
+মাই বাজার
+mybazar.vercel.app | sohelmart.com
+WhatsApp: 01872149655
+শাখা: ${order.branch_name || 'লালমোহন'}
+
+অর্ডার #${order.id}
+তারিখ: ${new Date(order.created_at).toLocaleString('bn-BD')}
+
+কাস্টমার তথ্য:
+নাম: ${order.customer_name}
+ফোন: ${order.customer_phone}
+জেলা: ${order.district}
+উপজেলা: ${order.upazila}
+ঠিকানা: ${order.address}
+পেমেন্ট: ${order.payment_method}
+
+পণ্য তালিকা:
+${'─'.repeat(40)}
+${order.order_items?.map((item: any) => {
+  const name = item.products?.name || '';
+  const price = item.price;
+  const qty = item.quantity;
+  const unit = item.products?.unit || '';
+  const total = price * qty;
+  return `${name}\n${price} Tk/${unit}\n${qty} ${unit}   ${total} Tk`;
+}).join('\n─────────────────────\n')}
+${'─'.repeat(40)}
+মোট: ${order.total_amount} Tk
+
+ধন্যবাদ আমাদের সাথে কেনাকাটা করার জন্য!
+    `;
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `order-${order.id}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg max-h-screen overflow-y-auto">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="text-lg font-bold text-green-700">অর্ডার #{order.id}</h2>
+          <div className="flex gap-2">
+            <button onClick={handlePrint}
+              className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">🖨️ Print</button>
+            <button onClick={handleSave}
+              className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm">💾 Save</button>
+            <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
+          </div>
+        </div>
+
+        <div ref={printRef} style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+          {/* হেডার */}
+          <div style={{ textAlign: 'center', borderBottom: '3px double #15803d', paddingBottom: '12px', marginBottom: '12px' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#15803d', margin: '0 0 4px 0' }}>🛒 মাই বাজার</h1>
+            <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>mybazar.vercel.app | sohelmart.com</p>
+            <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>📱 WhatsApp: 01872149655</p>
+          </div>
+
+          {/* শাখা ও কাস্টমার তথ্য পাশাপাশি */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div>
+              <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151' }}>শাখা: লালমোহন</p>
+              <p style={{ fontSize: '12px', color: '#6b7280' }}>অর্ডার #: {order.id}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280' }}>পেমেন্ট: {order.payment_method}</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151' }}>{order.customer_name}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280' }}>{order.customer_phone}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280' }}>{order.district}, {order.upazila}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280' }}>{order.address}</p>
+            </div>
+          </div>
+
+          {/* দাগ */}
+          <hr style={{ border: 'none', borderTop: '2px solid #d1d5db', margin: '8px 0' }} />
+
+          {/* পণ্য তালিকা */}
+          <div>
+            {order.order_items?.map((item: any, i: number) => (
+              <div key={i} style={{ borderBottom: '1px dashed #e5e7eb', padding: '8px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
+                      {item.products?.name}
+                    </p>
+                    <p style={{ fontSize: '11px', color: '#6b7280', margin: '2px 0 0 0' }}>
+                      {item.price} Tk/{item.products?.unit}
+                    </p>
+                    <p style={{ fontSize: '11px', color: '#6b7280', margin: '1px 0 0 0' }}>
+                      {item.quantity} {item.products?.unit}
+                    </p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>
+                      {item.price * item.quantity} Tk
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* মোট */}
+          <div style={{ borderTop: '2px solid #374151', marginTop: '8px', paddingTop: '8px', display: 'flex', justifyContent: 'space-between' }}>
+            <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#374151', margin: 0 }}>মোট:</p>
+            <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>{order.total_amount} Tk</p>
+          </div>
+
+          {/* ফুটার */}
+          <p style={{ textAlign: 'center', fontSize: '11px', color: '#9ca3af', marginTop: '16px' }}>
+            ধন্যবাদ আমাদের সাথে কেনাকাটা করার জন্য!
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
@@ -35,6 +184,11 @@ export default function Home() {
   const [autoPrint, setAutoPrint] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [orderSearch, setOrderSearch] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [myOrders, setMyOrders] = useState<any[]>([]);
+  const [showMyOrders, setShowMyOrders] = useState(false);
+  const [myPhone, setMyPhone] = useState('');
 
   useEffect(() => {
     fetchBranches();
@@ -42,32 +196,26 @@ export default function Home() {
     if (savedRole) setRole(savedRole);
     const savedAutoPrint = localStorage.getItem('autoPrint');
     if (savedAutoPrint === 'true') setAutoPrint(true);
+    const savedPhone = localStorage.getItem('customer_phone');
+    if (savedPhone) setMyPhone(savedPhone);
   }, []);
 
   useEffect(() => {
     if (role === 'admin') {
       fetchOrders();
       fetchNotifications();
-
-      requestNotificationPermission().then(token => {
-        if (token) {
-          localStorage.setItem('fcm_token', token);
-          saveFCMToken(token);
-        }
-      });
-
-      if (messaging) {
-        onMessage(messaging, (payload: any) => {
-          const title = payload.notification?.title || 'নতুন অর্ডার!';
-          const body = payload.notification?.body || '';
-          if (Notification.permission === 'granted') {
-            new Notification(title, { body });
-          }
-          fetchOrders();
-          fetchNotifications();
-          playNotificationSound();
+      try {
+        requestNotificationPermission().then((token: string | null) => {
+          if (token) localStorage.setItem('fcm_token', token);
         });
-      }
+        if (messaging) {
+          onMessage(messaging, (payload: any) => {
+            fetchOrders();
+            fetchNotifications();
+            playNotificationSound();
+          });
+        }
+      } catch (e) {}
 
       const channel = supabase
         .channel('orders')
@@ -75,20 +223,12 @@ export default function Home() {
           fetchOrders();
           fetchNotifications();
           playNotificationSound();
-          if (autoPrint) {
-            setTimeout(() => printOrder(payload.new as any), 1000);
-          }
+          if (autoPrint) setTimeout(() => {}, 1000);
         })
         .subscribe();
       return () => { supabase.removeChannel(channel); };
     }
   }, [role, autoPrint]);
-
-  async function saveFCMToken(token: string) {
-    try {
-      await supabase.from('fcm_tokens').upsert({ token, created_at: new Date().toISOString() });
-    } catch (e) {}
-  }
 
   function playNotificationSound() {
     try {
@@ -98,7 +238,6 @@ export default function Home() {
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       oscillator.frequency.value = 880;
-      oscillator.type = 'sine';
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
       oscillator.start(audioContext.currentTime);
@@ -108,35 +247,35 @@ export default function Home() {
 
   async function fetchBranches() {
     const { data } = await supabase.from('branches').select('*');
-    if (data) {
-      setBranches(data as Branch[]);
-      setBranches2(data);
-    }
+    if (data) { setBranches(data as Branch[]); setBranches2(data); }
   }
 
   async function fetchOrders() {
     const { data } = await supabase
       .from('orders')
-      .select('*, order_items(*, products(name_bn, name))')
+      .select('*, order_items(*, products(name, name_bn, unit))')
       .order('created_at', { ascending: false });
     if (data) {
       setOrders(data);
       setTotalOrders(data.length);
       const today = new Date().toDateString();
-      const todayOrders = data.filter((o: any) =>
-        new Date(o.created_at).toDateString() === today
-      );
-      const todayTotal = todayOrders.reduce((a: number, o: any) => a + o.total_amount, 0);
-      setTodaySales(todayTotal);
+      const todayOrders = data.filter((o: any) => new Date(o.created_at).toDateString() === today);
+      setTodaySales(todayOrders.reduce((a: number, o: any) => a + o.total_amount, 0));
     }
   }
 
-  async function fetchNotifications() {
+  async function fetchMyOrders(phone: string) {
     const { data } = await supabase
-      .from('notifications')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(20);
+      .from('orders')
+      .select('*, order_items(*, products(name, name_bn, unit))')
+      .eq('customer_phone', phone)
+      .order('created_at', { ascending: true });
+    if (data) setMyOrders(data);
+  }
+
+  async function fetchNotifications() {
+    const { data } = await supabase.from('notifications').select('*')
+      .order('created_at', { ascending: false }).limit(20);
     if (data) {
       setNotifications(data);
       setUnreadCount(data.filter((n: any) => !n.is_read).length);
@@ -153,108 +292,20 @@ export default function Home() {
     fetchOrders();
   }
 
-  function printOrder(order: any) {
-    const win = window.open('', '_blank');
-    if (!win) return;
-    win.document.write(`
-      <html>
-      <head>
-        <title>Order #${order.id}</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; max-width: 400px; margin: 0 auto; }
-          h2 { color: #15803d; border-bottom: 2px solid #15803d; padding-bottom: 10px; }
-          .shop-info { background: #f0fdf4; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
-          .info { margin: 5px 0; font-size: 14px; }
-          .item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #ccc; font-size: 14px; }
-          .total { font-size: 18px; font-weight: bold; color: #15803d; margin-top: 10px; }
-          .footer { margin-top: 20px; font-size: 12px; color: #666; text-align: center; }
-        </style>
-      </head>
-      <body>
-        <div class="shop-info">
-          <h2>🛒 Sohelmart</h2>
-          <p class="info"><b>Website:</b> sohelmart.com</p>
-          <p class="info"><b>Phone:</b> 01872149655</p>
-          <p class="info"><b>Branch:</b> ${order.branch_id === 1 ? 'লালমোহন' : 'শাখা'}</p>
-        </div>
-        <p class="info"><b>Order #:</b> ${order.id}</p>
-        <p class="info"><b>Name:</b> ${order.customer_name}</p>
-        <p class="info"><b>Phone:</b> ${order.customer_phone}</p>
-        <p class="info"><b>District:</b> ${order.district}</p>
-        <p class="info"><b>Upazila:</b> ${order.upazila}</p>
-        <p class="info"><b>Address:</b> ${order.address}</p>
-        <p class="info"><b>Payment:</b> ${order.payment_method}</p>
-        <p class="info"><b>Date:</b> ${new Date(order.created_at).toLocaleString()}</p>
-        <hr/>
-        <b>Items:</b>
-        ${order.order_items?.map((item: any) => `
-          <div class="item">
-            <span>${item.products?.name_bn || item.products?.name}</span>
-            <span>${item.quantity} x ${item.price} = ${item.quantity * item.price} Tk</span>
-          </div>
-        `).join('')}
-        <p class="total">Total: ${order.total_amount} Tk</p>
-        <div class="footer">ধন্যবাদ আমাদের সাথে কেনাকাটা করার জন্য!</div>
-      </body>
-      </html>
-    `);
-    win.document.close();
-    win.print();
-  }
-
-  async function saveOrderAsImage(order: any) {
-    const content = `
-🛒 Sohelmart
-sohelmart.com | 01872149655
-শাখা: ${order.branch_id === 1 ? 'লালমোহন' : 'শাখা'}
-
-অর্ডার #${order.id}
-নাম: ${order.customer_name}
-ফোন: ${order.customer_phone}
-জেলা: ${order.district}, ${order.upazila}
-ঠিকানা: ${order.address}
-পেমেন্ট: ${order.payment_method}
-তারিখ: ${new Date(order.created_at).toLocaleString('bn-BD')}
-
-পণ্য তালিকা:
-${order.order_items?.map((item: any) =>
-  `${item.products?.name_bn || item.products?.name} x ${item.quantity} = ${item.quantity * item.price} Tk`
-).join('\n')}
-
-মোট: ${order.total_amount} Tk
-ধন্যবাদ!`;
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `order-${order.id}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
   function handleLogin() {
     if (password === ADMIN_PASSWORD) {
-      setRole('admin');
-      localStorage.setItem('role', 'admin');
-      setShowLoginModal(false);
-      setPassword('');
-      setLoginError('');
+      setRole('admin'); localStorage.setItem('role', 'admin');
+      setShowLoginModal(false); setPassword(''); setLoginError('');
     } else if (password === EDITOR_PASSWORD) {
-      setRole('editor');
-      localStorage.setItem('role', 'editor');
-      setShowLoginModal(false);
-      setPassword('');
-      setLoginError('');
+      setRole('editor'); localStorage.setItem('role', 'editor');
+      setShowLoginModal(false); setPassword(''); setLoginError('');
     } else {
       setLoginError('পাসওয়ার্ড ভুল হয়েছে!');
     }
   }
 
   function handleLogout() {
-    setRole(null);
-    localStorage.removeItem('role');
-    setShowAdminDrawer(false);
+    setRole(null); localStorage.removeItem('role'); setShowAdminDrawer(false);
   }
 
   function toggleAutoPrint() {
@@ -263,16 +314,19 @@ ${order.order_items?.map((item: any) =>
     localStorage.setItem('autoPrint', newVal.toString());
   }
 
+  const filteredOrders = orders.filter(o =>
+    orderSearch === '' ||
+    o.customer_name?.toLowerCase().includes(orderSearch.toLowerCase()) ||
+    o.customer_phone?.includes(orderSearch) ||
+    String(o.id).includes(orderSearch)
+  );
+
   if (!selectedBranch) {
     return (
       <div className="min-h-screen bg-green-50 flex items-center justify-center relative">
         <div className="absolute top-4 right-4">
-          <button
-            onClick={() => setShowLoginModal(true)}
-            className="bg-white shadow rounded-full w-10 h-10 flex items-center justify-center text-xl hover:bg-green-50"
-          >
-            👤
-          </button>
+          <button onClick={() => setShowLoginModal(true)}
+            className="bg-white shadow rounded-full w-10 h-10 flex items-center justify-center text-xl">👤</button>
           {role && (
             <div className="mt-1 flex flex-col items-end gap-1">
               <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
@@ -284,48 +338,86 @@ ${order.order_items?.map((item: any) =>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full mx-4">
-          <h1 className="text-2xl font-bold text-center text-green-700 mb-2">
-            🛒 মাই বাজার
-          </h1>
-          <p className="text-center text-gray-500 mb-6">
-            আপনার শাখা সিলেক্ট করুন
-          </p>
+          <h1 className="text-2xl font-bold text-center text-green-700 mb-2">🛒 মাই বাজার</h1>
+          <p className="text-center text-gray-500 mb-6">আপনার শাখা সিলেক্ট করুন</p>
           <div className="space-y-3">
             {branches.map((branch) => (
-              <button
-                key={branch.id}
-                onClick={() => setSelectedBranch(branch)}
-                className="w-full py-3 px-4 bg-green-100 hover:bg-green-200 text-green-800 font-medium rounded-xl transition"
-              >
+              <button key={branch.id} onClick={() => setSelectedBranch(branch)}
+                className="w-full py-3 px-4 bg-green-100 hover:bg-green-200 text-green-800 font-medium rounded-xl transition">
                 {branch.name_bn || branch.name}
               </button>
             ))}
           </div>
+
+          {/* কাস্টমার আগের অর্ডার দেখা */}
+          <div className="mt-6 border-t pt-4">
+            <p className="text-sm text-gray-500 text-center mb-2">আগের অর্ডার দেখুন</p>
+            <div className="flex gap-2">
+              <input type="tel" value={myPhone}
+                onChange={e => setMyPhone(e.target.value)}
+                placeholder="ফোন নম্বর দিন"
+                className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm focus:border-green-500 focus:outline-none" />
+              <button
+                onClick={() => { localStorage.setItem('customer_phone', myPhone); fetchMyOrders(myPhone); setShowMyOrders(true); }}
+                className="bg-green-700 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap">
+                দেখুন
+              </button>
+            </div>
+          </div>
         </div>
+
+        {/* কাস্টমারের পুরনো অর্ডার */}
+        {showMyOrders && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-lg w-full max-w-md max-h-screen overflow-y-auto">
+              <div className="flex justify-between items-center p-4 border-b">
+                <h2 className="text-lg font-bold text-green-700">আমার অর্ডার</h2>
+                <button onClick={() => setShowMyOrders(false)} className="text-gray-400 text-2xl">✕</button>
+              </div>
+              <div className="p-4 space-y-3">
+                {myOrders.length === 0 ? (
+                  <p className="text-center text-gray-400">কোনো অর্ডার নেই</p>
+                ) : (
+                  myOrders.map((order: any) => (
+                    <div key={order.id}
+                      onClick={() => setSelectedOrder(order)}
+                      className="bg-gray-50 rounded-xl p-3 cursor-pointer hover:bg-green-50 border border-gray-200">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-bold text-gray-800 text-sm">অর্ডার #{order.id}</p>
+                          <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+                          <p className="text-xs text-gray-500">{order.order_items?.length} টি পণ্য</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-green-700">{order.total_amount} Tk</p>
+                          <span className={`text-xs px-2 py-1 rounded-full ${order.status === 'delivered' ? 'bg-green-100 text-green-700' : order.status === 'confirmed' ? 'bg-blue-100 text-blue-700' : order.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                            {order.status === 'delivered' ? 'ডেলিভারি হয়েছে' : order.status === 'confirmed' ? 'কনফার্ম' : order.status === 'cancelled' ? 'বাতিল' : 'পেন্ডিং'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {showLoginModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl shadow-lg p-6 max-w-sm w-full mx-4">
               <h2 className="text-xl font-bold text-green-700 mb-4 text-center">🔐 লগইন</h2>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleLogin()}
                 placeholder="পাসওয়ার্ড লিখুন"
                 className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mb-2 focus:border-green-500 focus:outline-none"
-                autoFocus
-              />
+                autoFocus />
               {loginError && <p className="text-red-500 text-xs mb-2">{loginError}</p>}
               <div className="flex gap-2">
                 <button onClick={handleLogin}
-                  className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm flex-1 font-medium">
-                  লগইন
-                </button>
+                  className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm flex-1 font-medium">লগইন</button>
                 <button onClick={() => { setShowLoginModal(false); setPassword(''); setLoginError(''); }}
-                  className="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium">
-                  বাতিল
-                </button>
+                  className="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium">বাতিল</button>
               </div>
             </div>
           </div>
@@ -336,14 +428,16 @@ ${order.order_items?.map((item: any) =>
 
   return (
     <div className="min-h-screen bg-green-50">
+      {selectedOrder && (
+        <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+      )}
+
       <div className="bg-green-700 text-white p-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">🛒 মাই বাজার</h1>
         <div className="flex items-center gap-2">
           {role === 'admin' && (
-            <button
-              onClick={() => { setShowAdminDrawer(true); fetchOrders(); fetchNotifications(); }}
-              className="relative bg-yellow-500 text-white w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold"
-            >
+            <button onClick={() => { setShowAdminDrawer(true); fetchOrders(); fetchNotifications(); }}
+              className="relative bg-yellow-500 text-white w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold">
               ⋯
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
@@ -352,10 +446,8 @@ ${order.order_items?.map((item: any) =>
               )}
             </button>
           )}
-          <button
-            onClick={() => setSelectedBranch(null)}
-            className="text-sm bg-green-600 px-3 py-1 rounded-lg"
-          >
+          <button onClick={() => setSelectedBranch(null)}
+            className="text-sm bg-green-600 px-3 py-1 rounded-lg">
             {selectedBranch.name_bn || selectedBranch.name} ✕
           </button>
         </div>
@@ -413,33 +505,63 @@ ${order.order_items?.map((item: any) =>
               </button>
             </div>
 
-            {adminTab === 'notifications' && (
-              <div className="p-4 space-y-2">
-                {notifications.length === 0 && (
-                  <p className="text-center text-gray-400 mt-10">কোনো নোটিফিকেশন নেই</p>
+            {adminTab === 'orders' && (
+              <div className="p-4 space-y-3">
+                {/* সার্চ বক্স - শুধু Admin এর জন্য */}
+                <input
+                  type="text"
+                  value={orderSearch}
+                  onChange={e => setOrderSearch(e.target.value)}
+                  placeholder="🔍 নাম, ফোন বা অর্ডার নম্বর..."
+                  className="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+                />
+                {filteredOrders.length === 0 && (
+                  <p className="text-center text-gray-400 mt-10">No orders found</p>
                 )}
-                {notifications.map((n: any) => (
-                  <div key={n.id} className={`p-3 rounded-xl border ${n.is_read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'}`}>
-                    <p className="text-sm font-medium text-gray-800">🔔 {n.message}</p>
-                    <p className="text-xs text-gray-400">{new Date(n.created_at).toLocaleString('bn-BD')}</p>
+                {filteredOrders.map((order: any) => (
+                  <div key={order.id} className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-bold text-gray-800 text-sm">#{order.id} - {order.customer_name}</h3>
+                        <p className="text-xs text-gray-500">{order.customer_phone}</p>
+                        <p className="text-xs text-gray-500">{order.district}, {order.upazila}</p>
+                        <p className="text-xs text-gray-400">{new Date(order.created_at).toLocaleString('bn-BD')}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <p className="font-bold text-green-700">{order.total_amount} Tk</p>
+                        <select value={order.status} onChange={e => updateOrderStatus(order.id, e.target.value)}
+                          className="border border-gray-300 rounded-lg px-1 py-1 text-xs">
+                          <option value="pending">Pending</option>
+                          <option value="confirmed">Confirmed</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                        <button onClick={() => setSelectedOrder(order)}
+                          className="bg-blue-600 text-white px-2 py-1 rounded-lg text-xs">
+                          🖨️ Print/Save
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-2 border-t pt-2">
+                      {order.order_items?.map((item: any) => (
+                        <p key={item.id} className="text-xs text-gray-600">
+                          {item.products?.name} x {item.quantity} = {item.price * item.quantity} Tk
+                        </p>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
             )}
 
-            {adminTab === 'orders' && (
-              <div className="p-4 space-y-3">
-                {orders.length === 0 && (
-                  <p className="text-center text-gray-400 mt-10">No orders yet</p>
-                )}
-                {orders.map((order: any) => (
-                  <OrderCard
-                    key={order.id}
-                    order={order}
-                    onStatusChange={updateOrderStatus}
-                    onPrint={printOrder}
-                    onSave={saveOrderAsImage}
-                  />
+            {adminTab === 'notifications' && (
+              <div className="p-4 space-y-2">
+                {notifications.length === 0 && <p className="text-center text-gray-400 mt-10">কোনো নোটিফিকেশন নেই</p>}
+                {notifications.map((n: any) => (
+                  <div key={n.id} className={`p-3 rounded-xl border ${n.is_read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'}`}>
+                    <p className="text-sm font-medium text-gray-800">🔔 {n.message}</p>
+                    <p className="text-xs text-gray-400">{new Date(n.created_at).toLocaleString('bn-BD')}</p>
+                  </div>
                 ))}
               </div>
             )}
@@ -450,63 +572,6 @@ ${order.order_items?.map((item: any) =>
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function OrderCard({ order, onStatusChange, onPrint, onSave }: any) {
-  const [showMenu, setShowMenu] = useState(false);
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="font-bold text-gray-800 text-sm">#{order.id} - {order.customer_name}</h3>
-          <p className="text-xs text-gray-500">{order.customer_phone}</p>
-          <p className="text-xs text-gray-500">{order.district}, {order.upazila}</p>
-          <p className="text-xs text-gray-500">{order.address}</p>
-          <p className="text-xs text-gray-500">Payment: {order.payment_method}</p>
-          <p className="text-xs text-gray-400">{new Date(order.created_at).toLocaleString('bn-BD')}</p>
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <p className="font-bold text-green-700">{order.total_amount} Tk</p>
-          <select value={order.status} onChange={e => onStatusChange(order.id, e.target.value)}
-            className="border border-gray-300 rounded-lg px-1 py-1 text-xs">
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-          <div className="relative">
-            <button onClick={() => setShowMenu(!showMenu)}
-              className="bg-gray-100 text-gray-600 px-2 py-1 rounded-lg text-xs font-bold">
-              ⋯
-            </button>
-            {showMenu && (
-              <div className="absolute right-0 top-8 bg-white rounded-xl shadow-lg z-50 w-48 border border-gray-200">
-                <button onClick={() => { onPrint(order); setShowMenu(false); }}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-                  🖨️ প্রিন্ট করুন
-                </button>
-                <button onClick={() => { onSave(order); setShowMenu(false); }}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-                  💾 সেভ করুন
-                </button>
-              </div>
-            )}
-            {showMenu && (
-              <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="mt-2 border-t pt-2">
-        {order.order_items?.map((item: any) => (
-          <p key={item.id} className="text-xs text-gray-600">
-            {item.products?.name_bn || item.products?.name} x {item.quantity} = {item.price * item.quantity} Tk
-          </p>
-        ))}
-      </div>
     </div>
   );
 }
@@ -522,9 +587,7 @@ function AddProductPanel({ branches, onDone }: { branches: any[], onDone: () => 
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    supabase.from('pages').select('*').then(({ data }) => {
-      if (data) setPages(data);
-    });
+    supabase.from('pages').select('*').then(({ data }) => { if (data) setPages(data); });
   }, []);
 
   const handle = (e: any) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -546,35 +609,23 @@ function AddProductPanel({ branches, onDone }: { branches: any[], onDone: () => 
       alert('নাম, কোড, দাম এবং শাখা আবশ্যক!');
       return;
     }
-    const supabaseClient = createClient(
-      'https://jthdtmqrapnfmmmeuqsw.supabase.co',
-      'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
-    );
     setLoading(true);
-    const { data: product, error } = await supabaseClient
-      .from('products')
-      .insert({
-        name: form.name, name_bn: form.name_bn,
-        product_code: form.product_code, description: form.description,
-        price_per_unit: parseFloat(form.price_per_unit),
-        unit: form.unit, branch_id: parseInt(form.branch_id),
-        category: form.category, category_bn: form.category_bn,
-        image_url: form.image_url,
-        page_id: form.page_id ? parseInt(form.page_id) : null,
-        is_active: true
-      }).select().single();
+    const { data: product, error } = await supabase.from('products').insert({
+      name: form.name, name_bn: form.name_bn, product_code: form.product_code,
+      description: form.description, price_per_unit: parseFloat(form.price_per_unit),
+      unit: form.unit, branch_id: parseInt(form.branch_id),
+      category: form.category, category_bn: form.category_bn,
+      image_url: form.image_url,
+      page_id: form.page_id ? parseInt(form.page_id) : null, is_active: true
+    }).select().single();
 
     if (error) { alert('সমস্যা: ' + error.message); setLoading(false); return; }
 
     if (form.stock && parseFloat(form.stock) > 0) {
-      await supabaseClient.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) });
+      await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) });
     }
     alert('পণ্য যোগ হয়েছে!');
-    setForm({
-      name: '', name_bn: '', product_code: '', description: '',
-      price_per_unit: '', unit: 'Kg', branch_id: '',
-      category: '', category_bn: '', stock: '', image_url: '', page_id: ''
-    });
+    setForm({ name: '', name_bn: '', product_code: '', description: '', price_per_unit: '', unit: 'Kg', branch_id: '', category: '', category_bn: '', stock: '', image_url: '', page_id: '' });
     setLoading(false);
     onDone();
   }
@@ -583,13 +634,13 @@ function AddProductPanel({ branches, onDone }: { branches: any[], onDone: () => 
     <div className="p-4 space-y-2">
       <h3 className="font-bold text-gray-700">Add New Product</h3>
       {[
-        { name: 'name', label: 'English Name *', placeholder: 'Anchor Dal' },
-        { name: 'name_bn', label: 'Bengali Name', placeholder: 'এ্যাংকর ডাল' },
-        { name: 'product_code', label: 'Product Code *', placeholder: 'P001' },
-        { name: 'price_per_unit', label: 'Price *', placeholder: '120', type: 'number' },
-        { name: 'category', label: 'Category (EN)', placeholder: 'dal' },
-        { name: 'category_bn', label: 'Category (BN)', placeholder: 'ডাল' },
-        { name: 'stock', label: 'Initial Stock', placeholder: '50', type: 'number' },
+        { name: 'name', label: 'নাম *', placeholder: 'এ্যাংকর ডাল' },
+        { name: 'name_bn', label: 'বিকল্প নাম (সার্চের জন্য)', placeholder: 'Anchor Dal' },
+        { name: 'product_code', label: 'পণ্য কোড *', placeholder: 'P001' },
+        { name: 'price_per_unit', label: 'দাম *', placeholder: '120', type: 'number' },
+        { name: 'category', label: 'ক্যাটাগরি (ইং)', placeholder: 'dal' },
+        { name: 'category_bn', label: 'ক্যাটাগরি (বাং)', placeholder: 'ডাল' },
+        { name: 'stock', label: 'প্রাথমিক স্টক', placeholder: '50', type: 'number' },
       ].map((field: any) => (
         <div key={field.name}>
           <label className="text-xs text-gray-500">{field.label}</label>
@@ -599,46 +650,37 @@ function AddProductPanel({ branches, onDone }: { branches: any[], onDone: () => 
         </div>
       ))}
       <div>
-        <label className="text-xs text-gray-500">Description</label>
+        <label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
         <textarea name="description" value={form.description} onChange={handle} rows={2}
-          className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-          placeholder="Product description" />
+          className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
       </div>
       <div>
-        <label className="text-xs text-gray-500">Unit</label>
+        <label className="text-xs text-gray-500">ইউনিট</label>
         <select name="unit" value={form.unit} onChange={handle}
           className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
-          <option value="Kg">Kg</option>
-          <option value="Liter">Liter</option>
-          <option value="pcs">pcs</option>
-          <option value="packet">Packet</option>
+          <option value="Kg">Kg</option><option value="Liter">Liter</option>
+          <option value="pcs">pcs</option><option value="packet">Packet</option>
         </select>
       </div>
       <div>
-        <label className="text-xs text-gray-500">Branch *</label>
+        <label className="text-xs text-gray-500">শাখা *</label>
         <select name="branch_id" value={form.branch_id} onChange={handle}
           className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
           <option value="">Select Branch</option>
-          {branches.map((b: any) => (
-            <option key={b.id} value={b.id}>{b.name_bn || b.name}</option>
-          ))}
+          {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name_bn || b.name}</option>)}
         </select>
       </div>
       <div>
-        <label className="text-xs text-gray-500">Page</label>
+        <label className="text-xs text-gray-500">পেজ</label>
         <select name="page_id" value={form.page_id} onChange={handle}
           className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
           <option value="">Select Page</option>
-          {pages.map((p: any) => (
-            <option key={p.id} value={p.id}>{p.name_bn || p.name}</option>
-          ))}
+          {pages.map((p: any) => <option key={p.id} value={p.id}>{p.name_bn || p.name}</option>)}
         </select>
       </div>
       <div>
-        <label className="text-xs text-gray-500">Image</label>
-        {form.image_url && (
-          <img src={form.image_url} alt="product" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-32" />
-        )}
+        <label className="text-xs text-gray-500">ছবি</label>
+        {form.image_url && <img src={form.image_url} alt="product" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-32" />}
         <input type="file" accept="image/*" onChange={uploadImage}
           className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
         {uploading && <p className="text-xs text-blue-500 mt-1">Uploading...</p>}
