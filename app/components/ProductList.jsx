@@ -117,9 +117,6 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
     return q;
   };
 
-  const isOutOfStock = !isAdmin && stock <= 0;
-  if (isOutOfStock) return null;
-
   return (
     <div style={{
       background: 'white',
@@ -165,7 +162,6 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
         </div>
       )}
 
-      {/* নাম - উপরে */}
       <div onDoubleClick={() => onDoubleClick(product)}
         style={{ cursor: 'pointer', userSelect: 'none', flexShrink: 0 }}>
         <p style={{
@@ -179,21 +175,17 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
         }}>{product.name}</p>
       </div>
 
-      {/* অটো স্পেস - নামের নিচে */}
       <div style={{ flex: 1 }} />
 
-      {/* কোড, দাম, স্টক, বাটন - নিচে */}
       <div style={{ flexShrink: 0 }}>
         {product.product_code && (
           <p style={{ fontSize: '11px', color: '#3b82f6', fontWeight: '500', margin: '0 0 2px 0' }}>
             কোড: {product.product_code}
           </p>
         )}
-
         <p style={{ color: '#16a34a', fontWeight: 'bold', fontSize: '12px', margin: '2px 0' }}>
           1 {product.unit} = {product.price_per_unit} Tk
         </p>
-
         {isAdmin ? (
           <p style={{ fontSize: '11px', color: stock <= 0 ? '#ef4444' : '#9ca3af', margin: '0 0 4px 0' }}>
             Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}
@@ -203,7 +195,6 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
             Stock: {stock} {product.unit}
           </p>
         )}
-
         {product.description && (
           <div style={{ marginBottom: '4px' }}>
             <button onClick={() => setShowDesc(!showDesc)}
@@ -217,7 +208,6 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
             )}
           </div>
         )}
-
         <div style={{ marginTop: '8px' }}>
           <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
             <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty}
@@ -341,13 +331,13 @@ function EditProductModal({ product, onClose, onSave }) {
         </div>
         <div className="space-y-2">
           <div><label className="text-xs text-gray-500">নাম *</label>
-            <input name="name" value={form.name} onChange={handle} placeholder="এ্যাংকর ডাল"
+            <input name="name" value={form.name} onChange={handle}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">বিকল্প নাম</label>
-            <input name="name_bn" value={form.name_bn} onChange={handle} placeholder="Anchor Dal"
+            <input name="name_bn" value={form.name_bn} onChange={handle}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">পণ্য কোড</label>
-            <input name="product_code" value={form.product_code} onChange={handle} placeholder="P001"
+            <input name="product_code" value={form.product_code} onChange={handle}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">দাম (Tk)</label>
             <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle}
@@ -359,10 +349,10 @@ function EditProductModal({ product, onClose, onSave }) {
               <option value="pcs">pcs</option><option value="packet">Packet</option>
             </select></div>
           <div><label className="text-xs text-gray-500">ক্যাটাগরি (ইং)</label>
-            <input name="category" value={form.category} onChange={handle} placeholder="dal"
+            <input name="category" value={form.category} onChange={handle}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">ক্যাটাগরি (বাং)</label>
-            <input name="category_bn" value={form.category_bn} onChange={handle} placeholder="ডাল"
+            <input name="category_bn" value={form.category_bn} onChange={handle}
               className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div className="bg-green-50 rounded-lg p-3">
             <label className="text-xs text-green-700 font-bold">প্রধান ছবি</label>
@@ -389,8 +379,7 @@ function EditProductModal({ product, onClose, onSave }) {
           </div>
           <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
             <textarea name="description" value={form.description} onChange={handle} rows={3}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="পণ্যের বৈশিষ্ট্য লিখুন" /></div>
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div className="bg-blue-50 rounded-lg p-3">
             <label className="text-xs text-blue-700 font-bold">স্টক যোগ (বর্তমান: {currentStock} {product.unit})</label>
             <input type="number" value={stockQty} onChange={e => setStockQty(e.target.value)}
@@ -451,9 +440,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
       category_bn: form.category_bn, image_url: form.image_url,
       page_id: form.page_id ? parseInt(form.page_id) : null, is_active: true
     }).select().single();
-
     if (error) { alert('সমস্যা: ' + error.message); setLoading(false); return; }
-
     if (form.stock && parseFloat(form.stock) > 0) {
       await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) });
     }
@@ -507,8 +494,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           </div>
           <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
             <textarea name="description" value={form.description} onChange={handle} rows={2}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1"
-              placeholder="পণ্যের বৈশিষ্ট্য লিখুন" /></div>
+              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
         </div>
         <div className="flex gap-2 mt-4">
           <button onClick={save} disabled={loading || uploading}
@@ -594,11 +580,17 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
   const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
 
   const getDisplayProducts = () => {
+    // আগে stock 0 বাদ দাও
+    const inStock = products.filter(p => {
+      const stock = p.stock?.[0]?.quantity || 0;
+      return stock > 0;
+    });
+
     const baseProducts = (search !== '' || selectedName)
-      ? products
+      ? inStock
       : selectedPage
-        ? products.filter(p => String(p.page_id) === String(selectedPage.id))
-        : products;
+        ? inStock.filter(p => String(p.page_id) === String(selectedPage.id))
+        : inStock;
 
     let filtered = baseProducts.filter(p => {
       const matchSearch = search === '' ||
