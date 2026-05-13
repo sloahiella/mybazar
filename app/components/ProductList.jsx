@@ -80,6 +80,178 @@ function CartItem({ item, onUpdate, onRemove }) {
   );
 }
 
+function OrderReceiptModal({ order, onClose }) {
+  function handlePrint() {
+    const content = document.getElementById('receipt-content')?.innerHTML;
+    const win = window.open('', '_blank');
+    if (!win || !content) return;
+    win.document.write(`
+      <html><head><title>Order #${order.id}</title>
+      <style>* { margin:0; padding:0; box-sizing:border-box; } body { font-family: Arial, sans-serif; width:210mm; padding:15mm; }</style>
+      </head><body>${content}</body></html>
+    `);
+    win.document.close();
+    win.print();
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-screen overflow-y-auto">
+        <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
+          <h2 className="text-lg font-bold text-green-700">অর্ডার #{order.id}</h2>
+          <div className="flex gap-2">
+            <button onClick={handlePrint} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium">🖨️ Print</button>
+            <button onClick={onClose} className="bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm">✕</button>
+          </div>
+        </div>
+        <div id="receipt-content" style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
+          <div style={{ textAlign: 'center', borderBottom: '3px double #15803d', paddingBottom: '14px', marginBottom: '14px' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#15803d', margin: '0 0 6px 0' }}>🛒 মাই বাজার</h1>
+            <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0' }}>🌐 mybazar.vercel.app | sohelmart.com</p>
+            <p style={{ fontSize: '12px', color: '#4b5563', margin: '3px 0' }}>📱 WhatsApp: 01872149655</p>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <div>
+              <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151', margin: '0 0 3px 0' }}>📍 শাখা: লালমোহন</p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>অর্ডার #: <strong>{order.id}</strong></p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>পেমেন্ট: {order.payment_method}</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 3px 0' }}>{order.customer_name}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.customer_phone}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.district}, {order.upazila}</p>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.address}</p>
+            </div>
+          </div>
+          <hr style={{ border: 'none', borderTop: '2px solid #374151', margin: '10px 0' }} />
+          {(order.order_items || []).map((item, i) => (
+            <div key={i} style={{ borderBottom: '1px dashed #d1d5db', padding: '8px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{item.products?.name}</p>
+                  <p style={{ fontSize: '11px', color: '#6b7280', margin: '2px 0' }}>{item.price} Tk/{item.products?.unit}</p>
+                  <p style={{ fontSize: '11px', color: '#6b7280', margin: '1px 0' }}>{item.quantity} {item.products?.unit}</p>
+                </div>
+                <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>
+                  {(item.price * item.quantity).toFixed(0)} Tk
+                </p>
+              </div>
+            </div>
+          ))}
+          <div style={{ borderTop: '2px solid #374151', marginTop: '10px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between' }}>
+            <p style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>সর্বমোট:</p>
+            <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>{order.total_amount} Tk</p>
+          </div>
+          <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', marginTop: '16px' }}>
+            ধন্যবাদ মাই বাজারে কেনাকাটা করার জন্য! 🙏
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MyOrdersModal({ onClose }) {
+  const [phone, setPhone] = useState(localStorage.getItem('customer_phone') || '');
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [searched, setSearched] = useState(false);
+
+  useEffect(() => {
+    if (phone) { fetchOrders(phone); }
+  }, []);
+
+  async function fetchOrders(p) {
+    if (!p) return;
+    setLoading(true);
+    const { data } = await supabase
+      .from('orders')
+      .select('*, order_items(*, products(name, name_bn, unit))')
+      .eq('customer_phone', p)
+      .order('created_at', { ascending: false });
+    if (data) setOrders(data);
+    setLoading(false);
+    setSearched(true);
+    localStorage.setItem('customer_phone', p);
+  }
+
+  return (
+    <>
+      {selectedOrder && (
+        <OrderReceiptModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+      )}
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-lg w-full max-w-md max-h-screen overflow-y-auto">
+          <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
+            <h2 className="text-lg font-bold text-green-700">📋 আমার অর্ডার</h2>
+            <button onClick={onClose} className="text-gray-400 text-2xl">✕</button>
+          </div>
+
+          <div className="p-4">
+            <div className="flex gap-2 mb-4">
+              <input
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                placeholder="ফোন নম্বর দিন"
+                className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm focus:border-green-500 focus:outline-none" />
+              <button
+                onClick={() => fetchOrders(phone)}
+                className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap font-medium">
+                খুঁজুন
+              </button>
+            </div>
+
+            {loading && <p className="text-center text-gray-400 py-8">লোড হচ্ছে...</p>}
+
+            {!loading && searched && orders.length === 0 && (
+              <p className="text-center text-gray-400 py-8">কোনো অর্ডার পাওয়া যায়নি</p>
+            )}
+
+            <div className="space-y-3">
+              {orders.map((order) => (
+                <div key={order.id}
+                  onClick={() => setSelectedOrder(order)}
+                  className="bg-gray-50 rounded-xl p-3 cursor-pointer hover:bg-green-50 border border-gray-200 active:bg-green-100">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-bold text-gray-800 text-sm">অর্ডার #{order.id}</p>
+                      <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString('bn-BD')} {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
+                      <div className="mt-1">
+                        {order.order_items?.slice(0, 2).map((item, i) => (
+                          <p key={i} className="text-xs text-gray-400">{item.products?.name} × {item.quantity}</p>
+                        ))}
+                        {order.order_items?.length > 2 && (
+                          <p className="text-xs text-gray-400">আরো {order.order_items.length - 2} টি...</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-green-700 text-lg">{order.total_amount} Tk</p>
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                        order.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
+                        order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'}`}>
+                        {order.status === 'delivered' ? '✅ ডেলিভারি' :
+                         order.status === 'confirmed' ? '✔️ কনফার্ম' :
+                         order.status === 'cancelled' ? '❌ বাতিল' : '⏳ পেন্ডিং'}
+                      </span>
+                      <p className="text-xs text-gray-400 mt-1">ক্লিক করুন বিস্তারিত</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDragging, onDragStart }) {
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
@@ -119,27 +291,18 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
 
   return (
     <div style={{
-      background: 'white',
-      borderRadius: '12px',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-      padding: '10px',
+      background: 'white', borderRadius: '12px',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.1)', padding: '10px',
       opacity: isDragging ? 0.5 : 1,
       border: isDragging ? '2px solid #16a34a' : '1px solid #e5e7eb',
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      boxSizing: 'border-box',
+      display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box',
     }}>
       {isAdmin && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', marginBottom: '6px', flexShrink: 0 }}>
           <span onMouseDown={onDragStart} onTouchStart={onDragStart}
-            style={{ background: '#e5e7eb', color: '#6b7280', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', cursor: 'grab' }}>
-            ⠿
-          </span>
+            style={{ background: '#e5e7eb', color: '#6b7280', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', cursor: 'grab' }}>⠿</span>
           <button onClick={() => onEdit(product)}
-            style={{ background: '#facc15', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
-            ✏️
-          </button>
+            style={{ background: '#facc15', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>✏️</button>
         </div>
       )}
 
@@ -162,26 +325,17 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
         </div>
       )}
 
-      <div onDoubleClick={() => onDoubleClick(product)}
-        style={{ cursor: 'pointer', userSelect: 'none', flexShrink: 0 }}>
-        <p style={{
-          fontWeight: 'bold',
-          color: '#1f2937',
-          fontSize: '13px',
-          lineHeight: '1.4',
-          wordBreak: 'break-word',
-          overflowWrap: 'anywhere',
-          margin: 0,
-        }}>{product.name}</p>
+      <div onDoubleClick={() => onDoubleClick(product)} style={{ cursor: 'pointer', userSelect: 'none', flexShrink: 0 }}>
+        <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '13px', lineHeight: '1.4', wordBreak: 'break-word', overflowWrap: 'anywhere', margin: 0 }}>
+          {product.name}
+        </p>
       </div>
 
       <div style={{ flex: 1 }} />
 
       <div style={{ flexShrink: 0 }}>
         {product.product_code && (
-          <p style={{ fontSize: '11px', color: '#3b82f6', fontWeight: '500', margin: '0 0 2px 0' }}>
-            কোড: {product.product_code}
-          </p>
+          <p style={{ fontSize: '11px', color: '#3b82f6', fontWeight: '500', margin: '0 0 2px 0' }}>কোড: {product.product_code}</p>
         )}
         <p style={{ color: '#16a34a', fontWeight: 'bold', fontSize: '12px', margin: '2px 0' }}>
           1 {product.unit} = {product.price_per_unit} Tk
@@ -191,9 +345,7 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
             Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}
           </p>
         ) : (
-          <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 4px 0' }}>
-            Stock: {stock} {product.unit}
-          </p>
+          <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 4px 0' }}>Stock: {stock} {product.unit}</p>
         )}
         {product.description && (
           <div style={{ marginBottom: '4px' }}>
@@ -222,9 +374,7 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
               </select>
             )}
             {isPiece && (
-              <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', color: '#6b7280', background: '#f9fafb', flexShrink: 0 }}>
-                pcs
-              </span>
+              <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', color: '#6b7280', background: '#f9fafb', flexShrink: 0 }}>pcs</span>
             )}
           </div>
           {qty && parseFloat(qty) > 0 && (
@@ -263,15 +413,13 @@ function EditProductModal({ product, onClose, onSave }) {
 
   async function fetchExtraImages() {
     setLoadingImages(true);
-    const { data } = await supabase.from('product_images').select('*')
-      .eq('product_id', product.id).order('sort_order');
+    const { data } = await supabase.from('product_images').select('*').eq('product_id', product.id).order('sort_order');
     if (data) setExtraImages(data);
     setLoadingImages(false);
   }
 
   async function uploadMainImage(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]; if (!file) return;
     setUploading(true);
     const fileName = `${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from('products').upload(fileName, file);
@@ -282,16 +430,13 @@ function EditProductModal({ product, onClose, onSave }) {
   }
 
   async function uploadExtraImage(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]; if (!file) return;
     setUploading(true);
     const fileName = `${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from('products').upload(fileName, file);
     if (error) { alert('সমস্যা: ' + error.message); setUploading(false); return; }
     const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName);
-    await supabase.from('product_images').insert({
-      product_id: product.id, image_url: urlData.publicUrl, sort_order: extraImages.length
-    });
+    await supabase.from('product_images').insert({ product_id: product.id, image_url: urlData.publicUrl, sort_order: extraImages.length });
     fetchExtraImages();
     setUploading(false);
   }
@@ -317,9 +462,7 @@ function EditProductModal({ product, onClose, onSave }) {
         await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(stockQty) });
       }
     }
-    setLoading(false);
-    onSave();
-    onClose();
+    setLoading(false); onSave(); onClose();
   }
 
   return (
@@ -331,34 +474,26 @@ function EditProductModal({ product, onClose, onSave }) {
         </div>
         <div className="space-y-2">
           <div><label className="text-xs text-gray-500">নাম *</label>
-            <input name="name" value={form.name} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="name" value={form.name} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">বিকল্প নাম</label>
-            <input name="name_bn" value={form.name_bn} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="name_bn" value={form.name_bn} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">পণ্য কোড</label>
-            <input name="product_code" value={form.product_code} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="product_code" value={form.product_code} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">দাম (Tk)</label>
-            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">ইউনিট</label>
-            <select name="unit" value={form.unit} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
+            <select name="unit" value={form.unit} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
               <option value="Kg">Kg</option><option value="Liter">Liter</option>
               <option value="pcs">pcs</option><option value="packet">Packet</option>
             </select></div>
           <div><label className="text-xs text-gray-500">ক্যাটাগরি (ইং)</label>
-            <input name="category" value={form.category} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="category" value={form.category} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">ক্যাটাগরি (বাং)</label>
-            <input name="category_bn" value={form.category_bn} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="category_bn" value={form.category_bn} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div className="bg-green-50 rounded-lg p-3">
             <label className="text-xs text-green-700 font-bold">প্রধান ছবি</label>
             {form.image_url && <img src={form.image_url} alt="main" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-32" />}
-            <input type="file" accept="image/*" onChange={uploadMainImage}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+            <input type="file" accept="image/*" onChange={uploadMainImage} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
           </div>
           <div className="bg-blue-50 rounded-lg p-3">
             <label className="text-xs text-blue-700 font-bold">অতিরিক্ত ছবি</label>
@@ -367,23 +502,19 @@ function EditProductModal({ product, onClose, onSave }) {
                 {extraImages.map(img => (
                   <div key={img.id} className="relative">
                     <img src={img.image_url} alt="extra" className="w-16 h-16 object-cover rounded-lg" />
-                    <button onClick={() => deleteExtraImage(img.id)}
-                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">✕</button>
+                    <button onClick={() => deleteExtraImage(img.id)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">✕</button>
                   </div>
                 ))}
               </div>
             )}
-            <input type="file" accept="image/*" onChange={uploadExtraImage}
-              className="border-2 border-blue-300 rounded-lg px-3 py-2 w-full text-sm mt-2" />
+            <input type="file" accept="image/*" onChange={uploadExtraImage} className="border-2 border-blue-300 rounded-lg px-3 py-2 w-full text-sm mt-2" />
             {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
           </div>
           <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
-            <textarea name="description" value={form.description} onChange={handle} rows={3}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <textarea name="description" value={form.description} onChange={handle} rows={3} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div className="bg-blue-50 rounded-lg p-3">
             <label className="text-xs text-blue-700 font-bold">স্টক যোগ (বর্তমান: {currentStock} {product.unit})</label>
-            <input type="number" value={stockQty} onChange={e => setStockQty(e.target.value)}
-              className="border-2 border-blue-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="কত যোগ করবেন?" />
+            <input type="number" value={stockQty} onChange={e => setStockQty(e.target.value)} className="border-2 border-blue-300 rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="কত যোগ করবেন?" />
           </div>
           <div className="flex items-center gap-2">
             <label className="text-xs text-gray-500">Status:</label>
@@ -394,8 +525,7 @@ function EditProductModal({ product, onClose, onSave }) {
           </div>
         </div>
         <div className="flex gap-2 mt-4">
-          <button onClick={save} disabled={loading || uploading}
-            className="bg-green-700 text-white px-4 py-2 rounded-xl flex-1 font-bold disabled:opacity-50">
+          <button onClick={save} disabled={loading || uploading} className="bg-green-700 text-white px-4 py-2 rounded-xl flex-1 font-bold disabled:opacity-50">
             {loading ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
           </button>
           <button onClick={onClose} className="bg-gray-200 text-gray-600 px-4 py-2 rounded-xl">বাতিল</button>
@@ -416,8 +546,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   async function uploadImage(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]; if (!file) return;
     setUploading(true);
     const fileName = `${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from('products').upload(fileName, file);
@@ -428,10 +557,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
   }
 
   async function save() {
-    if (!form.name || !form.product_code || !form.price_per_unit) {
-      alert('নাম, কোড, দাম আবশ্যক!');
-      return;
-    }
+    if (!form.name || !form.product_code || !form.price_per_unit) { alert('নাম, কোড, দাম আবশ্যক!'); return; }
     setLoading(true);
     const { data: product, error } = await supabase.from('products').insert({
       name: form.name, name_bn: form.name_bn, product_code: form.product_code,
@@ -445,9 +571,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
       await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) });
     }
     alert('পণ্য যোগ হয়েছে!');
-    setLoading(false);
-    onSave();
-    onClose();
+    setLoading(false); onSave(); onClose();
   }
 
   return (
@@ -459,46 +583,35 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
         </div>
         <div className="space-y-2">
           <div><label className="text-xs text-gray-500">নাম *</label>
-            <input name="name" value={form.name} onChange={handle} placeholder="এ্যাংকর ডাল"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="name" value={form.name} onChange={handle} placeholder="এ্যাংকর ডাল" className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">বিকল্প নাম</label>
-            <input name="name_bn" value={form.name_bn} onChange={handle} placeholder="Anchor Dal"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="name_bn" value={form.name_bn} onChange={handle} placeholder="Anchor Dal" className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">পণ্য কোড *</label>
-            <input name="product_code" value={form.product_code} onChange={handle} placeholder="P001"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="product_code" value={form.product_code} onChange={handle} placeholder="P001" className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">দাম *</label>
-            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} placeholder="120"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} placeholder="120" className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">ইউনিট</label>
-            <select name="unit" value={form.unit} onChange={handle}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
+            <select name="unit" value={form.unit} onChange={handle} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1">
               <option value="Kg">Kg</option><option value="Liter">Liter</option>
               <option value="pcs">pcs</option><option value="packet">Packet</option>
             </select></div>
           <div><label className="text-xs text-gray-500">ক্যাটাগরি (ইং)</label>
-            <input name="category" value={form.category} onChange={handle} placeholder="dal"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="category" value={form.category} onChange={handle} placeholder="dal" className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">ক্যাটাগরি (বাং)</label>
-            <input name="category_bn" value={form.category_bn} onChange={handle} placeholder="ডাল"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="category_bn" value={form.category_bn} onChange={handle} placeholder="ডাল" className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div><label className="text-xs text-gray-500">প্রাথমিক স্টক</label>
-            <input name="stock" type="number" value={form.stock} onChange={handle} placeholder="50"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <input name="stock" type="number" value={form.stock} onChange={handle} placeholder="50" className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
           <div>
             <label className="text-xs text-gray-500">প্রধান ছবি</label>
             {form.image_url && <img src={form.image_url} alt="product" className="w-full object-contain rounded-lg mt-1 mb-1 max-h-32" />}
-            <input type="file" accept="image/*" onChange={uploadImage}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
+            <input type="file" accept="image/*" onChange={uploadImage} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" />
             {uploading && <p className="text-xs text-blue-500 mt-1">আপলোড হচ্ছে...</p>}
           </div>
           <div><label className="text-xs text-gray-500">বৈশিষ্ট্য</label>
-            <textarea name="description" value={form.description} onChange={handle} rows={2}
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
+            <textarea name="description" value={form.description} onChange={handle} rows={2} className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mt-1" /></div>
         </div>
         <div className="flex gap-2 mt-4">
-          <button onClick={save} disabled={loading || uploading}
-            className="bg-green-700 text-white px-4 py-2 rounded-xl flex-1 font-bold disabled:opacity-50">
+          <button onClick={save} disabled={loading || uploading} className="bg-green-700 text-white px-4 py-2 rounded-xl flex-1 font-bold disabled:opacity-50">
             {loading ? 'যোগ হচ্ছে...' : '+ পণ্য যোগ করুন'}
           </button>
           <button onClick={onClose} className="bg-gray-200 text-gray-600 px-4 py-2 rounded-xl">বাতিল</button>
@@ -525,6 +638,7 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
   const [addModalPage, setAddModalPage] = useState(null);
   const [dragIndex, setDragIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
+  const [showMyOrders, setShowMyOrders] = useState(false);
 
   const isAdmin = role === 'admin';
 
@@ -532,6 +646,7 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
 
   useEffect(() => {
     const handlePopState = () => {
+      if (showMyOrders) { setShowMyOrders(false); return; }
       if (editingProduct) { setEditingProduct(null); return; }
       if (showAddModal) { setShowAddModal(false); return; }
       if (showOrder) { setShowOrder(false); return; }
@@ -540,13 +655,13 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [editingProduct, showAddModal, showCart, showOrder, selectedName]);
+  }, [showMyOrders, editingProduct, showAddModal, showCart, showOrder, selectedName]);
 
   useEffect(() => {
-    if (editingProduct || showAddModal || showCart || showOrder) {
+    if (editingProduct || showAddModal || showCart || showOrder || showMyOrders) {
       window.history.pushState(null, '', window.location.href);
     }
-  }, [editingProduct, showAddModal, showCart, showOrder]);
+  }, [editingProduct, showAddModal, showCart, showOrder, showMyOrders]);
 
   async function fetchProducts() {
     setLoading(true);
@@ -580,40 +695,29 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
   const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
 
   const getDisplayProducts = () => {
-    // পেজ ফিল্টার - Admin ও Customer উভয়ের জন্য
     let baseProducts = products;
-
     if (selectedPage) {
       baseProducts = products.filter(p => String(p.page_id) === String(selectedPage.id));
     }
-
-    // Customer এর জন্য শুধু stock > 0
     if (!isAdmin) {
       baseProducts = baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
     }
-
-    // সার্চ বা নাম সিলেক্ট থাকলে সব product থেকে খুঁজবে
     if (search !== '' || selectedName) {
       let allBase = isAdmin ? products : products.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
       let filtered = allBase.filter(p => {
-        const matchSearch = search === '' ||
+        return search === '' ||
           p.name.toLowerCase().includes(search.toLowerCase()) ||
           (p.name_bn && p.name_bn.toLowerCase().includes(search.toLowerCase())) ||
           (p.product_code && p.product_code.toLowerCase().includes(search.toLowerCase())) ||
           (p.category && p.category.toLowerCase().includes(search.toLowerCase())) ||
           (p.category_bn && p.category_bn.includes(search));
-        return matchSearch;
       });
       if (selectedName) return filtered.filter(p => p.name === selectedName);
       return filtered;
     }
-
-    // ক্যাটাগরি ফিল্টার
     if (selectedCategory) {
       baseProducts = baseProducts.filter(p => p.category === selectedCategory);
     }
-
-    // duplicate নাম বাদ দাও (শুধু কাস্টমারের জন্য)
     if (!isAdmin) {
       const seen = new Set();
       return baseProducts.filter(p => {
@@ -622,7 +726,6 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
         return true;
       });
     }
-
     return baseProducts;
   };
 
@@ -642,9 +745,7 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
     else setCart(cart.map(c => c.id === id ? { ...c, qty } : c));
   }
 
-  function removeFromCart(id) {
-    setCart(cart.filter(c => c.id !== id));
-  }
+  function removeFromCart(id) { setCart(cart.filter(c => c.id !== id)); }
 
   const total = cart.reduce((a, c) => a + c.price_per_unit * c.qty, 0);
 
@@ -652,10 +753,7 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
     return <OrderForm cart={cart} branch={branch} total={total}
       onBack={() => setShowOrder(false)}
       onSuccess={(id, phone) => {
-        setOrderId(id);
-        setShowOrder(false);
-        setCart([]);
-        setShowCart(false);
+        setOrderId(id); setShowOrder(false); setCart([]); setShowCart(false);
         if (onOrderSuccess) onOrderSuccess(id, phone);
       }} />;
   }
@@ -709,6 +807,8 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
 
   return (
     <div className="pb-24">
+      {showMyOrders && <MyOrdersModal onClose={() => setShowMyOrders(false)} />}
+
       {editingProduct && (
         <EditProductModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={fetchProducts} />
       )}
@@ -718,10 +818,14 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
       )}
 
       <div className="px-4 pt-4 flex items-center gap-2 flex-wrap">
-        <PageMenu branch={branch} selectedPage={selectedPage}
+        <PageMenu
+          branch={branch}
+          selectedPage={selectedPage}
           onSelectPage={(page) => { setSelectedPage(page); setSelectedName(null); setSelectedCategory(null); }}
           isAdmin={isAdmin}
-          onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }} />
+          onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }}
+          onShowOrders={() => setShowMyOrders(true)}
+        />
         {selectedPage && (
           <span className="text-sm font-medium text-green-700 bg-green-50 border border-green-300 px-3 py-1 rounded-full">
             {selectedPage.name_bn || selectedPage.name}
@@ -777,25 +881,17 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 items-stretch">
         {displayProducts.map((product, index) => (
-          <div
-            key={product.id}
+          <div key={product.id}
             style={{
               outline: isAdmin && dragOverIndex === index && dragIndex !== index ? '2px solid #16a34a' : 'none',
-              borderRadius: '12px',
-              height: '100%',
+              borderRadius: '12px', height: '100%',
             }}
             onDragOver={(e) => { e.preventDefault(); if (isAdmin) handleDragOver(index); }}
-            onDrop={() => { if (isAdmin) handleDrop(index); }}
-          >
+            onDrop={() => { if (isAdmin) handleDrop(index); }}>
             <ProductCard
-              product={product}
-              onAdd={addToCart}
-              isAdmin={isAdmin}
-              onEdit={setEditingProduct}
-              onDoubleClick={(p) => setSelectedName(p.name)}
-              isDragging={dragIndex === index}
-              onDragStart={() => handleDragStart(index)}
-            />
+              product={product} onAdd={addToCart} isAdmin={isAdmin}
+              onEdit={setEditingProduct} onDoubleClick={(p) => setSelectedName(p.name)}
+              isDragging={dragIndex === index} onDragStart={() => handleDragStart(index)} />
           </div>
         ))}
         {!loading && displayProducts.length === 0 && (
