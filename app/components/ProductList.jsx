@@ -580,39 +580,50 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
   const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
 
   const getDisplayProducts = () => {
-    // আগে stock 0 বাদ দাও
-    const inStock = products.filter(p => {
-      const stock = p.stock?.[0]?.quantity || 0;
-      return stock > 0;
-    });
+    // পেজ ফিল্টার - Admin ও Customer উভয়ের জন্য
+    let baseProducts = products;
 
-    const baseProducts = (search !== '' || selectedName)
-      ? inStock
-      : selectedPage
-        ? inStock.filter(p => String(p.page_id) === String(selectedPage.id))
-        : inStock;
+    if (selectedPage) {
+      baseProducts = products.filter(p => String(p.page_id) === String(selectedPage.id));
+    }
 
-    let filtered = baseProducts.filter(p => {
-      const matchSearch = search === '' ||
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        (p.name_bn && p.name_bn.toLowerCase().includes(search.toLowerCase())) ||
-        (p.product_code && p.product_code.toLowerCase().includes(search.toLowerCase())) ||
-        (p.category && p.category.toLowerCase().includes(search.toLowerCase())) ||
-        (p.category_bn && p.category_bn.includes(search));
-      const matchCategory = !selectedCategory || p.category === selectedCategory;
-      return matchSearch && matchCategory;
-    });
+    // Customer এর জন্য শুধু stock > 0
+    if (!isAdmin) {
+      baseProducts = baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
+    }
 
-    if (selectedName) return filtered.filter(p => p.name === selectedName);
-    if (search !== '') return filtered;
+    // সার্চ বা নাম সিলেক্ট থাকলে সব product থেকে খুঁজবে
+    if (search !== '' || selectedName) {
+      let allBase = isAdmin ? products : products.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
+      let filtered = allBase.filter(p => {
+        const matchSearch = search === '' ||
+          p.name.toLowerCase().includes(search.toLowerCase()) ||
+          (p.name_bn && p.name_bn.toLowerCase().includes(search.toLowerCase())) ||
+          (p.product_code && p.product_code.toLowerCase().includes(search.toLowerCase())) ||
+          (p.category && p.category.toLowerCase().includes(search.toLowerCase())) ||
+          (p.category_bn && p.category_bn.includes(search));
+        return matchSearch;
+      });
+      if (selectedName) return filtered.filter(p => p.name === selectedName);
+      return filtered;
+    }
 
-    const seen = new Set();
-    return filtered.filter(p => {
-      const key = p.name;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+    // ক্যাটাগরি ফিল্টার
+    if (selectedCategory) {
+      baseProducts = baseProducts.filter(p => p.category === selectedCategory);
+    }
+
+    // duplicate নাম বাদ দাও (শুধু কাস্টমারের জন্য)
+    if (!isAdmin) {
+      const seen = new Set();
+      return baseProducts.filter(p => {
+        if (seen.has(p.name)) return false;
+        seen.add(p.name);
+        return true;
+      });
+    }
+
+    return baseProducts;
   };
 
   const displayProducts = getDisplayProducts();
@@ -741,8 +752,8 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
       )}
 
       <div className="px-4 flex gap-2 overflow-x-auto pb-2">
-        <button onClick={() => { setSelectedCategory(null); setSelectedName(null); }}
-          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${!selectedCategory && !selectedName ? 'bg-green-700 text-white' : 'bg-white text-green-700 border-2 border-green-700'}`}>
+        <button onClick={() => { setSelectedCategory(null); setSelectedName(null); setSelectedPage(null); }}
+          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${!selectedCategory && !selectedName && !selectedPage ? 'bg-green-700 text-white' : 'bg-white text-green-700 border-2 border-green-700'}`}>
           সব পণ্য
         </button>
         {categories.map(cat => {
@@ -765,7 +776,7 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
       {loading && <p className="text-center text-gray-400 mt-10">লোড হচ্ছে...</p>}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 items-stretch">
-        {(isAdmin ? products : displayProducts).map((product, index) => (
+        {displayProducts.map((product, index) => (
           <div
             key={product.id}
             style={{
@@ -787,7 +798,7 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
             />
           </div>
         ))}
-        {!loading && displayProducts.length === 0 && !isAdmin && (
+        {!loading && displayProducts.length === 0 && (
           <p className="col-span-4 text-center text-gray-400 mt-10">কোনো পণ্য পাওয়া যায়নি</p>
         )}
       </div>
