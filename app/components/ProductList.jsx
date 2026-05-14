@@ -80,7 +80,7 @@ function CartItem({ item, onUpdate, onRemove }) {
   );
 }
 
-function OrderReceiptModal({ order, onClose }) {
+function OrderReceiptModal({ order, onClose, isAdmin = false }) {
   const printRef = useRef(null);
 
   function handlePrint() {
@@ -135,21 +135,29 @@ function OrderReceiptModal({ order, onClose }) {
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }}>
       <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflowY: 'auto' }}>
+        {/* হেডার বাটন */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, background: 'white', zIndex: 10 }}>
           <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>অর্ডার #{order.id}</h2>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={handlePrint} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>🖨️ Print</button>
-            <button onClick={handleSave} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>💾 Save</button>
+            {/* শুধু Admin দেখবে */}
+            {isAdmin && (
+              <>
+                <button onClick={handlePrint} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>🖨️ Print</button>
+                <button onClick={handleSave} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>💾 Save</button>
+              </>
+            )}
             <button onClick={onClose} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', cursor: 'pointer' }}>✕</button>
           </div>
         </div>
 
         <div ref={printRef} style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
+          {/* হেডার - আমাদের তথ্য বাম, কাস্টমার ডান */}
           <div style={{
             display: 'grid', gridTemplateColumns: '1fr 2px 1fr',
             border: '2px solid #15803d', borderRadius: '8px',
             overflow: 'hidden', marginBottom: '16px',
           }}>
+            {/* বাম - আমাদের তথ্য */}
             <div style={{ padding: '14px', background: '#f0fdf4' }}>
               <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', margin: '0 0 8px 0' }}>🛒 মাই বাজার</h1>
               <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 mybazar.vercel.app</p>
@@ -159,7 +167,9 @@ function OrderReceiptModal({ order, onClose }) {
               <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>সময়: {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
             </div>
+            {/* মাঝের দাগ */}
             <div style={{ background: '#15803d' }} />
+            {/* ডান - কাস্টমার তথ্য */}
             <div style={{ padding: '14px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1d4ed8', margin: '0 0 8px 0' }}>👤 কাস্টমার তথ্য</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>নাম: <strong>{order.customer_name}</strong></p>
@@ -171,11 +181,13 @@ function OrderReceiptModal({ order, onClose }) {
             </div>
           </div>
 
+          {/* পণ্য হেডার */}
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 4px', marginBottom: '4px', borderBottom: '2px solid #374151', borderTop: '1px solid #e5e7eb' }}>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
           </div>
 
+          {/* পণ্য লিস্ট */}
           {(order.order_items || []).map((item, i) => (
             <div key={i} style={{ borderBottom: '1px dashed #d1d5db', padding: '8px 4px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -192,6 +204,7 @@ function OrderReceiptModal({ order, onClose }) {
             </div>
           ))}
 
+          {/* মোট */}
           <div style={{ borderTop: '2px solid #374151', marginTop: '8px', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#374151', margin: 0 }}>সর্বমোট:</p>
             <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>{order.total_amount} Tk</p>
@@ -245,7 +258,7 @@ function MyOrdersModal({ onClose }) {
   });
 
   if (selectedOrder) {
-    return <OrderReceiptModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />;
+    return <OrderReceiptModal order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={false} />;
   }
 
   return (
@@ -519,7 +532,6 @@ function EditProductModal({ product, onClose, onSave }) {
       description: form.description, image_url: form.image_url, is_active: form.is_active
     }).eq('id', product.id);
 
-    // স্টক সেট করা - যত লেখা হবে সেটাই হবে
     if (stockQty !== '') {
       const newQty = parseFloat(stockQty);
       if (!isNaN(newQty) && newQty >= 0) {
@@ -542,7 +554,6 @@ function EditProductModal({ product, onClose, onSave }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#9ca3af' }}>✕</button>
         </div>
         <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-
           <div>
             <label style={{ fontSize: '12px', color: '#6b7280' }}>নাম *</label>
             <input name="name" value={form.name} onChange={handle}
@@ -583,16 +594,12 @@ function EditProductModal({ product, onClose, onSave }) {
             <input name="category_bn" value={form.category_bn} onChange={handle}
               style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
           </div>
-
-          {/* প্রধান ছবি */}
           <div style={{ background: '#f0fdf4', borderRadius: '8px', padding: '12px' }}>
             <label style={{ fontSize: '12px', color: '#15803d', fontWeight: 'bold' }}>প্রধান ছবি</label>
             {form.image_url && <img src={form.image_url} alt="main" style={{ width: '100%', objectFit: 'contain', borderRadius: '8px', marginTop: '8px', maxHeight: '120px' }} />}
             <input type="file" accept="image/*" onChange={uploadMainImage}
               style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
           </div>
-
-          {/* অতিরিক্ত ছবি */}
           <div style={{ background: '#eff6ff', borderRadius: '8px', padding: '12px' }}>
             <label style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: 'bold' }}>অতিরিক্ত ছবি</label>
             {loadingImages ? <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '8px' }}>লোড হচ্ছে...</p> : (
@@ -601,7 +608,7 @@ function EditProductModal({ product, onClose, onSave }) {
                   <div key={img.id} style={{ position: 'relative' }}>
                     <img src={img.image_url} alt="extra" style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }} />
                     <button onClick={() => deleteExtraImage(img.id)}
-                      style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                      style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', cursor: 'pointer' }}>✕</button>
                   </div>
                 ))}
               </div>
@@ -610,33 +617,23 @@ function EditProductModal({ product, onClose, onSave }) {
               style={{ border: '2px solid #bfdbfe', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
             {uploading && <p style={{ fontSize: '12px', color: '#3b82f6', marginTop: '4px' }}>আপলোড হচ্ছে...</p>}
           </div>
-
-          {/* বৈশিষ্ট্য */}
           <div>
             <label style={{ fontSize: '12px', color: '#6b7280' }}>বৈশিষ্ট্য</label>
             <textarea name="description" value={form.description} onChange={handle} rows={3}
               style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'vertical' }} />
           </div>
-
-          {/* স্টক সেট */}
           <div style={{ background: '#eff6ff', borderRadius: '8px', padding: '12px' }}>
             <label style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: 'bold' }}>
               স্টক সেট করুন (বর্তমান: {currentStock} {product.unit})
             </label>
-            <input
-              type="number"
-              min="0"
-              step="0.001"
-              value={stockQty}
+            <input type="number" min="0" step="0.001" value={stockQty}
               onChange={e => setStockQty(e.target.value)}
-              placeholder={`নতুন স্টক লিখুন (যেমন: ${currentStock})`}
+              placeholder={`নতুন স্টক লিখুন`}
               style={{ border: '2px solid #bfdbfe', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '8px', boxSizing: 'border-box', outline: 'none' }} />
-            <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>
-              * যা লিখবেন সেটাই নতুন স্টক হবে। বাড়াতে বা কমাতে পারবেন।
+            <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', margin: '4px 0 0 0' }}>
+              * যা লিখবেন সেটাই নতুন স্টক হবে
             </p>
           </div>
-
-          {/* Status */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <label style={{ fontSize: '12px', color: '#6b7280' }}>Status:</label>
             <button onClick={() => setForm({...form, is_active: !form.is_active})}
@@ -649,7 +646,6 @@ function EditProductModal({ product, onClose, onSave }) {
             </button>
           </div>
         </div>
-
         <div style={{ display: 'flex', gap: '8px', padding: '16px', borderTop: '1px solid #e5e7eb' }}>
           <button onClick={save} disabled={loading || uploading}
             style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', flex: 1, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: (loading || uploading) ? 0.5 : 1 }}>
