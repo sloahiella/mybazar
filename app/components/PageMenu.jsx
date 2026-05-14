@@ -105,9 +105,7 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
               </button>
               {showDotMenu && (
                 <>
-                  <div
-                    style={{ position: 'fixed', inset: 0, zIndex: 40 }}
-                    onClick={() => setShowDotMenu(false)} />
+                  <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setShowDotMenu(false)} />
                   <div style={{
                     position: 'absolute', right: 0, top: '32px',
                     background: 'white', borderRadius: '12px',
@@ -216,8 +214,6 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-
-      {/* পেজ মেনু */}
       <div ref={menuRef} style={{ position: 'relative' }}>
         <button
           onClick={() => setIsOpen(prev => !prev)}
@@ -302,7 +298,6 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
         )}
       </div>
 
-      {/* কাস্টমারের অর্ডার লিস্ট বাটন */}
       {!isAdmin && (
         <button
           onClick={() => onShowOrders && onShowOrders()}
@@ -317,7 +312,6 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
           📋 অর্ডার লিস্ট
         </button>
       )}
-
     </div>
   );
 }

@@ -106,10 +106,8 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
       'mybazar.vercel.app | sohelmart.com',
       'WhatsApp: 01872149655',
       '════════════════════════════════════════',
-      `শাখা: লালমোহন`,
-      `তারিখ: ${new Date(order.created_at).toLocaleDateString('bn-BD')}`,
-      `নাম: ${order.customer_name}`,
-      `ফোন: ${order.customer_phone}`,
+      `শাখা: লালমোহন | তারিখ: ${new Date(order.created_at).toLocaleDateString('bn-BD')}`,
+      `নাম: ${order.customer_name} | ফোন: ${order.customer_phone}`,
       `জেলা: ${order.district}, ${order.upazila}`,
       `ঠিকানা: ${order.address}`,
       `অর্ডার #: ${order.id}`,
@@ -135,11 +133,9 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }}>
       <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflowY: 'auto' }}>
-        {/* টপ বাটন */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, background: 'white', zIndex: 10 }}>
           <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>অর্ডার #{order.id}</h2>
           <div style={{ display: 'flex', gap: '8px' }}>
-            {/* Admin: Print + Save, Customer: শুধু Save */}
             {isAdmin && (
               <button onClick={handlePrint} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>🖨️ Print</button>
             )}
@@ -149,16 +145,11 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
         </div>
 
         <div ref={printRef} style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
-          {/* হেডার - মাই বাজার বাম, কাস্টমার ডান - পাশাপাশি */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 2px 1fr',
-            border: '2px solid #15803d',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            marginBottom: '16px',
+            display: 'grid', gridTemplateColumns: '1fr 2px 1fr',
+            border: '2px solid #15803d', borderRadius: '8px',
+            overflow: 'hidden', marginBottom: '16px',
           }}>
-            {/* বাম - মাই বাজার তথ্য */}
             <div style={{ padding: '14px', background: '#f0fdf4' }}>
               <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d', margin: '0 0 6px 0' }}>🛒 মাই বাজার</h1>
               <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 mybazar.vercel.app</p>
@@ -168,11 +159,7 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
               <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>সময়: {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
             </div>
-
-            {/* মাঝের সবুজ দাগ */}
             <div style={{ background: '#15803d' }} />
-
-            {/* ডান - কাস্টমার তথ্য */}
             <div style={{ padding: '14px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1d4ed8', margin: '0 0 6px 0' }}>👤 কাস্টমার তথ্য</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>নাম: <strong>{order.customer_name}</strong></p>
@@ -184,13 +171,11 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
             </div>
           </div>
 
-          {/* পণ্য হেডার */}
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 4px', marginBottom: '4px', borderBottom: '2px solid #374151' }}>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
           </div>
 
-          {/* পণ্য লিস্ট */}
           {(order.order_items || []).map((item, i) => (
             <div key={i} style={{ borderBottom: '1px dashed #d1d5db', padding: '8px 4px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -207,14 +192,13 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
             </div>
           ))}
 
-          {/* মোট */}
           <div style={{ borderTop: '2px solid #374151', marginTop: '8px', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#374151', margin: 0 }}>সর্বমোট:</p>
             <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>{order.total_amount} Tk</p>
           </div>
 
           <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', marginTop: '16px', borderTop: '1px solid #e5e7eb', paddingTop: '10px' }}>
-            ধন্যবাদ মাই বাজারে কেনাকাটা করার জন্য! 🙏
+            ধন্যবাদ মাই বাজারে কেনাকাটা করার জন্য! 
           </p>
         </div>
       </div>
@@ -292,7 +276,6 @@ function OrdersModal({ onClose, isAdmin = false }) {
         </div>
 
         <div style={{ padding: '16px' }}>
-          {/* কাস্টমার হলে ফোন নম্বর দিয়ে খুঁজবে */}
           {!isAdmin && (
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
               <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
@@ -305,7 +288,6 @@ function OrdersModal({ onClose, isAdmin = false }) {
             </div>
           )}
 
-          {/* সার্চ - তারিখ বা অর্ডার নম্বর */}
           {orders.length > 0 && (
             <input type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder="🔍 তারিখ, অর্ডার নম্বর বা নাম..."
@@ -321,18 +303,13 @@ function OrdersModal({ onClose, isAdmin = false }) {
             {filteredOrders.map((order) => (
               <div key={order.id}
                 onClick={() => setSelectedOrder(order)}
-                style={{
-                  background: '#f9fafb', borderRadius: '12px', padding: '12px',
-                  cursor: 'pointer', border: '1px solid #e5e7eb',
-                }}
+                style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px', cursor: 'pointer', border: '1px solid #e5e7eb' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#f0fdf4'}
                 onMouseLeave={e => e.currentTarget.style.background = '#f9fafb'}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '14px', margin: '0 0 4px 0' }}>অর্ডার #{order.id}</p>
-                    {isAdmin && (
-                      <p style={{ fontSize: '12px', color: '#374151', margin: '0 0 2px 0', fontWeight: '500' }}>{order.customer_name}</p>
-                    )}
+                    {isAdmin && <p style={{ fontSize: '12px', color: '#374151', margin: '0 0 2px 0', fontWeight: '500' }}>{order.customer_name}</p>}
                     <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px 0' }}>{new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
                     <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>{order.order_items?.length} টি পণ্য</p>
                   </div>
@@ -356,7 +333,56 @@ function OrdersModal({ onClose, isAdmin = false }) {
   );
 }
 
-function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDragging, onDragStart }) {
+// সাব-পেজ chips component
+function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
+  const [subPages, setSubPages] = useState([]);
+  const [rootPages, setRootPages] = useState([]);
+
+  useEffect(() => {
+    if (selectedPage) {
+      fetchSubPages(selectedPage.id);
+    } else {
+      fetchRootPages();
+    }
+  }, [selectedPage, branch]);
+
+  async function fetchSubPages(parentId) {
+    const { data } = await supabase.from('pages').select('*')
+      .eq('parent_id', parentId).order('sort_order');
+    if (data) setSubPages(isAdmin ? data : data.filter(p => p.is_active !== false));
+  }
+
+  async function fetchRootPages() {
+    const { data } = await supabase.from('pages').select('*')
+      .eq('branch_id', branch.id).is('parent_id', null).order('sort_order');
+    if (data) setRootPages(isAdmin ? data : data.filter(p => p.is_active !== false));
+  }
+
+  const pages = selectedPage ? subPages : rootPages;
+  if (pages.length === 0) return null;
+
+  return (
+    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+      {pages.map(page => (
+        <button
+          key={page.id}
+          onClick={() => onSelectPage(page)}
+          style={{
+            padding: '6px 14px', borderRadius: '20px', fontSize: '13px',
+            fontWeight: '500', border: '2px solid #15803d', cursor: 'pointer',
+            whiteSpace: 'nowrap', flexShrink: 0,
+            background: '#white', color: '#15803d',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#15803d'; e.currentTarget.style.color = 'white'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#15803d'; }}>
+          {page.name_bn || page.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDragging, onDragStart, onDragOver, onDrop }) {
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
   const [showDesc, setShowDesc] = useState(false);
@@ -392,17 +418,24 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
   };
 
   return (
-    <div style={{
-      background: 'white', borderRadius: '12px',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.1)', padding: '10px',
-      opacity: isDragging ? 0.5 : 1,
-      border: isDragging ? '2px solid #16a34a' : '1px solid #e5e7eb',
-      display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box',
-    }}>
+    <div
+      onDragOver={e => { e.preventDefault(); onDragOver && onDragOver(); }}
+      onDrop={onDrop}
+      style={{
+        background: 'white', borderRadius: '12px',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.1)', padding: '10px',
+        opacity: isDragging ? 0.5 : 1,
+        border: isDragging ? '2px solid #16a34a' : '1px solid #e5e7eb',
+        display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box',
+      }}>
       {isAdmin && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', marginBottom: '6px', flexShrink: 0 }}>
-          <span onMouseDown={onDragStart} onTouchStart={onDragStart}
-            style={{ background: '#e5e7eb', color: '#6b7280', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', cursor: 'grab' }}>⠿</span>
+          <span
+            draggable
+            onDragStart={onDragStart}
+            onMouseDown={onDragStart}
+            onTouchStart={onDragStart}
+            style={{ background: '#e5e7eb', color: '#6b7280', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', cursor: 'grab', userSelect: 'none' }}>⠿</span>
           <button onClick={() => onEdit(product)}
             style={{ background: '#facc15', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>✏️</button>
         </div>
@@ -496,15 +529,11 @@ function ProductCard({ product, onAdd, isAdmin, onEdit, onDoubleClick, isDraggin
 
 function EditProductModal({ product, onClose, onSave }) {
   const [form, setForm] = useState({
-    name: product.name || '',
-    name_bn: product.name_bn || '',
+    name: product.name || '', name_bn: product.name_bn || '',
     product_code: product.product_code || '',
-    price_per_unit: product.price_per_unit || '',
-    unit: product.unit || 'Kg',
-    category: product.category || '',
-    category_bn: product.category_bn || '',
-    description: product.description || '',
-    image_url: product.image_url || '',
+    price_per_unit: product.price_per_unit || '', unit: product.unit || 'Kg',
+    category: product.category || '', category_bn: product.category_bn || '',
+    description: product.description || '', image_url: product.image_url || '',
     is_active: product.is_active,
   });
   const [stockQty, setStockQty] = useState('');
@@ -560,7 +589,6 @@ function EditProductModal({ product, onClose, onSave }) {
       category: form.category, category_bn: form.category_bn,
       description: form.description, image_url: form.image_url, is_active: form.is_active
     }).eq('id', product.id);
-
     if (stockQty !== '') {
       const newQty = parseFloat(stockQty);
       if (!isNaN(newQty) && newQty >= 0) {
@@ -583,46 +611,30 @@ function EditProductModal({ product, onClose, onSave }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#9ca3af' }}>✕</button>
         </div>
         <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div>
-            <label style={{ fontSize: '12px', color: '#6b7280' }}>নাম *</label>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>নাম *</label>
             <input name="name" value={form.name} onChange={handle}
-              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
-          </div>
-          <div>
-            <label style={{ fontSize: '12px', color: '#6b7280' }}>বিকল্প নাম</label>
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} /></div>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>বিকল্প নাম</label>
             <input name="name_bn" value={form.name_bn} onChange={handle}
-              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
-          </div>
-          <div>
-            <label style={{ fontSize: '12px', color: '#6b7280' }}>পণ্য কোড</label>
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} /></div>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>পণ্য কোড</label>
             <input name="product_code" value={form.product_code} onChange={handle}
-              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
-          </div>
-          <div>
-            <label style={{ fontSize: '12px', color: '#6b7280' }}>দাম (Tk)</label>
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} /></div>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>দাম (Tk)</label>
             <input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle}
-              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
-          </div>
-          <div>
-            <label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label>
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} /></div>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label>
             <select name="unit" value={form.unit} onChange={handle}
               style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white' }}>
-              <option value="Kg">Kg</option>
-              <option value="Liter">Liter</option>
-              <option value="pcs">pcs</option>
-              <option value="packet">Packet</option>
-            </select>
-          </div>
-          <div>
-            <label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (ইং)</label>
+              <option value="Kg">Kg</option><option value="Liter">Liter</option>
+              <option value="pcs">pcs</option><option value="packet">Packet</option>
+            </select></div>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (ইং)</label>
             <input name="category" value={form.category} onChange={handle}
-              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
-          </div>
-          <div>
-            <label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (বাং)</label>
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} /></div>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (বাং)</label>
             <input name="category_bn" value={form.category_bn} onChange={handle}
-              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
-          </div>
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} /></div>
           <div style={{ background: '#f0fdf4', borderRadius: '8px', padding: '12px' }}>
             <label style={{ fontSize: '12px', color: '#15803d', fontWeight: 'bold' }}>প্রধান ছবি</label>
             {form.image_url && <img src={form.image_url} alt="main" style={{ width: '100%', objectFit: 'contain', borderRadius: '8px', marginTop: '8px', maxHeight: '120px' }} />}
@@ -646,11 +658,9 @@ function EditProductModal({ product, onClose, onSave }) {
               style={{ border: '2px solid #bfdbfe', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
             {uploading && <p style={{ fontSize: '12px', color: '#3b82f6', marginTop: '4px' }}>আপলোড হচ্ছে...</p>}
           </div>
-          <div>
-            <label style={{ fontSize: '12px', color: '#6b7280' }}>বৈশিষ্ট্য</label>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>বৈশিষ্ট্য</label>
             <textarea name="description" value={form.description} onChange={handle} rows={3}
-              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'vertical' }} />
-          </div>
+              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'vertical' }} /></div>
           <div style={{ background: '#eff6ff', borderRadius: '8px', padding: '12px' }}>
             <label style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: 'bold' }}>
               স্টক সেট করুন (বর্তমান: {currentStock} {product.unit})
@@ -828,8 +838,15 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
     setLoading(false);
   }
 
-  function handleDragStart(index) { setDragIndex(index); }
-  function handleDragOver(index) { if (dragIndex !== null) setDragOverIndex(index); }
+  function handleDragStart(index) {
+    setDragIndex(index);
+  }
+
+  function handleDragOver(index) {
+    if (dragIndex !== null && dragIndex !== index) {
+      setDragOverIndex(index);
+    }
+  }
 
   async function handleDrop(dropIndex) {
     if (dragIndex === null || dragIndex === dropIndex) {
@@ -969,26 +986,39 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
           onClose={() => setShowAddModal(false)} onSave={fetchProducts} />
       )}
 
-      <div className="px-4 pt-4 flex items-center gap-2">
-        <PageMenu
-          branch={branch}
+      {/* পেজ মেনু + সাব-পেজ chips */}
+      <div className="px-4 pt-4">
+        <div className="flex items-center gap-2 mb-3">
+          <PageMenu
+            branch={branch}
+            selectedPage={selectedPage}
+            onSelectPage={(page) => { setSelectedPage(page); setSelectedName(null); setSelectedCategory(null); }}
+            isAdmin={isAdmin}
+            onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }}
+            onShowOrders={() => setShowOrders(true)}
+          />
+          {selectedPage && (
+            <button
+              onClick={() => { setSelectedPage(null); setSelectedName(null); setSelectedCategory(null); }}
+              style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', border: 'none', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer' }}>
+              ← হোম
+            </button>
+          )}
+          {isAdmin && (
+            <button onClick={() => { setAddModalPage(selectedPage); setShowAddModal(true); }}
+              className="bg-green-700 text-white text-xs px-3 py-2 rounded-xl font-medium whitespace-nowrap">
+              + পণ্য যোগ
+            </button>
+          )}
+        </div>
+
+        {/* সাব-পেজ chips */}
+        <SubPageChips
           selectedPage={selectedPage}
-          onSelectPage={(page) => { setSelectedPage(page); setSelectedName(null); setSelectedCategory(null); }}
+          branch={branch}
           isAdmin={isAdmin}
-          onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }}
-          onShowOrders={() => setShowOrders(true)}
+          onSelectPage={(page) => { setSelectedPage(page); setSelectedName(null); setSelectedCategory(null); }}
         />
-        {selectedPage && (
-          <span className="text-sm font-medium text-green-700 bg-green-50 border border-green-300 px-3 py-1 rounded-full whitespace-nowrap">
-            {selectedPage.name_bn || selectedPage.name}
-          </span>
-        )}
-        {isAdmin && (
-          <button onClick={() => { setAddModalPage(selectedPage); setShowAddModal(true); }}
-            className="bg-green-700 text-white text-xs px-3 py-2 rounded-xl font-medium whitespace-nowrap">
-            + পণ্য যোগ
-          </button>
-        )}
       </div>
 
       <div className="p-4">
@@ -1008,8 +1038,8 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
       )}
 
       <div className="px-4 flex gap-2 overflow-x-auto pb-2">
-        <button onClick={() => { setSelectedCategory(null); setSelectedName(null); setSelectedPage(null); }}
-          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${!selectedCategory && !selectedName && !selectedPage ? 'bg-green-700 text-white' : 'bg-white text-green-700 border-2 border-green-700'}`}>
+        <button onClick={() => { setSelectedCategory(null); setSelectedName(null); }}
+          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${!selectedCategory && !selectedName ? 'bg-green-700 text-white' : 'bg-white text-green-700 border-2 border-green-700'}`}>
           সব পণ্য
         </button>
         {categories.map(cat => {
@@ -1033,18 +1063,18 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 items-stretch">
         {displayProducts.map((product, index) => (
-          <div key={product.id}
-            style={{
-              outline: isAdmin && dragOverIndex === index && dragIndex !== index ? '2px solid #16a34a' : 'none',
-              borderRadius: '12px', height: '100%',
-            }}
-            onDragOver={(e) => { e.preventDefault(); if (isAdmin) handleDragOver(index); }}
-            onDrop={() => { if (isAdmin) handleDrop(index); }}>
-            <ProductCard
-              product={product} onAdd={addToCart} isAdmin={isAdmin}
-              onEdit={setEditingProduct} onDoubleClick={(p) => setSelectedName(p.name)}
-              isDragging={dragIndex === index} onDragStart={() => handleDragStart(index)} />
-          </div>
+          <ProductCard
+            key={product.id}
+            product={product}
+            onAdd={addToCart}
+            isAdmin={isAdmin}
+            onEdit={setEditingProduct}
+            onDoubleClick={(p) => setSelectedName(p.name)}
+            isDragging={dragIndex === index}
+            onDragStart={() => handleDragStart(index)}
+            onDragOver={() => handleDragOver(index)}
+            onDrop={() => handleDrop(index)}
+          />
         ))}
         {!loading && displayProducts.length === 0 && (
           <p className="col-span-4 text-center text-gray-400 mt-10">কোনো পণ্য পাওয়া যায়নি</p>
