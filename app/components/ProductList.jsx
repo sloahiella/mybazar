@@ -135,54 +135,57 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }}>
       <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflowY: 'auto' }}>
-        {/* হেডার বাটন */}
+        {/* টপ বাটন */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, background: 'white', zIndex: 10 }}>
           <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>অর্ডার #{order.id}</h2>
           <div style={{ display: 'flex', gap: '8px' }}>
-            {/* শুধু Admin দেখবে */}
+            {/* Admin: Print + Save, Customer: শুধু Save */}
             {isAdmin && (
-              <>
-                <button onClick={handlePrint} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>🖨️ Print</button>
-                <button onClick={handleSave} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>💾 Save</button>
-              </>
+              <button onClick={handlePrint} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>🖨️ Print</button>
             )}
+            <button onClick={handleSave} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>💾 Save</button>
             <button onClick={onClose} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', cursor: 'pointer' }}>✕</button>
           </div>
         </div>
 
         <div ref={printRef} style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
-          {/* হেডার - আমাদের তথ্য বাম, কাস্টমার ডান */}
+          {/* হেডার - মাই বাজার বাম, কাস্টমার ডান - পাশাপাশি */}
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 2px 1fr',
-            border: '2px solid #15803d', borderRadius: '8px',
-            overflow: 'hidden', marginBottom: '16px',
+            display: 'grid',
+            gridTemplateColumns: '1fr 2px 1fr',
+            border: '2px solid #15803d',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            marginBottom: '16px',
           }}>
-            {/* বাম - আমাদের তথ্য */}
+            {/* বাম - মাই বাজার তথ্য */}
             <div style={{ padding: '14px', background: '#f0fdf4' }}>
-              <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', margin: '0 0 8px 0' }}>🛒 মাই বাজার</h1>
+              <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d', margin: '0 0 6px 0' }}>🛒 মাই বাজার</h1>
               <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 mybazar.vercel.app</p>
               <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 sohelmart.com</p>
-              <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>📱 WhatsApp: 01872149655</p>
-              <p style={{ fontSize: '11px', color: '#374151', margin: '8px 0 2px 0', fontWeight: 'bold' }}>📍 শাখা: লালমোহন</p>
+              <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>📱 01872149655</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 2px 0', fontWeight: 'bold' }}>📍 শাখা: লালমোহন</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>সময়: {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
             </div>
-            {/* মাঝের দাগ */}
+
+            {/* মাঝের সবুজ দাগ */}
             <div style={{ background: '#15803d' }} />
+
             {/* ডান - কাস্টমার তথ্য */}
             <div style={{ padding: '14px' }}>
-              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1d4ed8', margin: '0 0 8px 0' }}>👤 কাস্টমার তথ্য</p>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1d4ed8', margin: '0 0 6px 0' }}>👤 কাস্টমার তথ্য</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>নাম: <strong>{order.customer_name}</strong></p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ফোন: {order.customer_phone}</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>জেলা: {order.district}, {order.upazila}</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ঠিকানা: {order.address}</p>
-              <p style={{ fontSize: '11px', color: '#374151', margin: '8px 0 3px 0', fontWeight: 'bold' }}>অর্ডার #: {order.id}</p>
-              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 2px 0', fontWeight: 'bold' }}>অর্ডার #: {order.id}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
             </div>
           </div>
 
           {/* পণ্য হেডার */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 4px', marginBottom: '4px', borderBottom: '2px solid #374151', borderTop: '1px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 4px', marginBottom: '4px', borderBottom: '2px solid #374151' }}>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
           </div>
@@ -219,7 +222,7 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
   );
 }
 
-function MyOrdersModal({ onClose }) {
+function OrdersModal({ onClose, isAdmin = false }) {
   const [phone, setPhone] = useState('');
   const [search, setSearch] = useState('');
   const [orders, setOrders] = useState([]);
@@ -228,8 +231,12 @@ function MyOrdersModal({ onClose }) {
   const [searched, setSearched] = useState(false);
 
   useEffect(() => {
-    const savedPhone = localStorage.getItem('customer_phone');
-    if (savedPhone) { setPhone(savedPhone); fetchOrders(savedPhone); }
+    if (!isAdmin) {
+      const savedPhone = localStorage.getItem('customer_phone');
+      if (savedPhone) { setPhone(savedPhone); fetchOrders(savedPhone); }
+    } else {
+      fetchAllOrders();
+    }
   }, []);
 
   async function fetchOrders(p) {
@@ -246,6 +253,17 @@ function MyOrdersModal({ onClose }) {
     localStorage.setItem('customer_phone', p);
   }
 
+  async function fetchAllOrders() {
+    setLoading(true);
+    const { data } = await supabase
+      .from('orders')
+      .select('*, order_items(*, products(name, name_bn, unit))')
+      .order('created_at', { ascending: false });
+    if (data) setOrders(data);
+    setLoading(false);
+    setSearched(true);
+  }
+
   const filteredOrders = orders.filter(o => {
     if (!search) return true;
     const dateStr = new Date(o.created_at).toLocaleDateString('bn-BD');
@@ -253,36 +271,44 @@ function MyOrdersModal({ onClose }) {
     return (
       String(o.id).includes(search) ||
       dateStr.includes(search) ||
-      dateStrEn.toLowerCase().includes(search.toLowerCase())
+      dateStrEn.toLowerCase().includes(search.toLowerCase()) ||
+      (o.customer_name && o.customer_name.toLowerCase().includes(search.toLowerCase())) ||
+      (o.customer_phone && o.customer_phone.includes(search))
     );
   });
 
   if (selectedOrder) {
-    return <OrderReceiptModal order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={false} />;
+    return <OrderReceiptModal order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={isAdmin} />;
   }
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }}>
       <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '440px', maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, background: 'white' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>📋 আমার অর্ডার</h2>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>
+            {isAdmin ? '📋 সব অর্ডার' : '📋 আমার অর্ডার'}
+          </h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#9ca3af' }}>✕</button>
         </div>
 
         <div style={{ padding: '16px' }}>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-              placeholder="ফোন নম্বর দিন"
-              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', outline: 'none' }} />
-            <button onClick={() => fetchOrders(phone)}
-              style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: '600' }}>
-              খুঁজুন
-            </button>
-          </div>
+          {/* কাস্টমার হলে ফোন নম্বর দিয়ে খুঁজবে */}
+          {!isAdmin && (
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                placeholder="ফোন নম্বর দিন"
+                style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', outline: 'none' }} />
+              <button onClick={() => fetchOrders(phone)}
+                style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: '600' }}>
+                খুঁজুন
+              </button>
+            </div>
+          )}
 
+          {/* সার্চ - তারিখ বা অর্ডার নম্বর */}
           {orders.length > 0 && (
             <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="🔍 তারিখ বা অর্ডার নম্বর..."
+              placeholder="🔍 তারিখ, অর্ডার নম্বর বা নাম..."
               style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }} />
           )}
 
@@ -304,7 +330,10 @@ function MyOrdersModal({ onClose }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '14px', margin: '0 0 4px 0' }}>অর্ডার #{order.id}</p>
-                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>{new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+                    {isAdmin && (
+                      <p style={{ fontSize: '12px', color: '#374151', margin: '0 0 2px 0', fontWeight: '500' }}>{order.customer_name}</p>
+                    )}
+                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px 0' }}>{new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
                     <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>{order.order_items?.length} টি পণ্য</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
@@ -628,11 +657,9 @@ function EditProductModal({ product, onClose, onSave }) {
             </label>
             <input type="number" min="0" step="0.001" value={stockQty}
               onChange={e => setStockQty(e.target.value)}
-              placeholder={`নতুন স্টক লিখুন`}
+              placeholder="নতুন স্টক লিখুন"
               style={{ border: '2px solid #bfdbfe', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '8px', boxSizing: 'border-box', outline: 'none' }} />
-            <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', margin: '4px 0 0 0' }}>
-              * যা লিখবেন সেটাই নতুন স্টক হবে
-            </p>
+            <p style={{ fontSize: '11px', color: '#6b7280', margin: '4px 0 0 0' }}>* যা লিখবেন সেটাই নতুন স্টক হবে</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <label style={{ fontSize: '12px', color: '#6b7280' }}>Status:</label>
@@ -764,7 +791,7 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
   const [addModalPage, setAddModalPage] = useState(null);
   const [dragIndex, setDragIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
-  const [showMyOrders, setShowMyOrders] = useState(false);
+  const [showOrders, setShowOrders] = useState(false);
 
   const isAdmin = role === 'admin';
 
@@ -772,7 +799,7 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
 
   useEffect(() => {
     const handlePopState = () => {
-      if (showMyOrders) { setShowMyOrders(false); return; }
+      if (showOrders) { setShowOrders(false); return; }
       if (editingProduct) { setEditingProduct(null); return; }
       if (showAddModal) { setShowAddModal(false); return; }
       if (showOrder) { setShowOrder(false); return; }
@@ -781,13 +808,13 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [showMyOrders, editingProduct, showAddModal, showCart, showOrder, selectedName]);
+  }, [showOrders, editingProduct, showAddModal, showCart, showOrder, selectedName]);
 
   useEffect(() => {
-    if (editingProduct || showAddModal || showCart || showOrder || showMyOrders) {
+    if (editingProduct || showAddModal || showCart || showOrder || showOrders) {
       window.history.pushState(null, '', window.location.href);
     }
-  }, [editingProduct, showAddModal, showCart, showOrder, showMyOrders]);
+  }, [editingProduct, showAddModal, showCart, showOrder, showOrders]);
 
   async function fetchProducts() {
     setLoading(true);
@@ -933,7 +960,7 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
 
   return (
     <div className="pb-24">
-      {showMyOrders && <MyOrdersModal onClose={() => setShowMyOrders(false)} />}
+      {showOrders && <OrdersModal onClose={() => setShowOrders(false)} isAdmin={isAdmin} />}
       {editingProduct && (
         <EditProductModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={fetchProducts} />
       )}
@@ -949,7 +976,7 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
           onSelectPage={(page) => { setSelectedPage(page); setSelectedName(null); setSelectedCategory(null); }}
           isAdmin={isAdmin}
           onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }}
-          onShowOrders={() => setShowMyOrders(true)}
+          onShowOrders={() => setShowOrders(true)}
         />
         {selectedPage && (
           <span className="text-sm font-medium text-green-700 bg-green-50 border border-green-300 px-3 py-1 rounded-full whitespace-nowrap">
