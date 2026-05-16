@@ -11,6 +11,11 @@ const supabase = createClient(
 
 const ADMIN_PASSWORD = 'sloahiella@admin';
 const EDITOR_PASSWORD = 'editor@123';
+const LOGO_URL = 'https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/Untitled%20folder/logo.jpg';
+const PINK = '#db2777';
+const PINK_DARK = '#be185d';
+const PINK_LIGHT = '#fdf2f8';
+const PINK_BORDER = '#fbcfe8';
 
 interface Branch {
   id: number;
@@ -19,7 +24,7 @@ interface Branch {
   is_active: boolean;
 }
 
-function OrderReceipt({ order, onClose }: { order: any; onClose: () => void }) {
+function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => void; isAdmin: boolean }) {
   const printRef = useRef<HTMLDivElement>(null);
 
   function handlePrint() {
@@ -41,15 +46,12 @@ function OrderReceipt({ order, onClose }: { order: any; onClose: () => void }) {
 
   function handleSave() {
     const lines = [
-      '🛒 মাই বাজার',
-      'mybazar.vercel.app | sohelmart.com',
+      'সোহেল মার্ট | মাই বাজার',
+      'sohelmart.com | mybazar.vercel.app',
       'WhatsApp: 01872149655',
       '════════════════════════════════════════',
-      `শাখা: লালমোহন`,
-      `তারিখ: ${new Date(order.created_at).toLocaleDateString('bn-BD')}`,
-      '════════════════════════════════════════',
-      `নাম: ${order.customer_name}`,
-      `ফোন: ${order.customer_phone}`,
+      `শাখা: লালমোহন | তারিখ: ${new Date(order.created_at).toLocaleDateString('bn-BD')}`,
+      `নাম: ${order.customer_name} | ফোন: ${order.customer_phone}`,
       `জেলা: ${order.district}, ${order.upazila}`,
       `ঠিকানা: ${order.address}`,
       `অর্ডার #: ${order.id}`,
@@ -73,52 +75,54 @@ function OrderReceipt({ order, onClose }: { order: any; onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-screen overflow-y-auto">
-        <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
-          <h2 className="text-lg font-bold text-green-700">অর্ডার #{order.id}</h2>
-          <div className="flex gap-2">
-            <button onClick={handlePrint} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium">🖨️ Print</button>
-            <button onClick={handleSave} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium">💾 Save</button>
-            <button onClick={onClose} className="bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm">✕</button>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }}>
+      <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, background: 'white', zIndex: 10 }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: PINK, margin: 0 }}>অর্ডার #{order.id}</h2>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {isAdmin && (
+              <button onClick={handlePrint} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>🖨️ Print</button>
+            )}
+            <button onClick={handleSave} style={{ background: PINK, color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>💾 Save</button>
+            <button onClick={onClose} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', cursor: 'pointer' }}>✕</button>
           </div>
         </div>
 
         <div ref={printRef} style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
-          <div style={{ textAlign: 'center', borderBottom: '3px double #15803d', paddingBottom: '12px', marginBottom: '12px' }}>
-            <h1 style={{ fontSize: '26px', fontWeight: 'bold', color: '#15803d', margin: '0 0 4px 0' }}>🛒 মাই বাজার</h1>
-            <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>🌐 mybazar.vercel.app | sohelmart.com</p>
-            <p style={{ fontSize: '12px', color: '#4b5563', margin: '2px 0' }}>📱 WhatsApp: 01872149655</p>
-          </div>
-
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1px 1fr',
-            border: '1px solid #d1d5db', borderRadius: '8px',
-            overflow: 'hidden', marginBottom: '12px',
+            display: 'grid', gridTemplateColumns: '1fr 2px 1fr',
+            border: `2px solid ${PINK}`, borderRadius: '8px',
+            overflow: 'hidden', marginBottom: '16px',
           }}>
-            <div style={{ padding: '12px', background: '#f9fafb' }}>
-              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#15803d', margin: '0 0 8px 0' }}>📍 আমাদের তথ্য</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>শাখা: <strong>লালমোহন</strong></p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>সময়: {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
+            <div style={{ padding: '14px', background: PINK_LIGHT }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
+                <div>
+                  <h1 style={{ fontSize: '16px', fontWeight: 'bold', color: PINK, margin: 0 }}>সোহেল মার্ট</h1>
+                  <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>মাই বাজার</p>
+                </div>
+              </div>
+              <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 sohelmart.com</p>
+              <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>📱 01872149655</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 2px 0', fontWeight: 'bold' }}>📍 শাখা: লালমোহন</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>সময়: {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
             </div>
-            <div style={{ background: '#d1d5db' }} />
-            <div style={{ padding: '12px' }}>
-              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1d4ed8', margin: '0 0 8px 0' }}>👤 কাস্টমার তথ্য</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>নাম: <strong>{order.customer_name}</strong></p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>ফোন: {order.customer_phone}</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>জেলা: {order.district}, {order.upazila}</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>ঠিকানা: {order.address}</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>অর্ডার #: <strong>{order.id}</strong></p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '4px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+            <div style={{ background: PINK }} />
+            <div style={{ padding: '14px' }}>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1d4ed8', margin: '0 0 6px 0' }}>👤 কাস্টমার তথ্য</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>নাম: <strong>{order.customer_name}</strong></p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ফোন: {order.customer_phone}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>জেলা: {order.district}, {order.upazila}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ঠিকানা: {order.address}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 2px 0', fontWeight: 'bold' }}>অর্ডার #: {order.id}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
             </div>
           </div>
 
-          <hr style={{ border: 'none', borderTop: '2px solid #374151', margin: '12px 0 8px 0' }} />
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', marginBottom: '4px' }}>
-            <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
-            <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 4px', marginBottom: '4px', borderBottom: `2px solid #374151` }}>
+            <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
+            <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
           </div>
 
           {(order.order_items || []).map((item: any, i: number) => (
@@ -130,7 +134,7 @@ function OrderReceipt({ order, onClose }: { order: any; onClose: () => void }) {
                     {item.price} Tk/{item.products?.unit} × {item.quantity} {item.products?.unit}
                   </p>
                 </div>
-                <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#15803d', margin: 0, whiteSpace: 'nowrap' }}>
+                <p style={{ fontSize: '14px', fontWeight: 'bold', color: PINK, margin: 0, whiteSpace: 'nowrap' }}>
                   {(item.price * item.quantity).toFixed(0)} Tk
                 </p>
               </div>
@@ -139,11 +143,11 @@ function OrderReceipt({ order, onClose }: { order: any; onClose: () => void }) {
 
           <div style={{ borderTop: '2px solid #374151', marginTop: '8px', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#374151', margin: 0 }}>সর্বমোট:</p>
-            <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>{order.total_amount} Tk</p>
+            <p style={{ fontSize: '20px', fontWeight: 'bold', color: PINK, margin: 0 }}>{order.total_amount} Tk</p>
           </div>
 
           <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', marginTop: '16px', borderTop: '1px solid #e5e7eb', paddingTop: '10px' }}>
-            ধন্যবাদ মাই বাজারে কেনাকাটা করার জন্য! 🙏
+            ধন্যবাদ সোহেল মার্টে কেনাকাটা করার জন্য! 😊
           </p>
         </div>
       </div>
@@ -163,7 +167,6 @@ export default function Home() {
   const [todaySales, setTodaySales] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
   const [adminTab, setAdminTab] = useState('orders');
-  const [branches2, setBranches2] = useState<any[]>([]);
   const [autoPrint, setAutoPrint] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -224,7 +227,7 @@ export default function Home() {
 
   async function fetchBranches() {
     const { data } = await supabase.from('branches').select('*');
-    if (data) { setBranches(data as Branch[]); setBranches2(data); }
+    if (data) setBranches(data as Branch[]);
   }
 
   async function fetchOrders() {
@@ -286,32 +289,38 @@ export default function Home() {
     orderSearch === '' ||
     o.customer_name?.toLowerCase().includes(orderSearch.toLowerCase()) ||
     o.customer_phone?.includes(orderSearch) ||
-    String(o.id).includes(orderSearch)
+    String(o.id).includes(orderSearch) ||
+    new Date(o.created_at).toLocaleDateString('bn-BD').includes(orderSearch) ||
+    new Date(o.created_at).toLocaleDateString('en-US').includes(orderSearch)
   );
 
   if (!selectedBranch) {
     return (
-      <div className="min-h-screen bg-green-50 flex items-center justify-center relative">
-        <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
+      <div style={{ minHeight: '100vh', background: PINK_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
           <button onClick={() => setShowLoginModal(true)}
-            className="bg-white shadow rounded-full w-10 h-10 flex items-center justify-center text-xl">👤</button>
+            style={{ background: 'white', border: `2px solid ${PINK}`, borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', cursor: 'pointer' }}>👤</button>
           {role && (
             <>
-              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+              <span style={{ fontSize: '12px', background: PINK_LIGHT, color: PINK, padding: '4px 8px', borderRadius: '20px', fontWeight: '500', border: `1px solid ${PINK_BORDER}` }}>
                 {role === 'admin' ? '👑 Admin' : '✏️ Editor'}
               </span>
-              <button onClick={handleLogout} className="text-xs text-red-500">লগআউট</button>
+              <button onClick={handleLogout} style={{ fontSize: '12px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>লগআউট</button>
             </>
           )}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full mx-4">
-          <h1 className="text-2xl font-bold text-center text-green-700 mb-2">🛒 মাই বাজার</h1>
-          <p className="text-center text-gray-500 mb-6">আপনার শাখা সিলেক্ট করুন</p>
-          <div className="space-y-3">
+        <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)', padding: '32px', maxWidth: '400px', width: '100%', margin: '0 16px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', marginBottom: '12px' }} />
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: PINK, margin: '0 0 4px 0' }}>সোহেল মার্ট</h1>
+            <p style={{ fontSize: '14px', color: '#9ca3af', margin: 0 }}>মাই বাজার</p>
+          </div>
+          <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: '16px', fontSize: '14px' }}>আপনার শাখা সিলেক্ট করুন</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {branches.map((branch) => (
               <button key={branch.id} onClick={() => setSelectedBranch(branch)}
-                className="w-full py-3 px-4 bg-green-100 hover:bg-green-200 text-green-800 font-medium rounded-xl transition">
+                style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer' }}>
                 {branch.name_bn || branch.name}
               </button>
             ))}
@@ -319,20 +328,20 @@ export default function Home() {
         </div>
 
         {showLoginModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl shadow-lg p-6 max-w-sm w-full mx-4">
-              <h2 className="text-xl font-bold text-green-700 mb-4 text-center">🔐 লগইন</h2>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+            <div style={{ background: 'white', borderRadius: '20px', padding: '24px', maxWidth: '340px', width: '100%', margin: '0 16px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: PINK, textAlign: 'center', marginBottom: '16px' }}>🔐 লগইন</h2>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleLogin()}
                 placeholder="পাসওয়ার্ড লিখুন"
-                className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm mb-2 focus:border-green-500 focus:outline-none"
+                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginBottom: '8px', boxSizing: 'border-box', outline: 'none' }}
                 autoFocus />
-              {loginError && <p className="text-red-500 text-xs mb-2">{loginError}</p>}
-              <div className="flex gap-2">
+              {loginError && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '8px' }}>{loginError}</p>}
+              <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={handleLogin}
-                  className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm flex-1 font-medium">লগইন</button>
+                  style={{ background: PINK, color: 'white', border: 'none', borderRadius: '8px', padding: '10px', flex: 1, fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>লগইন</button>
                 <button onClick={() => { setShowLoginModal(false); setPassword(''); setLoginError(''); }}
-                  className="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium">বাতিল</button>
+                  style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '10px 16px', fontSize: '14px', cursor: 'pointer' }}>বাতিল</button>
               </div>
             </div>
           </div>
@@ -342,28 +351,34 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-green-50">
+    <div style={{ minHeight: '100vh', background: '#fdf2f8' }}>
       {selectedOrder && (
-        <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+        <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={role === 'admin'} />
       )}
 
       {/* হেডার */}
-      <div className="bg-green-700 text-white p-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">🛒 মাই বাজার</h1>
-        <div className="flex items-center gap-2">
+      <div style={{ background: PINK, color: 'white', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
+          <div>
+            <h1 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, lineHeight: 1.2 }}>সোহেল মার্ট</h1>
+            <p style={{ fontSize: '11px', margin: 0, opacity: 0.8 }}>মাই বাজার</p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {role === 'admin' && (
             <button onClick={() => { setShowAdminDrawer(true); fetchOrders(); fetchNotifications(); }}
-              className="relative bg-yellow-500 text-white w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold">
+              style={{ position: 'relative', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', fontWeight: 'bold' }}>
               ⋯
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: 'white', fontSize: '10px', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {unreadCount}
                 </span>
               )}
             </button>
           )}
           <button onClick={() => setSelectedBranch(null)}
-            className="text-sm bg-green-600 px-3 py-1 rounded-lg">
+            style={{ fontSize: '13px', background: PINK_DARK, color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer' }}>
             {selectedBranch.name_bn || selectedBranch.name} ✕
           </button>
         </div>
@@ -379,81 +394,81 @@ export default function Home() {
 
       {/* Admin Drawer */}
       {showAdminDrawer && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowAdminDrawer(false)} />
-          <div className="relative ml-auto w-full max-w-sm bg-white h-full overflow-y-auto shadow-xl">
-            <div className="bg-green-700 text-white p-4 flex justify-between items-center">
-              <h2 className="font-bold text-lg">👑 Admin Panel</h2>
-              <button onClick={() => setShowAdminDrawer(false)} className="text-2xl">✕</button>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowAdminDrawer(false)} />
+          <div style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: '380px', background: 'white', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
+            <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>👑 Admin Panel</h2>
+              <button onClick={() => setShowAdminDrawer(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 p-4">
-              <div className="bg-green-50 rounded-xl p-3 text-center">
-                <p className="text-xs text-gray-500">Today Sales</p>
-                <p className="text-2xl font-bold text-green-700">{todaySales} Tk</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', padding: '16px' }}>
+              <div style={{ background: PINK_LIGHT, borderRadius: '12px', padding: '12px', textAlign: 'center', border: `1px solid ${PINK_BORDER}` }}>
+                <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Today Sales</p>
+                <p style={{ fontSize: '22px', fontWeight: 'bold', color: PINK, margin: 0 }}>{todaySales} Tk</p>
               </div>
-              <div className="bg-blue-50 rounded-xl p-3 text-center">
-                <p className="text-xs text-gray-500">Total Orders</p>
-                <p className="text-2xl font-bold text-blue-700">{totalOrders}</p>
+              <div style={{ background: '#eff6ff', borderRadius: '12px', padding: '12px', textAlign: 'center', border: '1px solid #bfdbfe' }}>
+                <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Total Orders</p>
+                <p style={{ fontSize: '22px', fontWeight: 'bold', color: '#1d4ed8', margin: 0 }}>{totalOrders}</p>
               </div>
             </div>
 
-            <div className="px-4 pb-2">
-              <div className="flex items-center justify-between bg-gray-50 rounded-xl p-3">
+            <div style={{ padding: '0 16px 12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f9fafb', borderRadius: '12px', padding: '12px' }}>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">🖨️ Auto Print</p>
-                  <p className="text-xs text-gray-400">নতুন অর্ডারে অটো প্রিন্ট</p>
+                  <p style={{ fontSize: '14px', fontWeight: '500', color: '#374151', margin: '0 0 2px 0' }}>🖨️ Auto Print</p>
+                  <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>নতুন অর্ডারে অটো প্রিন্ট</p>
                 </div>
                 <button onClick={toggleAutoPrint}
-                  className={`px-3 py-1 rounded-lg text-xs font-medium ${autoPrint ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                  style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '500', border: 'none', cursor: 'pointer', background: autoPrint ? PINK : '#e5e7eb', color: autoPrint ? 'white' : '#6b7280' }}>
                   {autoPrint ? '✅ চালু' : '❌ বন্ধ'}
                 </button>
               </div>
             </div>
 
-            <div className="flex gap-2 px-4 pb-2 overflow-x-auto">
+            <div style={{ display: 'flex', gap: '8px', padding: '0 16px 12px', overflowX: 'auto' }}>
               {[
                 { key: 'orders', label: '📋 Orders' },
                 { key: 'notifications', label: `🔔 ${unreadCount > 0 ? `(${unreadCount})` : ''}` },
               ].map(t => (
                 <button key={t.key}
                   onClick={() => { setAdminTab(t.key); if (t.key === 'notifications') markAllRead(); }}
-                  className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap ${adminTab === t.key ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-700'}`}>
+                  style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: adminTab === t.key ? PINK : '#f3f4f6', color: adminTab === t.key ? 'white' : '#374151' }}>
                   {t.label}
                 </button>
               ))}
               <button onClick={handleLogout}
-                className="px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap bg-red-100 text-red-700">
+                style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: '#fee2e2', color: '#dc2626' }}>
                 Logout
               </button>
             </div>
 
             {adminTab === 'orders' && (
-              <div className="p-4 space-y-3">
+              <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)}
-                  placeholder="🔍 নাম, ফোন বা অর্ডার নম্বর..."
-                  className="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm focus:border-green-500 focus:outline-none" />
+                  placeholder="🔍 নাম, ফোন, তারিখ বা অর্ডার নম্বর..."
+                  style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', padding: '10px 12px', fontSize: '14px', outline: 'none', width: '100%', boxSizing: 'border-box' }} />
 
                 {filteredOrders.length === 0 && (
-                  <p className="text-center text-gray-400 mt-10">কোনো অর্ডার নেই</p>
+                  <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার নেই</p>
                 )}
 
                 {filteredOrders.map((order: any) => (
                   <div key={order.id}
                     onDoubleClick={() => setSelectedOrder(order)}
-                    className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm cursor-pointer hover:bg-green-50">
-                    <div className="flex justify-between items-start">
+                    style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
-                        <h3 className="font-bold text-gray-800 text-sm">#{order.id} - {order.customer_name}</h3>
-                        <p className="text-xs text-gray-500">{order.customer_phone}</p>
-                        <p className="text-xs text-gray-500">{order.district}, {order.upazila}</p>
-                        <p className="text-xs text-gray-400">{new Date(order.created_at).toLocaleString('bn-BD')}</p>
+                        <h3 style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '14px', margin: '0 0 2px 0' }}>#{order.id} - {order.customer_name}</h3>
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.customer_phone}</p>
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.district}, {order.upazila}</p>
+                        <p style={{ fontSize: '11px', color: '#9ca3af', margin: '2px 0' }}>{new Date(order.created_at).toLocaleString('bn-BD')}</p>
                       </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <p className="font-bold text-green-700">{order.total_amount} Tk</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                        <p style={{ fontWeight: 'bold', color: PINK, margin: 0 }}>{order.total_amount} Tk</p>
                         <select value={order.status}
                           onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value); }}
-                          className="border border-gray-300 rounded-lg px-1 py-1 text-xs">
+                          style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer' }}>
                           <option value="pending">Pending</option>
                           <option value="confirmed">Confirmed</option>
                           <option value="delivered">Delivered</option>
@@ -461,36 +476,35 @@ export default function Home() {
                         </select>
                         <button
                           onClick={e => { e.stopPropagation(); setSelectedOrder(order); }}
-                          className="bg-blue-600 text-white px-2 py-1 rounded-lg text-xs">
+                          style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '4px 10px', fontSize: '12px', cursor: 'pointer' }}>
                           🖨️ Print/Save
                         </button>
                       </div>
                     </div>
-                    <div className="mt-2 border-t pt-2">
+                    <div style={{ marginTop: '8px', borderTop: '1px solid #f3f4f6', paddingTop: '8px' }}>
                       {order.order_items?.map((item: any) => (
-                        <div key={item.id} className="flex justify-between text-xs text-gray-600 py-1 border-b border-dashed border-gray-100">
+                        <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#6b7280', padding: '3px 0', borderBottom: '1px dashed #f3f4f6' }}>
                           <span>{item.products?.name} × {item.quantity} {item.products?.unit}</span>
-                          <span className="font-medium">{item.price * item.quantity} Tk</span>
+                          <span style={{ fontWeight: '500' }}>{item.price * item.quantity} Tk</span>
                         </div>
                       ))}
-                      <div className="flex justify-between text-sm font-bold text-green-700 mt-1 pt-1">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 'bold', color: PINK, marginTop: '4px' }}>
                         <span>মোট:</span>
                         <span>{order.total_amount} Tk</span>
                       </div>
                     </div>
-                    <p className="text-xs text-gray-400 text-center mt-1">ডাবল ক্লিক করুন পুরো রিসিট দেখতে</p>
                   </div>
                 ))}
               </div>
             )}
 
             {adminTab === 'notifications' && (
-              <div className="p-4 space-y-2">
-                {notifications.length === 0 && <p className="text-center text-gray-400 mt-10">কোনো নোটিফিকেশন নেই</p>}
+              <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {notifications.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো নোটিফিকেশন নেই</p>}
                 {notifications.map((n: any) => (
-                  <div key={n.id} className={`p-3 rounded-xl border ${n.is_read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'}`}>
-                    <p className="text-sm font-medium text-gray-800">🔔 {n.message}</p>
-                    <p className="text-xs text-gray-400">{new Date(n.created_at).toLocaleString('bn-BD')}</p>
+                  <div key={n.id} style={{ padding: '12px', borderRadius: '12px', border: '1px solid', borderColor: n.is_read ? '#e5e7eb' : PINK_BORDER, background: n.is_read ? '#f9fafb' : PINK_LIGHT }}>
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', margin: '0 0 4px 0' }}>🔔 {n.message}</p>
+                    <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>{new Date(n.created_at).toLocaleString('bn-BD')}</p>
                   </div>
                 ))}
               </div>

@@ -63,7 +63,7 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
     await supabase.from('order_items').insert(items);
 
     setLoading(false);
-   onSuccess(orderId, form.phone)
+   onSuccess(order.id, form.phone)
   }
 
   return (
