@@ -7,6 +7,13 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
 
+const PINK = '#db2777';
+const PINK_LIGHT = '#fdf2f8';
+const PINK_BORDER = '#fbcfe8';
+
+const BKASH_NUMBER = '01872149655';
+const NAGAD_NUMBER = '01872149655';
+
 export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
   const [form, setForm] = useState({
     name: '',
@@ -15,7 +22,8 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
     district: '',
     upazila: '',
     address: '',
-    payment: 'cash'
+    payment: 'cod',
+    transaction_id: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -25,6 +33,10 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
   async function submitOrder() {
     if (!form.name || !form.phone || !form.address) {
       setError('নাম, ফোন নম্বর এবং ঠিকানা আবশ্যক!');
+      return;
+    }
+    if ((form.payment === 'bkash' || form.payment === 'nagad') && !form.transaction_id) {
+      setError('বিকাশ/নগদ এ পেমেন্ট করলে Transaction ID দিতে হবে!');
       return;
     }
     setLoading(true);
@@ -41,6 +53,7 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
         upazila: form.upazila,
         address: form.address,
         payment_method: form.payment,
+        transaction_id: form.transaction_id || null,
         total_amount: total,
         status: 'pending'
       })
@@ -63,127 +76,146 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
     await supabase.from('order_items').insert(items);
 
     setLoading(false);
-   onSuccess(order.id, form.phone)
+    onSuccess(order.id, form.phone);
   }
 
   return (
-    <div className="min-h-screen bg-green-50 pb-24">
-      <div className="bg-white p-4 shadow flex items-center gap-3">
-        <button onClick={onBack} className="text-green-700 font-bold text-lg">
-          &larr; ঝুড়িতে ফিরুন
+    <div style={{ minHeight: '100vh', background: PINK_LIGHT, paddingBottom: '100px' }}>
+      {/* হেডার */}
+      <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button onClick={onBack}
+          style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>
+          ←
         </button>
-        <h2 className="text-xl font-bold text-green-700">অর্ডার ফর্ম</h2>
+        <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>অর্ডার ফর্ম</h2>
       </div>
 
-      <div className="p-4 space-y-3">
-        <div className="bg-white rounded-xl shadow p-3">
-          <h3 className="font-bold text-gray-700 mb-3">আপনার তথ্য দিন</h3>
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
-          <div className="space-y-2">
+        {/* কাস্টমার তথ্য */}
+        <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+          <h3 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '12px', fontSize: '15px' }}>আপনার তথ্য দিন</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div>
-              <label className="text-xs text-gray-500 font-medium">নাম *</label>
-              <input
-                name="name"
-                value={form.name}
-                onChange={handle}
+              <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>নাম *</label>
+              <input name="name" value={form.name} onChange={handle}
                 placeholder="আপনার পূর্ণ নাম"
-                className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-900 mt-1 focus:border-green-500 focus:outline-none"
-              />
+                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
             </div>
             <div>
-              <label className="text-xs text-gray-500 font-medium">ফোন নম্বর *</label>
-              <input
-                name="phone"
-                value={form.phone}
-                onChange={handle}
+              <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>ফোন নম্বর *</label>
+              <input name="phone" value={form.phone} onChange={handle}
                 placeholder="01XXXXXXXXX"
-                className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-900 mt-1 focus:border-green-500 focus:outline-none"
-              />
+                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
             </div>
             <div>
-              <label className="text-xs text-gray-500 font-medium">ইমেইল</label>
-              <input
-                name="email"
-                value={form.email}
-                onChange={handle}
-                placeholder="example@email.com"
-                className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-900 mt-1 focus:border-green-500 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-gray-500 font-medium">জেলা</label>
-              <input
-                name="district"
-                value={form.district}
-                onChange={handle}
+              <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>জেলা</label>
+              <input name="district" value={form.district} onChange={handle}
                 placeholder="আপনার জেলা"
-                className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-900 mt-1 focus:border-green-500 focus:outline-none"
-              />
+                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
             </div>
             <div>
-              <label className="text-xs text-gray-500 font-medium">উপজেলা</label>
-              <input
-                name="upazila"
-                value={form.upazila}
-                onChange={handle}
+              <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>উপজেলা</label>
+              <input name="upazila" value={form.upazila} onChange={handle}
                 placeholder="আপনার উপজেলা"
-                className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-900 mt-1 focus:border-green-500 focus:outline-none"
-              />
+                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
             </div>
             <div>
-              <label className="text-xs text-gray-500 font-medium">বিস্তারিত ঠিকানা *</label>
-              <textarea
-                name="address"
-                value={form.address}
-                onChange={handle}
+              <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>বিস্তারিত ঠিকানা *</label>
+              <textarea name="address" value={form.address} onChange={handle}
                 placeholder="গ্রাম/মহল্লা, বাড়ির নাম/নম্বর"
                 rows={2}
-                className="border-2 border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-900 mt-1 focus:border-green-500 focus:outline-none"
-              />
+                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'none' }} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow p-3">
-          <h3 className="font-bold text-gray-700 mb-3">পেমেন্ট পদ্ধতি</h3>
-          <div className="grid grid-cols-3 gap-2">
-            {['cash', 'bkash', 'nagad'].map(method => (
-              <button
-                key={method}
-                onClick={() => setForm({ ...form, payment: method })}
-                className={`py-2 rounded-xl text-sm font-medium border-2 ${form.payment === method ? 'bg-green-700 text-white border-green-700' : 'bg-white text-gray-700 border-gray-300'}`}
-              >
-                {method === 'cash' ? 'ক্যাশ' : method === 'bkash' ? 'বিকাশ' : 'নগদ'}
+        {/* পেমেন্ট পদ্ধতি */}
+        <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+          <h3 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '12px', fontSize: '15px' }}>পেমেন্ট পদ্ধতি</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+            {[
+              { key: 'cod', label: '🚚 ক্যাশ অন ডেলিভারি' },
+              { key: 'bkash', label: '💗 বিকাশ' },
+              { key: 'nagad', label: '🟠 নগদ' },
+            ].map(method => (
+              <button key={method.key}
+                onClick={() => setForm({ ...form, payment: method.key, transaction_id: '' })}
+                style={{
+                  padding: '10px 6px', borderRadius: '12px', fontSize: '12px', fontWeight: '600',
+                  border: `2px solid`, cursor: 'pointer',
+                  borderColor: form.payment === method.key ? PINK : '#e5e7eb',
+                  background: form.payment === method.key ? PINK : 'white',
+                  color: form.payment === method.key ? 'white' : '#374151',
+                }}>
+                {method.label}
               </button>
             ))}
           </div>
+
+          {/* বিকাশ নির্দেশনা */}
+          {form.payment === 'bkash' && (
+            <div style={{ background: '#fdf2f8', border: `1px solid ${PINK_BORDER}`, borderRadius: '12px', padding: '12px', marginTop: '12px' }}>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', color: PINK, margin: '0 0 6px 0' }}>💗 বিকাশে পেমেন্ট করুন</p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '3px 0' }}>📱 নম্বর: <strong>{BKASH_NUMBER}</strong></p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '3px 0' }}>💰 পরিমাণ: <strong>{total.toFixed(0)} Tk</strong></p>
+              <p style={{ fontSize: '11px', color: '#6b7280', margin: '6px 0 0 0' }}>বিকাশ Send Money করে Transaction ID লিখুন</p>
+              <input name="transaction_id" value={form.transaction_id} onChange={handle}
+                placeholder="Transaction ID লিখুন (যেমন: 8N6A2T3K9P)"
+                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box', outline: 'none' }} />
+            </div>
+          )}
+
+          {/* নগদ নির্দেশনা */}
+          {form.payment === 'nagad' && (
+            <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '12px', padding: '12px', marginTop: '12px' }}>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#ea580c', margin: '0 0 6px 0' }}>🟠 নগদে পেমেন্ট করুন</p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '3px 0' }}>📱 নম্বর: <strong>{NAGAD_NUMBER}</strong></p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '3px 0' }}>💰 পরিমাণ: <strong>{total.toFixed(0)} Tk</strong></p>
+              <p style={{ fontSize: '11px', color: '#6b7280', margin: '6px 0 0 0' }}>নগদ Send Money করে Transaction ID লিখুন</p>
+              <input name="transaction_id" value={form.transaction_id} onChange={handle}
+                placeholder="Transaction ID লিখুন"
+                style={{ border: '2px solid #fed7aa', borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box', outline: 'none' }} />
+            </div>
+          )}
+
+          {/* ক্যাশ অন ডেলিভারি নির্দেশনা */}
+          {form.payment === 'cod' && (
+            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '12px', marginTop: '12px' }}>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#15803d', margin: '0 0 4px 0' }}>🚚 ক্যাশ অন ডেলিভারি</p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: 0 }}>পণ্য পাওয়ার পর <strong>{total.toFixed(0)} Tk</strong> পরিশোধ করুন।</p>
+            </div>
+          )}
         </div>
 
-        <div className="bg-white rounded-xl shadow p-3">
-          <h3 className="font-bold text-gray-700 mb-2">অর্ডার সারসংক্ষেপ</h3>
+        {/* অর্ডার সারসংক্ষেপ */}
+        <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+          <h3 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '8px', fontSize: '15px' }}>অর্ডার সারসংক্ষেপ</h3>
           {cart.map(item => (
-            <div key={item.id} className="flex justify-between text-sm text-gray-600 py-1 border-b">
+            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6b7280', padding: '6px 0', borderBottom: '1px dashed #e5e7eb' }}>
               <span>{item.name_bn || item.name} ({item.qty} {item.unit})</span>
-              <span className="font-bold">{(item.price_per_unit * item.qty).toFixed(0)} Tk</span>
+              <span style={{ fontWeight: 'bold', color: '#374151' }}>{(item.price_per_unit * item.qty).toFixed(0)} Tk</span>
             </div>
           ))}
-          <div className="flex justify-between font-bold text-green-700 mt-2 text-lg">
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: PINK, marginTop: '8px', fontSize: '16px' }}>
             <span>Total:</span>
             <span>{total.toFixed(0)} Tk</span>
           </div>
         </div>
 
         {error && (
-          <p className="text-red-500 text-sm text-center bg-red-50 p-2 rounded-lg">{error}</p>
+          <p style={{ color: '#ef4444', fontSize: '13px', textAlign: 'center', background: '#fee2e2', padding: '10px', borderRadius: '8px' }}>{error}</p>
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4">
-        <button
-          onClick={submitOrder}
-          disabled={loading}
-          className="w-full bg-green-700 text-white py-3 rounded-xl font-bold text-lg disabled:opacity-50"
-        >
+      {/* নিচের বাটন */}
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
+        <button onClick={submitOrder} disabled={loading}
+          style={{
+            width: '100%', background: loading ? '#9ca3af' : PINK, color: 'white',
+            border: 'none', borderRadius: '12px', padding: '14px',
+            fontSize: '16px', fontWeight: 'bold', cursor: loading ? 'not-allowed' : 'pointer'
+          }}>
           {loading ? 'অপেক্ষা করুন...' : 'অর্ডার নিশ্চিত করুন'}
         </button>
       </div>
