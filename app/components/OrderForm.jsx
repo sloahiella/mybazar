@@ -14,6 +14,19 @@ const PINK_BORDER = '#fbcfe8';
 const BKASH_NUMBER = '01872149655';
 const NAGAD_NUMBER = '01872149655';
 
+const inputStyle = {
+  border: `2px solid ${PINK_BORDER}`,
+  borderRadius: '8px',
+  padding: '10px 12px',
+  width: '100%',
+  fontSize: '14px',
+  marginTop: '4px',
+  boxSizing: 'border-box',
+  outline: 'none',
+  color: '#1f2937',
+  background: 'white',
+};
+
 export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
   const [form, setForm] = useState({
     name: '',
@@ -100,32 +113,32 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>নাম *</label>
               <input name="name" value={form.name} onChange={handle}
                 placeholder="আপনার পূর্ণ নাম"
-                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
+                style={inputStyle} />
             </div>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>ফোন নম্বর *</label>
               <input name="phone" value={form.phone} onChange={handle}
                 placeholder="01XXXXXXXXX"
-                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
+                style={inputStyle} />
             </div>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>জেলা</label>
               <input name="district" value={form.district} onChange={handle}
                 placeholder="আপনার জেলা"
-                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
+                style={inputStyle} />
             </div>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>উপজেলা</label>
               <input name="upazila" value={form.upazila} onChange={handle}
                 placeholder="আপনার উপজেলা"
-                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none' }} />
+                style={inputStyle} />
             </div>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>বিস্তারিত ঠিকানা *</label>
               <textarea name="address" value={form.address} onChange={handle}
                 placeholder="গ্রাম/মহল্লা, বাড়ির নাম/নম্বর"
                 rows={2}
-                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'none' }} />
+                style={{ ...inputStyle, resize: 'none' }} />
             </div>
           </div>
         </div>
@@ -143,7 +156,7 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
                 onClick={() => setForm({ ...form, payment: method.key, transaction_id: '' })}
                 style={{
                   padding: '10px 6px', borderRadius: '12px', fontSize: '12px', fontWeight: '600',
-                  border: `2px solid`, cursor: 'pointer',
+                  border: '2px solid', cursor: 'pointer',
                   borderColor: form.payment === method.key ? PINK : '#e5e7eb',
                   background: form.payment === method.key ? PINK : 'white',
                   color: form.payment === method.key ? 'white' : '#374151',
@@ -162,7 +175,7 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
               <p style={{ fontSize: '11px', color: '#6b7280', margin: '6px 0 0 0' }}>বিকাশ Send Money করে Transaction ID লিখুন</p>
               <input name="transaction_id" value={form.transaction_id} onChange={handle}
                 placeholder="Transaction ID লিখুন (যেমন: 8N6A2T3K9P)"
-                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box', outline: 'none' }} />
+                style={{ ...inputStyle, border: `2px solid ${PINK_BORDER}`, marginTop: '8px' }} />
             </div>
           )}
 
@@ -175,7 +188,7 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
               <p style={{ fontSize: '11px', color: '#6b7280', margin: '6px 0 0 0' }}>নগদ Send Money করে Transaction ID লিখুন</p>
               <input name="transaction_id" value={form.transaction_id} onChange={handle}
                 placeholder="Transaction ID লিখুন"
-                style={{ border: '2px solid #fed7aa', borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box', outline: 'none' }} />
+                style={{ ...inputStyle, border: '2px solid #fed7aa', marginTop: '8px' }} />
             </div>
           )}
 
