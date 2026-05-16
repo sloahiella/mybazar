@@ -207,34 +207,29 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
 }
 
 function OrdersModal({ onClose, isAdmin = false }) {
-  const [phone, setPhone] = useState('');
   const [search, setSearch] = useState('');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [searched, setSearched] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin) {
-      const savedPhone = localStorage.getItem('customer_phone');
-      if (savedPhone) { setPhone(savedPhone); fetchOrders(savedPhone); }
-    } else {
+    if (isAdmin) {
       fetchAllOrders();
+    } else {
+      const savedPhone = localStorage.getItem('customer_phone');
+      if (savedPhone) fetchCustomerOrders(savedPhone);
     }
   }, []);
 
-  async function fetchOrders(p) {
-    if (!p) return;
+  async function fetchCustomerOrders(phone) {
     setLoading(true);
     const { data } = await supabase
       .from('orders')
       .select('*, order_items(*, products(name, name_bn, unit))')
-      .eq('customer_phone', p)
+      .eq('customer_phone', phone)
       .order('created_at', { ascending: false });
     if (data) setOrders(data);
     setLoading(false);
-    setSearched(true);
-    localStorage.setItem('customer_phone', p);
   }
 
   async function fetchAllOrders() {
@@ -245,7 +240,6 @@ function OrdersModal({ onClose, isAdmin = false }) {
       .order('created_at', { ascending: false });
     if (data) setOrders(data);
     setLoading(false);
-    setSearched(true);
   }
 
   const filteredOrders = orders.filter(o => {
@@ -276,26 +270,14 @@ function OrdersModal({ onClose, isAdmin = false }) {
         </div>
 
         <div style={{ padding: '16px' }}>
-          {!isAdmin && (
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-                placeholder="ফোন নম্বর দিন"
-                style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', outline: 'none' }} />
-              <button onClick={() => fetchOrders(phone)}
-                style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: '600' }}>
-                খুঁজুন
-              </button>
-            </div>
-          )}
-
-          {orders.length > 0 && (
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="🔍 তারিখ, অর্ডার নম্বর বা নাম..."
-              style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }} />
-          )}
+          {/* সার্চ বক্স */}
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+            placeholder={isAdmin ? '🔍 তারিখ, অর্ডার নম্বর, নাম বা ফোন...' : '🔍 তারিখ বা অর্ডার নম্বর...'}
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }} />
 
           {loading && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>লোড হচ্ছে...</p>}
-          {!loading && searched && orders.length === 0 && (
+
+          {!loading && orders.length === 0 && (
             <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার পাওয়া যায়নি</p>
           )}
 
@@ -309,7 +291,7 @@ function OrdersModal({ onClose, isAdmin = false }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '14px', margin: '0 0 4px 0' }}>অর্ডার #{order.id}</p>
-                    {isAdmin && <p style={{ fontSize: '12px', color: '#374151', margin: '0 0 2px 0', fontWeight: '500' }}>{order.customer_name}</p>}
+                    {isAdmin && <p style={{ fontSize: '12px', color: '#374151', margin: '0 0 2px 0', fontWeight: '500' }}>{order.customer_name} | {order.customer_phone}</p>}
                     <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px 0' }}>{new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
                     <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>{order.order_items?.length} টি পণ্য</p>
                   </div>
@@ -332,7 +314,6 @@ function OrdersModal({ onClose, isAdmin = false }) {
     </div>
   );
 }
-
 // সাব-পেজ chips component
 function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
   const [subPages, setSubPages] = useState([]);
