@@ -823,29 +823,38 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
     setLoading(false);
   }
 
-  function handleDragStart(index) {
-    setDragIndex(index);
-  }
+  const dragItem = useRef(null);
+const dragOverItem = useRef(null);
 
-  function handleDragOver(index) {
-    if (dragIndex !== null && dragIndex !== index) {
-      setDragOverIndex(index);
-    }
-  }
+function handleDragStart(index) {
+  dragItem.current = index;
+  setDragIndex(index);
+}
 
-  async function handleDrop(dropIndex) {
-    if (dragIndex === null || dragIndex === dropIndex) {
-      setDragIndex(null); setDragOverIndex(null); return;
-    }
-    const items = Array.from(products);
-    const [removed] = items.splice(dragIndex, 1);
-    items.splice(dropIndex, 0, removed);
-    setProducts(items);
-    setDragIndex(null); setDragOverIndex(null);
-    for (let i = 0; i < items.length; i++) {
-      await supabase.from('products').update({ sort_order: i }).eq('id', items[i].id);
-    }
+function handleDragOver(index) {
+  dragOverItem.current = index;
+  if (dragIndex !== null && dragIndex !== index) {
+    setDragOverIndex(index);
   }
+}
+
+async function handleDrop() {
+  const from = dragItem.current;
+  const to = dragOverItem.current;
+  if (from === null || to === null || from === to) {
+    setDragIndex(null); setDragOverIndex(null); return;
+  }
+  const items = Array.from(products);
+  const [removed] = items.splice(from, 1);
+  items.splice(to, 0, removed);
+  setProducts(items);
+  dragItem.current = null;
+  dragOverItem.current = null;
+  setDragIndex(null); setDragOverIndex(null);
+  for (let i = 0; i < items.length; i++) {
+    await supabase.from('products').update({ sort_order: i }).eq('id', items[i].id);
+  }
+}
 
   const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
 
@@ -1049,17 +1058,16 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 items-stretch">
         {displayProducts.map((product, index) => (
           <ProductCard
-            key={product.id}
-            product={product}
-            onAdd={addToCart}
-            isAdmin={isAdmin}
-            onEdit={setEditingProduct}
-            onDoubleClick={(p) => setSelectedName(p.name)}
-            isDragging={dragIndex === index}
-            onDragStart={() => handleDragStart(index)}
-            onDragOver={() => handleDragOver(index)}
-            onDrop={() => handleDrop(index)}
-          />
+  product={product}
+  onAdd={addToCart}
+  isAdmin={isAdmin}
+  onEdit={setEditingProduct}
+  onDoubleClick={(p) => setSelectedName(p.name)}
+  isDragging={dragIndex === index}
+  onDragStart={() => handleDragStart(index)}
+  onDragOver={() => handleDragOver(index)}
+  onDrop={() => handleDrop()}
+/>
         ))}
         {!loading && displayProducts.length === 0 && (
           <p className="col-span-4 text-center text-gray-400 mt-10">কোনো পণ্য পাওয়া যায়নি</p>

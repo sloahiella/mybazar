@@ -199,13 +199,31 @@ export default function Home() {
       } catch (e) {}
 
       const channel = supabase
-        .channel('orders')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, () => {
-          fetchOrders();
-          fetchNotifications();
-          playNotificationSound();
-        })
-        .subscribe();
+  .channel('orders')
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, async (payload) => {
+    fetchOrders();
+    fetchNotifications();
+    playNotificationSound();
+
+    // Push Notification পাঠাও
+    const fcmToken = localStorage.getItem('fcm_token');
+    if (fcmToken) {
+      const order = payload.new;
+      await fetch('https://jthdtmqrapnfmmmeuqsw.supabase.co/functions/v1/send-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J`,
+        },
+        body: JSON.stringify({
+          token: fcmToken,
+          title: '🛒 নতুন অর্ডার!',
+          body: `অর্ডার #${order.id} - ${order.total_amount} Tk`,
+        }),
+      });
+    }
+  })
+  .subscribe();
       return () => { supabase.removeChannel(channel); };
     }
   }, [role]);
