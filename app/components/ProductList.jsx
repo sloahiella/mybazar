@@ -179,15 +179,19 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
           {(order.order_items || []).map((item, i) => (
             <div key={i} style={{ borderBottom: '1px dashed #d1d5db', padding: '8px 4px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1, paddingRight: '16px' }}>
-                  <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{item.products?.name}</p>
-                  <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>
-                    {item.price} Tk/{item.products?.unit} × {item.quantity} {item.products?.unit}
-                  </p>
-                </div>
-                <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#15803d', margin: 0, whiteSpace: 'nowrap' }}>
-                  {(item.price * item.quantity).toFixed(0)} Tk
-                </p>
+                <div style={{ flex: 1, paddingRight: '8px' }}>
+  <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{item.products?.name}</p>
+  <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>
+    {item.price} Tk/{item.products?.unit} × {item.quantity} {item.products?.unit}
+  </p>
+</div>
+{item.products?.image_url && (
+  <img src={item.products.image_url} alt={item.products.name}
+    style={{ width: '40px', height: '40px', objectFit: 'contain', borderRadius: '6px', margin: '0 8px', flexShrink: 0 }} />
+)}
+<p style={{ fontSize: '14px', fontWeight: 'bold', color: '#15803d', margin: 0, whiteSpace: 'nowrap' }}>
+  {(item.price * item.quantity).toFixed(0)} Tk
+</p>
               </div>
             </div>
           ))}
@@ -225,7 +229,7 @@ function OrdersModal({ onClose, isAdmin = false }) {
     setLoading(true);
     const { data } = await supabase
       .from('orders')
-      .select('*, order_items(*, products(name, name_bn, unit))')
+     .select('*, order_items(*, products(name, name_bn, unit, image_url))')
       .eq('customer_phone', phone)
       .order('created_at', { ascending: false });
     if (data) setOrders(data);
