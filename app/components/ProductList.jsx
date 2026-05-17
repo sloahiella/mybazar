@@ -847,25 +847,31 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
               setSelectedPage(page);
               setSelectedName(null);
               setSelectedCategory(null);
-              localStorage.setItem('current_page_id', page ? String(page.id) : '');
+             localStorage.setItem('current_page_id', page ? String(page.id) : '');
+localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
               if (onPageChange) onPageChange(page ? String(page.id) : null);
             }}
             isAdmin={isAdmin}
             onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }}
             onShowOrders={() => setShowOrders(true)}
           />
-          {selectedPage && (
-            <button onClick={() => {
-              setSelectedPage(null);
-              setSelectedName(null);
-              setSelectedCategory(null);
-              localStorage.setItem('current_page_id', '');
-              if (onPageChange) onPageChange(null);
-            }}
-              style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', border: 'none', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer' }}>
-              ← হোম
-            </button>
-          )}
+         {selectedPage && (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+    <button onClick={() => {
+      setSelectedPage(null);
+      setSelectedName(null);
+      setSelectedCategory(null);
+      localStorage.setItem('current_page_id', '');
+      if (onPageChange) onPageChange(null);
+    }}
+      style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', border: 'none', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer' }}>
+      ← হোম
+    </button>
+    <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#db2777' }}>
+      {selectedPage.name_bn || selectedPage.name}
+    </span>
+  </div>
+)}
           {(isAdmin || isEditor) && (
             <button onClick={() => { setAddModalPage(selectedPage); setShowAddModal(true); }}
               style={{ background: '#db2777', color: 'white', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', whiteSpace: 'nowrap' }}>
@@ -880,6 +886,8 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
             setSelectedName(null);
             setSelectedCategory(null);
             localStorage.setItem('current_page_id', page ? String(page.id) : '');
+            localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
+            localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
             if (onPageChange) onPageChange(page ? String(page.id) : null);
           }}
         />

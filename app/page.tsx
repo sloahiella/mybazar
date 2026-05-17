@@ -246,30 +246,35 @@ export default function Home() {
     if (data) setBranches(data as Branch[]);
   }
 
-  async function fetchOrders(filterPageId?: string) {
-    const editorPageId = localStorage.getItem('editor_page_id');
-    const currentPageId = filterPageId !== undefined ? filterPageId : localStorage.getItem('current_page_id');
-    const activePageId = currentPageId || (role === 'editor' ? editorPageId : null);
+ async function fetchOrders(filterPageId?: string) {
+  const editorPageId = localStorage.getItem('editor_page_id');
+  const currentPageId = filterPageId !== undefined ? filterPageId : localStorage.getItem('current_page_id');
+  const activePageId = currentPageId || (role === 'editor' ? editorPageId : null);
 
-    const { data } = await supabase
-      .from('orders')
-      .select('*, order_items(*, products(name, name_bn, unit, image_url, page_id))')
-      .order('created_at', { ascending: false });
+  const { data } = await supabase
+    .from('orders')
+    .select('*, order_items(*, products(name, name_bn, unit, image_url, page_id))')
+    .order('created_at', { ascending: false });
 
-    if (data) {
-      let filteredData = data;
-      if (activePageId) {
-        filteredData = data.filter((o: any) =>
-          o.order_items?.some((item: any) => String(item.products?.page_id) === String(activePageId))
-        );
-      }
-      setOrders(filteredData);
-      setTotalOrders(filteredData.length);
-      const today = new Date().toDateString();
-      const todayOrders = filteredData.filter((o: any) => new Date(o.created_at).toDateString() === today);
-      setTodaySales(todayOrders.reduce((a: number, o: any) => a + o.total_amount, 0));
+  if (data) {
+    let filteredData = data;
+    if (activePageId) {
+      filteredData = data.filter((o: any) =>
+        o.order_items?.some((item: any) => {
+          const productPageId = item.products?.page_id;
+          // page_id null হলে হোম পেজের অর্ডার হিসেবে গণ্য হবে
+          if (!productPageId && !activePageId) return true;
+          return String(productPageId) === String(activePageId);
+        })
+      );
     }
+    setOrders(filteredData);
+    setTotalOrders(filteredData.length);
+    const today = new Date().toDateString();
+    const todayOrders = filteredData.filter((o: any) => new Date(o.created_at).toDateString() === today);
+    setTodaySales(todayOrders.reduce((a: number, o: any) => a + o.total_amount, 0));
   }
+}
 
   async function fetchNotifications() {
     const { data } = await supabase.from('notifications').select('*')
@@ -508,8 +513,12 @@ export default function Home() {
           <div style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: '380px', background: 'white', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
             <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>
-                {role === 'admin' ? '👑 Admin Panel' : `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel`}
-              </h2>
+  {role === 'editor'
+    ? `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel`
+    : localStorage.getItem('current_page_id')
+      ? `📋 ${localStorage.getItem('current_page_name') || 'Admin'} Panel`
+      : '👑 Admin Panel'}
+</h2>
               <button onClick={() => setShowAdminDrawer(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
 
