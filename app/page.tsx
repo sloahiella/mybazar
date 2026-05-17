@@ -46,23 +46,20 @@ function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => 
   function handleSave() {
     const lines = [
       'সোহেল মার্ট | মাই বাজার',
-      'sohelmart.com | mybazar.vercel.app',
+      'sohelmart.com',
       'WhatsApp: 01872149655',
       '════════════════════════════════════════',
-      `শাখা: লালমোহন | তারিখ: ${new Date(order.created_at).toLocaleDateString('bn-BD')}`,
+      `তারিখ: ${new Date(order.created_at).toLocaleDateString('bn-BD')}`,
       `নাম: ${order.customer_name} | ফোন: ${order.customer_phone}`,
       `জেলা: ${order.district}, ${order.upazila}`,
       `ঠিকানা: ${order.address}`,
       `অর্ডার #: ${order.id}`,
       '════════════════════════════════════════',
-      'পণ্য                                টাকা',
-      '────────────────────────────────────────',
       ...((order.order_items || []).map((item: any) =>
-        `${item.products?.name}\n${item.price} Tk/${item.products?.unit} × ${item.quantity} ${item.products?.unit}     ${(item.price * item.quantity).toFixed(0)} Tk\n────────────────`
+        `${item.products?.name} × ${item.quantity} ${item.products?.unit} = ${(item.price * item.quantity).toFixed(0)} Tk`
       )),
       '════════════════════════════════════════',
-      `সর্বমোট:                        ${order.total_amount} Tk`,
-      '════════════════════════════════════════',
+      `সর্বমোট: ${order.total_amount} Tk`,
     ];
     const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -86,13 +83,8 @@ function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => 
             <button onClick={onClose} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', cursor: 'pointer' }}>✕</button>
           </div>
         </div>
-
         <div ref={printRef} style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
-          <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 2px 1fr',
-            border: `2px solid ${PINK}`, borderRadius: '8px',
-            overflow: 'hidden', marginBottom: '16px',
-          }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2px 1fr', border: `2px solid ${PINK}`, borderRadius: '8px', overflow: 'hidden', marginBottom: '16px' }}>
             <div style={{ padding: '14px', background: PINK_LIGHT }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                 <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
@@ -103,8 +95,7 @@ function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => 
               </div>
               <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 sohelmart.com</p>
               <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>📱 01872149655</p>
-              <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 2px 0', fontWeight: 'bold' }}>📍 শাখা: লালমোহন</p>
-              <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 2px 0', fontWeight: 'bold' }}>তারিখ: {new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '2px 0' }}>সময়: {new Date(order.created_at).toLocaleTimeString('bn-BD')}</p>
             </div>
             <div style={{ background: PINK }} />
@@ -176,6 +167,7 @@ export default function Home() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [orderSearch, setOrderSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [dateFilter, setDateFilter] = useState('today');
 
   useEffect(() => {
     fetchBranches();
@@ -186,43 +178,47 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (role === 'admin') {
+    if (role === 'admin' || role === 'editor') {
       fetchOrders();
-      fetchNotifications();
-      try {
-        requestNotificationPermission().then((token: string | null) => {
-          if (token) localStorage.setItem('fcm_token', token);
-        });
-        if (messaging) {
-          onMessage(messaging, (payload: any) => {
-            fetchOrders();
-            fetchNotifications();
-            playNotificationSound();
+      if (role === 'admin') {
+        fetchNotifications();
+        try {
+          requestNotificationPermission().then((token: string | null) => {
+            if (token) localStorage.setItem('fcm_token', token);
           });
-        }
-      } catch (e) {}
+          if (messaging) {
+            onMessage(messaging, (payload: any) => {
+              fetchOrders();
+              fetchNotifications();
+              playNotificationSound();
+            });
+          }
+        } catch (e) {}
+      }
 
       const channel = supabase
         .channel('orders')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, async (payload) => {
           fetchOrders();
-          fetchNotifications();
-          playNotificationSound();
-          const fcmToken = localStorage.getItem('fcm_token');
-          if (fcmToken) {
-            const order = payload.new;
-            await fetch('https://jthdtmqrapnfmmmeuqsw.supabase.co/functions/v1/send-notification', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J`,
-              },
-              body: JSON.stringify({
-                token: fcmToken,
-                title: '🛒 নতুন অর্ডার!',
-                body: `অর্ডার #${order.id} - ${order.total_amount} Tk`,
-              }),
-            });
+          if (role === 'admin') {
+            fetchNotifications();
+            playNotificationSound();
+            const fcmToken = localStorage.getItem('fcm_token');
+            if (fcmToken) {
+              const order = payload.new;
+              await fetch('https://jthdtmqrapnfmmmeuqsw.supabase.co/functions/v1/send-notification', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J`,
+                },
+                body: JSON.stringify({
+                  token: fcmToken,
+                  title: '🛒 নতুন অর্ডার!',
+                  body: `অর্ডার #${order.id} - ${order.total_amount} Tk`,
+                }),
+              });
+            }
           }
         })
         .subscribe();
@@ -250,29 +246,30 @@ export default function Home() {
     if (data) setBranches(data as Branch[]);
   }
 
- async function fetchOrders() {
-  const editorPageId = localStorage.getItem('editor_page_id');
-  let query = supabase
-    .from('orders')
-    .select('*, order_items(*, products(name, name_bn, unit, image_url, page_id))')
-    .order('created_at', { ascending: false });
+  async function fetchOrders(filterPageId?: string) {
+    const editorPageId = localStorage.getItem('editor_page_id');
+    const currentPageId = filterPageId !== undefined ? filterPageId : localStorage.getItem('current_page_id');
+    const activePageId = currentPageId || (role === 'editor' ? editorPageId : null);
 
-  const { data } = await query;
-  if (data) {
-    let filteredData = data;
-    // Editor হলে শুধু তার পেজের অর্ডার দেখাবে
-    if (role === 'editor' && editorPageId) {
-      filteredData = data.filter((o: any) =>
-        o.order_items?.some((item: any) => String(item.products?.page_id) === String(editorPageId))
-      );
+    const { data } = await supabase
+      .from('orders')
+      .select('*, order_items(*, products(name, name_bn, unit, image_url, page_id))')
+      .order('created_at', { ascending: false });
+
+    if (data) {
+      let filteredData = data;
+      if (activePageId) {
+        filteredData = data.filter((o: any) =>
+          o.order_items?.some((item: any) => String(item.products?.page_id) === String(activePageId))
+        );
+      }
+      setOrders(filteredData);
+      setTotalOrders(filteredData.length);
+      const today = new Date().toDateString();
+      const todayOrders = filteredData.filter((o: any) => new Date(o.created_at).toDateString() === today);
+      setTodaySales(todayOrders.reduce((a: number, o: any) => a + o.total_amount, 0));
     }
-    setOrders(filteredData);
-    setTotalOrders(filteredData.length);
-    const today = new Date().toDateString();
-    const todayOrders = filteredData.filter((o: any) => new Date(o.created_at).toDateString() === today);
-    setTodaySales(todayOrders.reduce((a: number, o: any) => a + o.total_amount, 0));
   }
-}
 
   async function fetchNotifications() {
     const { data } = await supabase.from('notifications').select('*')
@@ -324,6 +321,7 @@ export default function Home() {
     localStorage.removeItem('role');
     localStorage.removeItem('editor_page_id');
     localStorage.removeItem('editor_page_name');
+    localStorage.removeItem('current_page_id');
     setShowAdminDrawer(false);
   }
 
@@ -332,6 +330,44 @@ export default function Home() {
     setAutoPrint(newVal);
     localStorage.setItem('autoPrint', newVal.toString());
   }
+
+  const getFilteredByDate = (data: any[]) => {
+    const now = new Date();
+    if (orderSearch) {
+      return data.filter((o: any) => {
+        const dateStr = new Date(o.created_at).toLocaleDateString('bn-BD');
+        const dateStrEn = new Date(o.created_at).toLocaleDateString('en-US');
+        return (
+          String(o.id).includes(orderSearch) ||
+          dateStr.includes(orderSearch) ||
+          dateStrEn.toLowerCase().includes(orderSearch.toLowerCase()) ||
+          (o.customer_name && o.customer_name.toLowerCase().includes(orderSearch.toLowerCase())) ||
+          (o.customer_phone && o.customer_phone.includes(orderSearch))
+        );
+      });
+    }
+    return data.filter((o: any) => {
+      const orderDate = new Date(o.created_at);
+      if (dateFilter === 'today') {
+        return orderDate.toDateString() === now.toDateString();
+      } else if (dateFilter === 'yesterday') {
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        return orderDate.toDateString() === yesterday.toDateString();
+      } else if (dateFilter === 'week') {
+        const weekAgo = new Date(now);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return orderDate >= weekAgo;
+      } else if (dateFilter === 'month') {
+        return orderDate.getMonth() === now.getMonth() && orderDate.getFullYear() === now.getFullYear();
+      }
+      return true;
+    });
+  };
+
+  const dateFilteredOrders = getFilteredByDate(orders);
+  const filteredSales = dateFilteredOrders.reduce((a: number, o: any) => a + o.total_amount, 0);
+  const filteredOrders2 = dateFilteredOrders.length;
 
   const filteredOrders = orders.filter(o =>
     orderSearch === '' ||
@@ -375,38 +411,20 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Login Modal */}
         {showLoginModal && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
             <div style={{ background: 'white', borderRadius: '20px', padding: '24px', maxWidth: '340px', width: '100%', margin: '0 16px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: PINK, textAlign: 'center', marginBottom: '16px' }}>🔐 লগইন</h2>
-
-              {/* Admin বা Editor সিলেক্ট */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
-                <button
-                  onClick={() => setLoginType('admin')}
-                  style={{
-                    padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600',
-                    border: '2px solid', cursor: 'pointer',
-                    borderColor: loginType === 'admin' ? PINK : '#e5e7eb',
-                    background: loginType === 'admin' ? PINK : 'white',
-                    color: loginType === 'admin' ? 'white' : '#374151',
-                  }}>
+                <button onClick={() => setLoginType('admin')}
+                  style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: loginType === 'admin' ? PINK : '#e5e7eb', background: loginType === 'admin' ? PINK : 'white', color: loginType === 'admin' ? 'white' : '#374151' }}>
                   👑 Admin
                 </button>
-                <button
-                  onClick={() => setLoginType('editor')}
-                  style={{
-                    padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600',
-                    border: '2px solid', cursor: 'pointer',
-                    borderColor: loginType === 'editor' ? PINK : '#e5e7eb',
-                    background: loginType === 'editor' ? PINK : 'white',
-                    color: loginType === 'editor' ? 'white' : '#374151',
-                  }}>
+                <button onClick={() => setLoginType('editor')}
+                  style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: loginType === 'editor' ? PINK : '#e5e7eb', background: loginType === 'editor' ? PINK : 'white', color: loginType === 'editor' ? 'white' : '#374151' }}>
                   ✏️ Editor
                 </button>
               </div>
-
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleLogin()}
                 placeholder={loginType === 'admin' ? 'Admin পাসওয়ার্ড' : 'Editor পাসওয়ার্ড'}
@@ -442,14 +460,19 @@ export default function Home() {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-         {role === 'editor' && (
-  <button onClick={() => { setShowAdminDrawer(true); fetchOrders(); }}
-    style={{ position: 'relative', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', fontWeight: 'bold' }}>
-    📋
-  </button>
-)}
+          {role === 'editor' && (
+            <button onClick={() => { setShowAdminDrawer(true); fetchOrders(); }}
+              style={{ background: '#f59e0b', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer' }}>
+              📋
+            </button>
+          )}
           {role === 'admin' && (
-            <button onClick={() => { setShowAdminDrawer(true); fetchOrders(); fetchNotifications(); }}
+            <button onClick={() => {
+              setShowAdminDrawer(true);
+              const pageId = localStorage.getItem('current_page_id');
+              fetchOrders(pageId || undefined);
+              fetchNotifications();
+            }}
               style={{ position: 'relative', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', fontWeight: 'bold' }}>
               ⋯
               {unreadCount > 0 && (
@@ -459,7 +482,7 @@ export default function Home() {
               )}
             </button>
           )}
-          <button onClick={() => setSelectedBranch(null)}
+          <button onClick={() => { setSelectedBranch(null); localStorage.removeItem('current_page_id'); }}
             style={{ fontSize: '13px', background: PINK_DARK, color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer' }}>
             {selectedBranch.name_bn || selectedBranch.name} ✕
           </button>
@@ -472,46 +495,89 @@ export default function Home() {
         onOrderSuccess={(orderId: number, phone: string) => {
           localStorage.setItem('customer_phone', phone);
         }}
+        onPageChange={(pageId: string | null) => {
+          localStorage.setItem('current_page_id', pageId || '');
+          if (role === 'admin') fetchOrders(pageId || undefined);
+        }}
       />
 
-      {/* Admin Drawer */}
+      {/* Admin/Editor Drawer */}
       {showAdminDrawer && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowAdminDrawer(false)} />
           <div style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: '380px', background: 'white', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
             <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>👑 Admin Panel</h2>
+              <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>
+                {role === 'admin' ? '👑 Admin Panel' : `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel`}
+              </h2>
               <button onClick={() => setShowAdminDrawer(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', padding: '16px' }}>
-              <div style={{ background: PINK_LIGHT, borderRadius: '12px', padding: '12px', textAlign: 'center', border: `1px solid ${PINK_BORDER}` }}>
-                <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Today Sales</p>
-                <p style={{ fontSize: '22px', fontWeight: 'bold', color: PINK, margin: 0 }}>{todaySales} Tk</p>
+            {/* Date Filter */}
+            <div style={{ padding: '16px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', overflowX: 'auto' }}>
+                {[
+                  { key: 'today', label: 'আজকে' },
+                  { key: 'yesterday', label: 'গতকাল' },
+                  { key: 'week', label: 'এই সপ্তাহ' },
+                  { key: 'month', label: 'এই মাস' },
+                ].map(d => (
+                  <button key={d.key}
+                    onClick={() => { setDateFilter(d.key); setOrderSearch(''); }}
+                    style={{
+                      padding: '6px 14px', borderRadius: '20px', fontSize: '13px',
+                      fontWeight: '500', border: '2px solid', cursor: 'pointer',
+                      whiteSpace: 'nowrap', flexShrink: 0,
+                      borderColor: dateFilter === d.key ? PINK : '#e5e7eb',
+                      background: dateFilter === d.key ? PINK : 'white',
+                      color: dateFilter === d.key ? 'white' : '#374151',
+                    }}>
+                    {d.label}
+                  </button>
+                ))}
               </div>
-              <div style={{ background: '#eff6ff', borderRadius: '12px', padding: '12px', textAlign: 'center', border: '1px solid #bfdbfe' }}>
-                <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Total Orders</p>
-                <p style={{ fontSize: '22px', fontWeight: 'bold', color: '#1d4ed8', margin: 0 }}>{totalOrders}</p>
+
+              {/* তারিখ সার্চ */}
+              <input
+                type="text"
+                value={orderSearch}
+                onChange={e => setOrderSearch(e.target.value)}
+                placeholder="🔍 তারিখ, নাম, ফোন বা অর্ডার নম্বর..."
+                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '10px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: '#1f2937' }}
+              />
+
+              {/* Stats */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ background: PINK_LIGHT, borderRadius: '12px', padding: '12px', textAlign: 'center', border: `1px solid ${PINK_BORDER}` }}>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>💰 Sales</p>
+                  <p style={{ fontSize: '22px', fontWeight: 'bold', color: PINK, margin: 0 }}>{filteredSales} Tk</p>
+                </div>
+                <div style={{ background: '#eff6ff', borderRadius: '12px', padding: '12px', textAlign: 'center', border: '1px solid #bfdbfe' }}>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>📦 Orders</p>
+                  <p style={{ fontSize: '22px', fontWeight: 'bold', color: '#1d4ed8', margin: 0 }}>{filteredOrders2} টি</p>
+                </div>
               </div>
             </div>
 
-            <div style={{ padding: '0 16px 12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f9fafb', borderRadius: '12px', padding: '12px' }}>
-                <div>
-                  <p style={{ fontSize: '14px', fontWeight: '500', color: '#374151', margin: '0 0 2px 0' }}>🖨️ Auto Print</p>
-                  <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>নতুন অর্ডারে অটো প্রিন্ট</p>
+            {role === 'admin' && (
+              <div style={{ padding: '0 16px 12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f9fafb', borderRadius: '12px', padding: '12px' }}>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: '#374151', margin: '0 0 2px 0' }}>🖨️ Auto Print</p>
+                    <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>নতুন অর্ডারে অটো প্রিন্ট</p>
+                  </div>
+                  <button onClick={toggleAutoPrint}
+                    style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '500', border: 'none', cursor: 'pointer', background: autoPrint ? PINK : '#e5e7eb', color: autoPrint ? 'white' : '#6b7280' }}>
+                    {autoPrint ? '✅ চালু' : '❌ বন্ধ'}
+                  </button>
                 </div>
-                <button onClick={toggleAutoPrint}
-                  style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '500', border: 'none', cursor: 'pointer', background: autoPrint ? PINK : '#e5e7eb', color: autoPrint ? 'white' : '#6b7280' }}>
-                  {autoPrint ? '✅ চালু' : '❌ বন্ধ'}
-                </button>
               </div>
-            </div>
+            )}
 
             <div style={{ display: 'flex', gap: '8px', padding: '0 16px 12px', overflowX: 'auto' }}>
               {[
                 { key: 'orders', label: '📋 Orders' },
-                { key: 'notifications', label: `🔔 ${unreadCount > 0 ? `(${unreadCount})` : ''}` },
+                ...(role === 'admin' ? [{ key: 'notifications', label: `🔔 ${unreadCount > 0 ? `(${unreadCount})` : ''}` }] : []),
               ].map(t => (
                 <button key={t.key}
                   onClick={() => { setAdminTab(t.key); if (t.key === 'notifications') markAllRead(); }}
@@ -527,15 +593,11 @@ export default function Home() {
 
             {adminTab === 'orders' && (
               <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)}
-                  placeholder="🔍 নাম, ফোন, তারিখ বা অর্ডার নম্বর..."
-                  style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', padding: '10px 12px', fontSize: '14px', outline: 'none', width: '100%', boxSizing: 'border-box', color: '#1f2937' }} />
-
-                {filteredOrders.length === 0 && (
+                {dateFilteredOrders.length === 0 && (
                   <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার নেই</p>
                 )}
 
-                {filteredOrders.map((order: any) => (
+                {dateFilteredOrders.map((order: any) => (
                   <div key={order.id}
                     onDoubleClick={() => setSelectedOrder(order)}
                     style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
@@ -551,14 +613,14 @@ export default function Home() {
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                         <p style={{ fontWeight: 'bold', color: PINK, margin: 0 }}>{order.total_amount} Tk</p>
-                       <select value={order.status}
-  onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value); }}
-  style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer' }}>
-  <option value="pending">Pending</option>
-  <option value="confirmed">Confirmed</option>
-  <option value="delivered">Delivered</option>
-  {role === 'admin' && <option value="cancelled">Cancelled</option>}
-</select>
+                        <select value={order.status}
+                          onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value); }}
+                          style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer' }}>
+                          <option value="pending">Pending</option>
+                          <option value="confirmed">Confirmed</option>
+                          <option value="delivered">Delivered</option>
+                          {role === 'admin' && <option value="cancelled">Cancelled</option>}
+                        </select>
                         <button
                           onClick={e => { e.stopPropagation(); setSelectedOrder(order); }}
                           style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '4px 10px', fontSize: '12px', cursor: 'pointer' }}>
@@ -584,7 +646,7 @@ export default function Home() {
               </div>
             )}
 
-            {adminTab === 'notifications' && (
+            {adminTab === 'notifications' && role === 'admin' && (
               <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {notifications.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো নোটিফিকেশন নেই</p>}
                 {notifications.map((n: any) => (

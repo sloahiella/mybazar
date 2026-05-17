@@ -1026,7 +1026,15 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
           <PageMenu
             branch={branch}
             selectedPage={selectedPage}
-            onSelectPage={(page) => { setSelectedPage(page); setSelectedName(null); setSelectedCategory(null); }}
+           onSelectPage={(page) => {
+  setSelectedPage(page);
+  setSelectedName(null);
+  setSelectedCategory(null);
+ if (onPageChange) onPageChange
+ localStorage.setItem('current_page_id', page ? String(page.id) : '');
+ (page ? String(page.id) : null);
+localStorage.setItem('current_page_id', page ? String(page.id) : '');
+  }}
             isAdmin={isAdmin}
             onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }}
             onShowOrders={() => setShowOrders(true)}
@@ -1047,11 +1055,16 @@ export default function ProductList({ branch, role, onOrderSuccess }) {
         </div>
 
         <SubPageChips
-          selectedPage={selectedPage}
-          branch={branch}
-          isAdmin={isAdmin}
-          onSelectPage={(page) => { setSelectedPage(page); setSelectedName(null); setSelectedCategory(null); }}
-        />
+  selectedPage={selectedPage}
+  branch={branch}
+  isAdmin={isAdmin}
+  onSelectPage={(page) => {
+    setSelectedPage(page);
+    setSelectedName(null);
+    setSelectedCategory(null);
+    if (onPageChange) onPageChangelocalStorage.setItem('current_page_id', page ? String(page.id) : '');(page ? String(page.id) : null);
+  }}
+/>
       </div>
 
       <div className="p-4">
