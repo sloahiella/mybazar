@@ -250,19 +250,29 @@ export default function Home() {
     if (data) setBranches(data as Branch[]);
   }
 
-  async function fetchOrders() {
-    const { data } = await supabase
-      .from('orders')
-      .select('*, order_items(*, products(name, name_bn, unit, image_url))')
-      .order('created_at', { ascending: false });
-    if (data) {
-      setOrders(data);
-      setTotalOrders(data.length);
-      const today = new Date().toDateString();
-      const todayOrders = data.filter((o: any) => new Date(o.created_at).toDateString() === today);
-      setTodaySales(todayOrders.reduce((a: number, o: any) => a + o.total_amount, 0));
+ async function fetchOrders() {
+  const editorPageId = localStorage.getItem('editor_page_id');
+  let query = supabase
+    .from('orders')
+    .select('*, order_items(*, products(name, name_bn, unit, image_url, page_id))')
+    .order('created_at', { ascending: false });
+
+  const { data } = await query;
+  if (data) {
+    let filteredData = data;
+    // Editor হলে শুধু তার পেজের অর্ডার দেখাবে
+    if (role === 'editor' && editorPageId) {
+      filteredData = data.filter((o: any) =>
+        o.order_items?.some((item: any) => String(item.products?.page_id) === String(editorPageId))
+      );
     }
+    setOrders(filteredData);
+    setTotalOrders(filteredData.length);
+    const today = new Date().toDateString();
+    const todayOrders = filteredData.filter((o: any) => new Date(o.created_at).toDateString() === today);
+    setTodaySales(todayOrders.reduce((a: number, o: any) => a + o.total_amount, 0));
   }
+}
 
   async function fetchNotifications() {
     const { data } = await supabase.from('notifications').select('*')
@@ -432,6 +442,12 @@ export default function Home() {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+         {role === 'editor' && (
+  <button onClick={() => { setShowAdminDrawer(true); fetchOrders(); }}
+    style={{ position: 'relative', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', fontWeight: 'bold' }}>
+    📋
+  </button>
+)}
           {role === 'admin' && (
             <button onClick={() => { setShowAdminDrawer(true); fetchOrders(); fetchNotifications(); }}
               style={{ position: 'relative', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', fontWeight: 'bold' }}>
@@ -535,14 +551,14 @@ export default function Home() {
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                         <p style={{ fontWeight: 'bold', color: PINK, margin: 0 }}>{order.total_amount} Tk</p>
-                        <select value={order.status}
-                          onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value); }}
-                          style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer' }}>
-                          <option value="pending">Pending</option>
-                          <option value="confirmed">Confirmed</option>
-                          <option value="delivered">Delivered</option>
-                          <option value="cancelled">Cancelled</option>
-                        </select>
+                       <select value={order.status}
+  onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value); }}
+  style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer' }}>
+  <option value="pending">Pending</option>
+  <option value="confirmed">Confirmed</option>
+  <option value="delivered">Delivered</option>
+  {role === 'admin' && <option value="cancelled">Cancelled</option>}
+</select>
                         <button
                           onClick={e => { e.stopPropagation(); setSelectedOrder(order); }}
                           style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '4px 10px', fontSize: '12px', cursor: 'pointer' }}>
