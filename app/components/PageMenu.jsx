@@ -11,10 +11,12 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
   const [showDotMenu, setShowDotMenu] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showAddSub, setShowAddSub] = useState(false);
+  const [showPasswordSet, setShowPasswordSet] = useState(false);
   const [editName, setEditName] = useState(page.name);
   const [editNameBn, setEditNameBn] = useState(page.name_bn || '');
   const [subName, setSubName] = useState('');
   const [subNameBn, setSubNameBn] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [subPages, setSubPages] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -63,19 +65,27 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
     setLoading(false);
   }
 
+  async function setPassword() {
+    if (!newPassword) return;
+    await supabase.from('pages').update({ vendor_password: newPassword }).eq('id', page.id);
+    setShowPasswordSet(false);
+    setNewPassword('');
+    alert('Password সেট হয়েছে!');
+  }
+
   return (
     <div style={{ marginLeft: depth * 12 }}>
       {showEdit ? (
         <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <input value={editNameBn} onChange={e => setEditNameBn(e.target.value)}
             placeholder="বাংলা নাম"
-            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box', color: '#1f2937' }} />
           <input value={editName} onChange={e => setEditName(e.target.value)}
             placeholder="English name"
-            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box', color: '#1f2937' }} />
           <div style={{ display: 'flex', gap: '6px' }}>
             <button onClick={updatePage} disabled={loading}
-              style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>সেভ</button>
+              style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>সেভ</button>
             <button onClick={() => setShowEdit(false)}
               style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>বাতিল</button>
           </div>
@@ -87,7 +97,7 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
             style={{
               flex: 1, textAlign: 'left', padding: '8px 12px', borderRadius: '8px',
               fontSize: '14px', fontWeight: '500', border: 'none', cursor: 'pointer',
-              background: selectedPage?.id === page.id ? '#15803d' : 'transparent',
+              background: selectedPage?.id === page.id ? '#db2777' : 'transparent',
               color: selectedPage?.id === page.id ? 'white' : '#374151',
               opacity: page.is_active === false ? 0.5 : 1,
             }}>
@@ -125,6 +135,10 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
                       style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer' }}>
                       ➕ সাব-পেজ যোগ
                     </button>
+                    <button onClick={() => { setShowPasswordSet(true); setShowDotMenu(false); }}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer' }}>
+                      🔑 Password সেট করুন
+                    </button>
                     <button onClick={deletePage}
                       style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#dc2626' }}>
                       🗑️ মুছুন
@@ -142,14 +156,30 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
           <p style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: 'bold', margin: 0 }}>সাব-পেজ যোগ করুন</p>
           <input value={subNameBn} onChange={e => setSubNameBn(e.target.value)}
             placeholder="বাংলা নাম (শাড়ী)"
-            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box', color: '#1f2937' }} />
           <input value={subName} onChange={e => setSubName(e.target.value)}
             placeholder="English name (saree)"
-            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box', color: '#1f2937' }} />
           <div style={{ display: 'flex', gap: '6px' }}>
             <button onClick={addSubPage} disabled={loading}
-              style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>যোগ করুন</button>
+              style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>যোগ করুন</button>
             <button onClick={() => setShowAddSub(false)}
+              style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>বাতিল</button>
+          </div>
+        </div>
+      )}
+
+      {showPasswordSet && (
+        <div style={{ marginLeft: '12px', background: '#fdf2f8', borderRadius: '8px', padding: '10px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <p style={{ fontSize: '12px', color: '#db2777', fontWeight: 'bold', margin: 0 }}>🔑 Editor Password সেট করুন</p>
+          <input value={newPassword} onChange={e => setNewPassword(e.target.value)}
+            placeholder="password লিখুন"
+            type="text"
+            style={{ border: '2px solid #fbcfe8', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box', color: '#1f2937' }} />
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button onClick={setPassword}
+              style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>সেট করুন</button>
+            <button onClick={() => { setShowPasswordSet(false); setNewPassword(''); }}
               style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>বাতিল</button>
           </div>
         </div>
@@ -219,9 +249,9 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
           onClick={() => setIsOpen(prev => !prev)}
           style={{
             display: 'flex', alignItems: 'center', gap: '6px',
-            background: isOpen ? '#15803d' : 'white',
-            color: isOpen ? 'white' : '#15803d',
-            border: '2px solid #15803d',
+            background: isOpen ? '#db2777' : 'white',
+            color: isOpen ? 'white' : '#db2777',
+            border: '2px solid #db2777',
             padding: '8px 14px', borderRadius: '12px',
             fontWeight: '600', fontSize: '14px',
             whiteSpace: 'nowrap', cursor: 'pointer',
@@ -245,7 +275,7 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
                   width: '100%', textAlign: 'left', padding: '10px 14px',
                   borderRadius: '8px', fontSize: '14px', fontWeight: '500',
                   border: 'none', cursor: 'pointer', marginBottom: '4px',
-                  background: !selectedPage ? '#15803d' : 'transparent',
+                  background: !selectedPage ? '#db2777' : 'transparent',
                   color: !selectedPage ? 'white' : '#374151',
                 }}>
                 🏠 সব পণ্য
@@ -274,20 +304,20 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
                     <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <input value={newPageNameBn} onChange={e => setNewPageNameBn(e.target.value)}
                         placeholder="বাংলা নাম"
-                        style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
+                        style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box', color: '#1f2937' }} />
                       <input value={newPageName} onChange={e => setNewPageName(e.target.value)}
                         placeholder="English name"
-                        style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} />
+                        style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box', color: '#1f2937' }} />
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <button onClick={addPage} disabled={loading}
-                          style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>যোগ করুন</button>
+                          style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>যোগ করুন</button>
                         <button onClick={() => setShowAddPage(false)}
                           style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>বাতিল</button>
                       </div>
                     </div>
                   ) : (
                     <button onClick={() => setShowAddPage(true)}
-                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#15803d', fontWeight: '500' }}>
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#db2777', fontWeight: '500' }}>
                       + নতুন পেজ যোগ করুন
                     </button>
                   )}
@@ -303,8 +333,8 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
           onClick={() => onShowOrders && onShowOrders()}
           style={{
             display: 'flex', alignItems: 'center', gap: '6px',
-            background: 'white', color: '#15803d',
-            border: '2px solid #15803d',
+            background: 'white', color: '#db2777',
+            border: '2px solid #db2777',
             padding: '8px 14px', borderRadius: '12px',
             fontWeight: '600', fontSize: '14px',
             whiteSpace: 'nowrap', cursor: 'pointer',

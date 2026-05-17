@@ -10,7 +10,6 @@ const supabase = createClient(
 );
 
 const ADMIN_PASSWORD = 'sloahiella@admin';
-const EDITOR_PASSWORD = 'editor@123';
 const LOGO_URL = 'https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/Untitled%20folder/logo.jpg';
 const PINK = '#db2777';
 const PINK_DARK = '#be185d';
@@ -120,20 +119,24 @@ function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => 
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 4px', marginBottom: '4px', borderBottom: `2px solid #374151` }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 4px', marginBottom: '4px', borderBottom: '2px solid #374151' }}>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
           </div>
 
           {(order.order_items || []).map((item: any, i: number) => (
             <div key={i} style={{ borderBottom: '1px dashed #d1d5db', padding: '8px 4px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1, paddingRight: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ flex: 1, paddingRight: '8px' }}>
                   <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{item.products?.name}</p>
                   <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>
                     {item.price} Tk/{item.products?.unit} × {item.quantity} {item.products?.unit}
                   </p>
                 </div>
+                {item.products?.image_url && (
+                  <img src={item.products.image_url} alt={item.products.name}
+                    style={{ width: '40px', height: '40px', objectFit: 'contain', borderRadius: '6px', margin: '0 8px', flexShrink: 0 }} />
+                )}
                 <p style={{ fontSize: '14px', fontWeight: 'bold', color: PINK, margin: 0, whiteSpace: 'nowrap' }}>
                   {(item.price * item.quantity).toFixed(0)} Tk
                 </p>
@@ -162,6 +165,7 @@ export default function Home() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<string | null>(null);
   const [loginError, setLoginError] = useState('');
+  const [loginType, setLoginType] = useState<string>('admin');
   const [showAdminDrawer, setShowAdminDrawer] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
   const [todaySales, setTodaySales] = useState(0);
@@ -199,31 +203,29 @@ export default function Home() {
       } catch (e) {}
 
       const channel = supabase
-  .channel('orders')
-  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, async (payload) => {
-    fetchOrders();
-    fetchNotifications();
-    playNotificationSound();
-
-    // Push Notification পাঠাও
-    const fcmToken = localStorage.getItem('fcm_token');
-    if (fcmToken) {
-      const order = payload.new;
-      await fetch('https://jthdtmqrapnfmmmeuqsw.supabase.co/functions/v1/send-notification', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J`,
-        },
-        body: JSON.stringify({
-          token: fcmToken,
-          title: '🛒 নতুন অর্ডার!',
-          body: `অর্ডার #${order.id} - ${order.total_amount} Tk`,
-        }),
-      });
-    }
-  })
-  .subscribe();
+        .channel('orders')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, async (payload) => {
+          fetchOrders();
+          fetchNotifications();
+          playNotificationSound();
+          const fcmToken = localStorage.getItem('fcm_token');
+          if (fcmToken) {
+            const order = payload.new;
+            await fetch('https://jthdtmqrapnfmmmeuqsw.supabase.co/functions/v1/send-notification', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J`,
+              },
+              body: JSON.stringify({
+                token: fcmToken,
+                title: '🛒 নতুন অর্ডার!',
+                body: `অর্ডার #${order.id} - ${order.total_amount} Tk`,
+              }),
+            });
+          }
+        })
+        .subscribe();
       return () => { supabase.removeChannel(channel); };
     }
   }, [role]);
@@ -251,7 +253,7 @@ export default function Home() {
   async function fetchOrders() {
     const { data } = await supabase
       .from('orders')
-      .select('*, order_items(*, products(name, name_bn, unit))')
+      .select('*, order_items(*, products(name, name_bn, unit, image_url))')
       .order('created_at', { ascending: false });
     if (data) {
       setOrders(data);
@@ -281,20 +283,38 @@ export default function Home() {
     fetchOrders();
   }
 
-  function handleLogin() {
-    if (password === ADMIN_PASSWORD) {
-      setRole('admin'); localStorage.setItem('role', 'admin');
-      setShowLoginModal(false); setPassword(''); setLoginError('');
-    } else if (password === EDITOR_PASSWORD) {
-      setRole('editor'); localStorage.setItem('role', 'editor');
-      setShowLoginModal(false); setPassword(''); setLoginError('');
+  async function handleLogin() {
+    if (loginType === 'admin') {
+      if (password === ADMIN_PASSWORD) {
+        setRole('admin'); localStorage.setItem('role', 'admin');
+        setShowLoginModal(false); setPassword(''); setLoginError('');
+      } else {
+        setLoginError('Admin পাসওয়ার্ড ভুল!');
+      }
     } else {
-      setLoginError('পাসওয়ার্ড ভুল হয়েছে!');
+      const { data } = await supabase
+        .from('pages')
+        .select('*')
+        .eq('vendor_password', password)
+        .single();
+      if (data) {
+        setRole('editor');
+        localStorage.setItem('role', 'editor');
+        localStorage.setItem('editor_page_id', String(data.id));
+        localStorage.setItem('editor_page_name', data.name_bn || data.name);
+        setShowLoginModal(false); setPassword(''); setLoginError('');
+      } else {
+        setLoginError('Editor পাসওয়ার্ড ভুল!');
+      }
     }
   }
 
   function handleLogout() {
-    setRole(null); localStorage.removeItem('role'); setShowAdminDrawer(false);
+    setRole(null);
+    localStorage.removeItem('role');
+    localStorage.removeItem('editor_page_id');
+    localStorage.removeItem('editor_page_name');
+    setShowAdminDrawer(false);
   }
 
   function toggleAutoPrint() {
@@ -321,7 +341,7 @@ export default function Home() {
           {role && (
             <>
               <span style={{ fontSize: '12px', background: PINK_LIGHT, color: PINK, padding: '4px 8px', borderRadius: '20px', fontWeight: '500', border: `1px solid ${PINK_BORDER}` }}>
-                {role === 'admin' ? '👑 Admin' : '✏️ Editor'}
+                {role === 'admin' ? '👑 Admin' : `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'}`}
               </span>
               <button onClick={handleLogout} style={{ fontSize: '12px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>লগআউট</button>
             </>
@@ -334,7 +354,7 @@ export default function Home() {
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: PINK, margin: '0 0 4px 0' }}>সোহেল মার্ট</h1>
             <p style={{ fontSize: '14px', color: '#9ca3af', margin: 0 }}>মাই বাজার</p>
           </div>
-          <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: '16px', fontSize: '14px' }}>আপনার শাখা সিলেক্ট করুন</p>
+          <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: '16px', fontSize: '14px' }}>শাখা সিলেক্ট করুন</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {branches.map((branch) => (
               <button key={branch.id} onClick={() => setSelectedBranch(branch)}
@@ -345,14 +365,42 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Login Modal */}
         {showLoginModal && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
             <div style={{ background: 'white', borderRadius: '20px', padding: '24px', maxWidth: '340px', width: '100%', margin: '0 16px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: PINK, textAlign: 'center', marginBottom: '16px' }}>🔐 লগইন</h2>
+
+              {/* Admin বা Editor সিলেক্ট */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                <button
+                  onClick={() => setLoginType('admin')}
+                  style={{
+                    padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600',
+                    border: '2px solid', cursor: 'pointer',
+                    borderColor: loginType === 'admin' ? PINK : '#e5e7eb',
+                    background: loginType === 'admin' ? PINK : 'white',
+                    color: loginType === 'admin' ? 'white' : '#374151',
+                  }}>
+                  👑 Admin
+                </button>
+                <button
+                  onClick={() => setLoginType('editor')}
+                  style={{
+                    padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600',
+                    border: '2px solid', cursor: 'pointer',
+                    borderColor: loginType === 'editor' ? PINK : '#e5e7eb',
+                    background: loginType === 'editor' ? PINK : 'white',
+                    color: loginType === 'editor' ? 'white' : '#374151',
+                  }}>
+                  ✏️ Editor
+                </button>
+              </div>
+
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                placeholder="পাসওয়ার্ড লিখুন"
-                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginBottom: '8px', boxSizing: 'border-box', outline: 'none' }}
+                placeholder={loginType === 'admin' ? 'Admin পাসওয়ার্ড' : 'Editor পাসওয়ার্ড'}
+                style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginBottom: '8px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }}
                 autoFocus />
               {loginError && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '8px' }}>{loginError}</p>}
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -465,7 +513,7 @@ export default function Home() {
               <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)}
                   placeholder="🔍 নাম, ফোন, তারিখ বা অর্ডার নম্বর..."
-                  style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', padding: '10px 12px', fontSize: '14px', outline: 'none', width: '100%', boxSizing: 'border-box' }} />
+                  style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', padding: '10px 12px', fontSize: '14px', outline: 'none', width: '100%', boxSizing: 'border-box', color: '#1f2937' }} />
 
                 {filteredOrders.length === 0 && (
                   <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার নেই</p>
@@ -478,11 +526,10 @@ export default function Home() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
                         <h3 style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '14px', margin: '0 0 2px 0' }}>#{order.id} - {order.customer_name}</h3>
-                       {order.transaction_id && (
-  <p style={{ fontSize: '12px', color: '#db2777', margin: '2px 0', fontWeight: '600' }}>
-    💳 TrxID: {order.transaction_id}
-  </p>
-)}
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.customer_phone}</p>
+                        {order.transaction_id && (
+                          <p style={{ fontSize: '12px', color: PINK, margin: '2px 0', fontWeight: '600' }}>💳 TrxID: {order.transaction_id}</p>
+                        )}
                         <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0' }}>{order.district}, {order.upazila}</p>
                         <p style={{ fontSize: '11px', color: '#9ca3af', margin: '2px 0' }}>{new Date(order.created_at).toLocaleString('bn-BD')}</p>
                       </div>
@@ -515,6 +562,7 @@ export default function Home() {
                         <span>{order.total_amount} Tk</span>
                       </div>
                     </div>
+                    <p style={{ fontSize: '11px', color: '#9ca3af', textAlign: 'center', marginTop: '4px' }}>ডাবল ক্লিক করুন পুরো রিসিট দেখতে</p>
                   </div>
                 ))}
               </div>
