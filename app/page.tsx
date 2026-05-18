@@ -120,6 +120,9 @@ function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ flex: 1, paddingRight: '8px' }}>
                   <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{item.products?.name}</p>
+                  {item.products?.product_code && (
+  <p style={{ fontSize: '11px', color: '#3b82f6', margin: '0 0 2px 0' }}>কোড: {item.products?.product_code}</p>
+)}
                   <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>
                     {item.price} Tk/{item.products?.unit} × {item.quantity} {item.products?.unit}
                   </p>
@@ -253,7 +256,7 @@ export default function Home() {
 
   const { data } = await supabase
     .from('orders')
-    .select('*, order_items(*, products(name, name_bn, unit, image_url, page_id))')
+    .select('*, order_items(*, products(name, name_bn, unit, image_url, page_id, product_code))')
     .order('created_at', { ascending: false });
 
   if (data) {

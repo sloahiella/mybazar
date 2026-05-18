@@ -154,6 +154,9 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ flex: 1, paddingRight: '8px' }}>
                   <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{item.products?.name}</p>
+                 <p style={{ fontSize: '11px', color: '#3b82f6', margin: '0 0 2px 0' }}>
+  কোড: {String(item.products?.product_code ?? item?.product_code ?? 'N/A')}
+</p>
                   <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>{item.price} Tk/{item.products?.unit} × {item.quantity} {item.products?.unit}</p>
                 </div>
                 {item.products?.image_url && (
@@ -193,7 +196,7 @@ function OrdersModal({ onClose, isAdmin = false }) {
     if (!p) return;
     setLoading(true);
     const { data } = await supabase.from('orders')
-      .select('*, order_items(*, products(name, name_bn, unit, image_url))')
+      .select('*, order_items(*, products(name, name_bn, unit, image_url, product_code))')
       .eq('customer_phone', p).order('created_at', { ascending: false });
     if (data) setOrders(data);
     setLoading(false); setSearched(true);
@@ -203,7 +206,7 @@ function OrdersModal({ onClose, isAdmin = false }) {
   async function fetchAllOrders() {
     setLoading(true);
     const { data } = await supabase.from('orders')
-      .select('*, order_items(*, products(name, name_bn, unit, image_url))')
+      .select('*, order_items(*, products(name, name_bn, unit, image_url, product_code))')
       .order('created_at', { ascending: false });
     if (data) setOrders(data);
     setLoading(false); setSearched(true);
@@ -364,13 +367,10 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
         <div onDoubleClick={() => onDoubleClick(product)} style={{ cursor: 'pointer', userSelect: 'none', marginBottom: '4px' }}>
           <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '13px', lineHeight: '1.4', wordBreak: 'break-word', margin: 0 }}>{product.name}</p>
         </div>
-
         <div style={{ flex: 1 }} />
-
         {product.product_code && <p style={{ fontSize: '11px', color: '#3b82f6', fontWeight: '500', margin: '0 0 2px 0' }}>কোড: {product.product_code}</p>}
         <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '12px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
         <p style={{ fontSize: '11px', color: stock <= 0 ? '#ef4444' : '#9ca3af', margin: '0 0 4px 0' }}>Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}</p>
-
         {product.description && (
           <div style={{ marginBottom: '4px' }}>
             <button onClick={() => setShowDesc(!showDesc)} style={{ fontSize: '11px', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
@@ -379,7 +379,6 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
             {showDesc && <p style={{ fontSize: '11px', color: '#4b5563', background: '#eff6ff', padding: '6px', borderRadius: '6px', margin: '4px 0 0 0' }}>{product.description}</p>}
           </div>
         )}
-
         <div style={{ marginTop: '4px' }}>
           <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
             <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty} onChange={e => setQty(e.target.value)}
@@ -687,11 +686,12 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const editorPageId = isEditor ? localStorage.getItem('editor_page_id') : null;
 
   useEffect(() => { fetchProducts(); }, [branch]);
+
   async function fetchSubPageIds(pageId) {
-  const { data } = await supabase.from('pages').select('id').eq('parent_id', pageId);
-  if (data) setSubPageIds(data.map(p => p.id));
-  else setSubPageIds([]);
-}
+    const { data } = await supabase.from('pages').select('id').eq('parent_id', pageId);
+    if (data) setSubPageIds(data.map(p => p.id));
+    else setSubPageIds([]);
+  }
 
   useEffect(() => {
     const handlePopState = () => {
@@ -744,14 +744,14 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
 
   const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
 
- const getDisplayProducts = () => {
-  let baseProducts = products;
-  if (selectedPage) {
-  baseProducts = products.filter(p =>
-    String(p.page_id) === String(selectedPage.id) ||
-    subPageIds.map(String).includes(String(p.page_id))
-  );
-}
+  const getDisplayProducts = () => {
+    let baseProducts = products;
+    if (selectedPage) {
+      baseProducts = products.filter(p =>
+        String(p.page_id) === String(selectedPage.id) ||
+        subPageIds.map(String).includes(String(p.page_id))
+      );
+    }
     if (!isAdmin && !isEditor) {
       baseProducts = baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
     }
@@ -852,37 +852,39 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         <div className="flex items-center gap-2 mb-3">
           <PageMenu
             branch={branch} selectedPage={selectedPage}
-           onSelectPage={(page) => {
-  setSelectedPage(page);
-  setSelectedName(null);
-  setSelectedCategory(null);
-  localStorage.setItem('current_page_id', page ? String(page.id) : '');
-  localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
-  if (page) fetchSubPageIds(page.id);
-  else setSubPageIds([]);
-  if (onPageChange) onPageChange(page ? String(page.id) : null);
-}}
+            onSelectPage={(page) => {
+              setSelectedPage(page);
+              setSelectedName(null);
+              setSelectedCategory(null);
+              localStorage.setItem('current_page_id', page ? String(page.id) : '');
+              localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
+              if (page) fetchSubPageIds(page.id);
+              else setSubPageIds([]);
+              if (onPageChange) onPageChange(page ? String(page.id) : null);
+            }}
             isAdmin={isAdmin}
             onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }}
             onShowOrders={() => setShowOrders(true)}
           />
-         {selectedPage && (
-  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-    <button onClick={() => {
-      setSelectedPage(null);
-      setSelectedName(null);
-      setSelectedCategory(null);
-      localStorage.setItem('current_page_id', '');
-      if (onPageChange) onPageChange(null);
-    }}
-      style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', border: 'none', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer' }}>
-      ← হোম
-    </button>
-    <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#db2777' }}>
-      {selectedPage.name_bn || selectedPage.name}
-    </span>
-  </div>
-)}
+          {selectedPage && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <button onClick={() => {
+                setSelectedPage(null);
+                setSelectedName(null);
+                setSelectedCategory(null);
+                localStorage.setItem('current_page_id', '');
+                localStorage.setItem('current_page_name', '');
+                setSubPageIds([]);
+                if (onPageChange) onPageChange(null);
+              }}
+                style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', border: 'none', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer' }}>
+                ← হোম
+              </button>
+              <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#db2777' }}>
+                {selectedPage.name_bn || selectedPage.name}
+              </span>
+            </div>
+          )}
           {(isAdmin || isEditor) && (
             <button onClick={() => { setAddModalPage(selectedPage); setShowAddModal(true); }}
               style={{ background: '#db2777', color: 'white', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', whiteSpace: 'nowrap' }}>
@@ -891,18 +893,18 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
           )}
         </div>
 
-       <SubPageChips selectedPage={selectedPage} branch={branch} isAdmin={isAdmin}
-  onSelectPage={(page) => {
-    setSelectedPage(page);
-    setSelectedName(null);
-    setSelectedCategory(null);
-    localStorage.setItem('current_page_id', page ? String(page.id) : '');
-    localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
-    if (page) fetchSubPageIds(page.id);
-    else setSubPageIds([]);
-    if (onPageChange) onPageChange(page ? String(page.id) : null);
-  }}
-/>
+        <SubPageChips selectedPage={selectedPage} branch={branch} isAdmin={isAdmin}
+          onSelectPage={(page) => {
+            setSelectedPage(page);
+            setSelectedName(null);
+            setSelectedCategory(null);
+            localStorage.setItem('current_page_id', page ? String(page.id) : '');
+            localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
+            if (page) fetchSubPageIds(page.id);
+            else setSubPageIds([]);
+            if (onPageChange) onPageChange(page ? String(page.id) : null);
+          }}
+        />
       </div>
 
       <div className="p-4">
@@ -938,7 +940,6 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       </div>
 
       {isAdmin && <p style={{ fontSize: '12px', textAlign: 'center', color: '#f59e0b', marginBottom: '4px' }}>⠿ আইকন ধরে Drag করে পণ্য সাজান</p>}
-
       {loading && <p style={{ textAlign: 'center', color: '#9ca3af', marginTop: '40px' }}>লোড হচ্ছে...</p>}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 items-stretch">
