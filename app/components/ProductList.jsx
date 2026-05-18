@@ -680,12 +680,18 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const [dragIndex, setDragIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [showOrders, setShowOrders] = useState(false);
+  const [subPageIds, setSubPageIds] = useState([]);
 
   const isAdmin = role === 'admin';
   const isEditor = role === 'editor';
   const editorPageId = isEditor ? localStorage.getItem('editor_page_id') : null;
 
   useEffect(() => { fetchProducts(); }, [branch]);
+  async function fetchSubPageIds(pageId) {
+  const { data } = await supabase.from('pages').select('id').eq('parent_id', pageId);
+  if (data) setSubPageIds(data.map(p => p.id));
+  else setSubPageIds([]);
+}
 
   useEffect(() => {
     const handlePopState = () => {
@@ -738,11 +744,13 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
 
   const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
 
-  const getDisplayProducts = () => {
-    let baseProducts = products;
-    if (selectedPage) {
-      baseProducts = products.filter(p => String(p.page_id) === String(selectedPage.id));
-    }
+ const getDisplayProducts = () => {
+  let baseProducts = products;
+  if (selectedPage) {
+    baseProducts = products.filter(p =>
+      String(p.page_id) === String(selectedPage.id)
+    );
+  }
     if (!isAdmin && !isEditor) {
       baseProducts = baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
     }
@@ -843,14 +851,16 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         <div className="flex items-center gap-2 mb-3">
           <PageMenu
             branch={branch} selectedPage={selectedPage}
-            onSelectPage={(page) => {
-              setSelectedPage(page);
-              setSelectedName(null);
-              setSelectedCategory(null);
-             localStorage.setItem('current_page_id', page ? String(page.id) : '');
-localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
-              if (onPageChange) onPageChange(page ? String(page.id) : null);
-            }}
+           onSelectPage={(page) => {
+  setSelectedPage(page);
+  setSelectedName(null);
+  setSelectedCategory(null);
+  localStorage.setItem('current_page_id', page ? String(page.id) : '');
+  localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
+  if (page) fetchSubPageIds(page.id);
+  else setSubPageIds([]);
+  if (onPageChange) onPageChange(page ? String(page.id) : null);
+}}
             isAdmin={isAdmin}
             onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }}
             onShowOrders={() => setShowOrders(true)}
