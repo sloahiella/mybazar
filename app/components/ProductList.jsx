@@ -747,10 +747,11 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
  const getDisplayProducts = () => {
   let baseProducts = products;
   if (selectedPage) {
-    baseProducts = products.filter(p =>
-      String(p.page_id) === String(selectedPage.id)
-    );
-  }
+  baseProducts = products.filter(p =>
+    String(p.page_id) === String(selectedPage.id) ||
+    subPageIds.map(String).includes(String(p.page_id))
+  );
+}
     if (!isAdmin && !isEditor) {
       baseProducts = baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
     }
@@ -890,17 +891,18 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
           )}
         </div>
 
-        <SubPageChips selectedPage={selectedPage} branch={branch} isAdmin={isAdmin}
-          onSelectPage={(page) => {
-            setSelectedPage(page);
-            setSelectedName(null);
-            setSelectedCategory(null);
-            localStorage.setItem('current_page_id', page ? String(page.id) : '');
-            localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
-            localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
-            if (onPageChange) onPageChange(page ? String(page.id) : null);
-          }}
-        />
+       <SubPageChips selectedPage={selectedPage} branch={branch} isAdmin={isAdmin}
+  onSelectPage={(page) => {
+    setSelectedPage(page);
+    setSelectedName(null);
+    setSelectedCategory(null);
+    localStorage.setItem('current_page_id', page ? String(page.id) : '');
+    localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
+    if (page) fetchSubPageIds(page.id);
+    else setSubPageIds([]);
+    if (onPageChange) onPageChange(page ? String(page.id) : null);
+  }}
+/>
       </div>
 
       <div className="p-4">
