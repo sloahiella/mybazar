@@ -674,6 +674,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const [editingProduct, setEditingProduct] = useState(null);
   const [selectedName, setSelectedName] = useState(null);
   const [selectedPage, setSelectedPage] = useState(null);
+  const [pageHistory, setPageHistory] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalPage, setAddModalPage] = useState(null);
   const [dragIndex, setDragIndex] = useState(null);
@@ -853,15 +854,17 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
           <PageMenu
             branch={branch} selectedPage={selectedPage}
             onSelectPage={(page) => {
-              setSelectedPage(page);
-              setSelectedName(null);
-              setSelectedCategory(null);
-              localStorage.setItem('current_page_id', page ? String(page.id) : '');
-              localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
-              if (page) fetchSubPageIds(page.id);
-              else setSubPageIds([]);
-              if (onPageChange) onPageChange(page ? String(page.id) : null);
-            }}
+  if (page) setPageHistory(prev => [...prev, selectedPage]);
+  else setPageHistory([]);
+  setSelectedPage(page);
+  setSelectedName(null);
+  setSelectedCategory(null);
+  localStorage.setItem('current_page_id', page ? String(page.id) : '');
+  localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
+  if (page) fetchSubPageIds(page.id);
+  else setSubPageIds([]);
+  if (onPageChange) onPageChange(page ? String(page.id) : null);
+}}
             isAdmin={isAdmin}
             onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }}
             onShowOrders={() => setShowOrders(true)}
@@ -869,17 +872,20 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
           {selectedPage && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <button onClick={() => {
-                setSelectedPage(null);
-                setSelectedName(null);
-                setSelectedCategory(null);
-                localStorage.setItem('current_page_id', '');
-                localStorage.setItem('current_page_name', '');
-                setSubPageIds([]);
-                if (onPageChange) onPageChange(null);
-              }}
-                style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', border: 'none', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer' }}>
-                ← হোম
-              </button>
+  const prevPage = pageHistory[pageHistory.length - 1] || null;
+  setPageHistory(prev => prev.slice(0, -1));
+  setSelectedPage(prevPage);
+  setSelectedName(null);
+  setSelectedCategory(null);
+  localStorage.setItem('current_page_id', prevPage ? String(prevPage.id) : '');
+  localStorage.setItem('current_page_name', prevPage ? (prevPage.name_bn || prevPage.name) : '');
+  if (prevPage) fetchSubPageIds(prevPage.id);
+  else setSubPageIds([]);
+  if (onPageChange) onPageChange(prevPage ? String(prevPage.id) : null);
+}}
+  style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', border: 'none', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer' }}>
+  ← {pageHistory[pageHistory.length - 1]?.name_bn || pageHistory[pageHistory.length - 1]?.name || 'হোম'}
+</button>
               <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#db2777' }}>
                 {selectedPage.name_bn || selectedPage.name}
               </span>
@@ -895,15 +901,17 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
 
         <SubPageChips selectedPage={selectedPage} branch={branch} isAdmin={isAdmin}
           onSelectPage={(page) => {
-            setSelectedPage(page);
-            setSelectedName(null);
-            setSelectedCategory(null);
-            localStorage.setItem('current_page_id', page ? String(page.id) : '');
-            localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
-            if (page) fetchSubPageIds(page.id);
-            else setSubPageIds([]);
-            if (onPageChange) onPageChange(page ? String(page.id) : null);
-          }}
+  if (page) setPageHistory(prev => [...prev, selectedPage]);
+  else setPageHistory([]);
+  setSelectedPage(page);
+  setSelectedName(null);
+  setSelectedCategory(null);
+  localStorage.setItem('current_page_id', page ? String(page.id) : '');
+  localStorage.setItem('current_page_name', page ? (page.name_bn || page.name) : '');
+  if (page) fetchSubPageIds(page.id);
+  else setSubPageIds([]);
+  if (onPageChange) onPageChange(page ? String(page.id) : null);
+}}
         />
       </div>
 
