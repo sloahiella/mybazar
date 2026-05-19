@@ -44,12 +44,13 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
     onRefresh();
   }
 
-  async function deletePage() {
-    if (!confirm('এই পেজ মুছে দেবেন?')) return;
-    await supabase.from('pages').delete().eq('id', page.id);
-    setShowDotMenu(false);
-    onRefresh();
-  }
+ async function deletePage() {
+  if (!confirm('এই পেজ মুছে দেবেন?')) return;
+  const { error } = await supabase.from('pages').delete().eq('id', page.id);
+  if (error) { alert('সমস্যা: ' + error.message); return; }
+  setShowDotMenu(false);
+  onRefresh();
+}
 
   async function addSubPage() {
     if (!subName) return;

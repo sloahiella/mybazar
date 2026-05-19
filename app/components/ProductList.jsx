@@ -553,12 +553,19 @@ function EditProductModal({ product, onClose, onSave }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px', padding: '16px', borderTop: '1px solid #e5e7eb' }}>
-          <button onClick={save} disabled={loading || uploading}
-            style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', flex: 1, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: (loading || uploading) ? 0.5 : 1 }}>
-            {loading ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
-          </button>
-          <button onClick={onClose} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '12px', padding: '12px 20px', fontSize: '16px', cursor: 'pointer' }}>বাতিল</button>
-        </div>
+  <button onClick={save} disabled={loading || uploading}
+    style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', flex: 1, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: (loading || uploading) ? 0.5 : 1 }}>
+    {loading ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
+  </button>
+  <button onClick={async () => {
+    if (!confirm('পণ্য মুছে দেবেন?')) return;
+    await supabase.from('stock').delete().eq('product_id', product.id);
+    await supabase.from('product_images').delete().eq('product_id', product.id);
+    await supabase.from('products').delete().eq('id', product.id);
+    onSave(); onClose();
+  }} style={{ background: '#ef4444', color: 'white', border: 'none', borderRadius: '12px', padding: '12px 16px', fontSize: '16px', cursor: 'pointer' }}>🗑️</button>
+  <button onClick={onClose} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '12px', padding: '12px 20px', fontSize: '16px', cursor: 'pointer' }}>বাতিল</button>
+</div>
       </div>
     </div>
   );
