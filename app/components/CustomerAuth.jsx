@@ -74,7 +74,7 @@ const districtUpazilas = {
   'শেরপুর': ['ঝিনাইগাতী', 'নকলা', 'নালিতাবাড়ী', 'শেরপুর সদর', 'শ্রীবরদী'],
 };
 
-export default function CustomerAuth({ onSuccess }: { onSuccess: (data: any) => void }) {
+export default function CustomerAuth({ onSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
