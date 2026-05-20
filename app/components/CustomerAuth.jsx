@@ -82,7 +82,7 @@ export default function CustomerAuth({ onSuccess }) {
         {!isLogin && (
           <div style={{ background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '12px', padding: '12px', marginBottom: '16px' }}>
             <p style={{ fontSize: '13px', color: '#db2777', margin: 0, textAlign: 'center', fontWeight: '500' }}>
-              ⚠️ সঠিক তথ্য দিয়ে রেজিস্ট্রেশন করুন। অর্ডার করার সময় এই তথ্যগুলো স্বয়ংক্রিয়ভাবে বসে যাবে এবং পরিবর্তন করা যাবে না।
+              ⚠️ সঠিক তথ্য দিয়ে রেজিস্ট্রেশন করুন। অর্ডার করার সময় এই তথ্যগুলো স্বয়ংক্রিয়ভাবে বসে যাবে এবং পরবর্তীতে পরিবর্তন করা যাবে না।
             </p>
           </div>
         )}

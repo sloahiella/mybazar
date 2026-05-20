@@ -28,16 +28,16 @@ const inputStyle = {
 };
 
 export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
- const [form, setForm] = useState({
-  name: localStorage.getItem('customer_name') || '',
-  phone: localStorage.getItem('customer_phone') || '',
-  email: '',
-  district: localStorage.getItem('customer_district') || '',
-  upazila: localStorage.getItem('customer_upazila') || '',
-  address: '',
-  payment: 'cod',
-  transaction_id: '',
-});
+  const [form, setForm] = useState({
+    name: localStorage.getItem('customer_name') || '',
+    phone: localStorage.getItem('customer_phone') || '',
+    email: '',
+    district: localStorage.getItem('customer_district') || '',
+    upazila: localStorage.getItem('customer_upazila') || '',
+    address: '',
+    payment: 'cod',
+    transaction_id: '',
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -94,48 +94,42 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
 
   return (
     <div style={{ minHeight: '100vh', background: PINK_LIGHT, paddingBottom: '100px' }}>
-      {/* হেডার */}
       <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <button onClick={onBack}
-          style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>
-          ←
-        </button>
+        <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>←</button>
         <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>অর্ডার ফর্ম</h2>
       </div>
 
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-
-        {/* কাস্টমার তথ্য */}
         <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <h3 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '12px', fontSize: '15px' }}>আপনার তথ্য দিন</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>নাম *</label>
               <input name="name" value={form.name} onChange={handle}
-  placeholder="আপনার পূর্ণ নাম"
-  readOnly={!!localStorage.getItem('customer_name')}
-  style={{...inputStyle,background: localStorage.getItem('customer_name') ? '#fdf2f8' : 'white'
+                placeholder="আপনার পূর্ণ নাম"
+                readOnly={!!localStorage.getItem('customer_name')}
+                style={{ ...inputStyle, background: localStorage.getItem('customer_name') ? '#fdf2f8' : 'white' }} />
             </div>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>ফোন নম্বর *</label>
               <input name="phone" value={form.phone} onChange={handle}
-  placeholder="01XXXXXXXXX"
-  readOnly={!!localStorage.getItem('customer_phone')}
-  style={{...inputStyle,background: localStorage.getItem('customer_phone') ? '#fdf2f8' : 'white'
+                placeholder="01XXXXXXXXX"
+                readOnly={!!localStorage.getItem('customer_phone')}
+                style={{ ...inputStyle, background: localStorage.getItem('customer_phone') ? '#fdf2f8' : 'white' }} />
             </div>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>জেলা</label>
               <input name="district" value={form.district} onChange={handle}
-  placeholder="আপনার জেলা"
-  readOnly={!!localStorage.getItem('customer_district')}
-  style={{...inputStyle, background: localStorage.getItem('customer_district') ? '#fdf2f8' : 'white'
+                placeholder="আপনার জেলা"
+                readOnly={!!localStorage.getItem('customer_district')}
+                style={{ ...inputStyle, background: localStorage.getItem('customer_district') ? '#fdf2f8' : 'white' }} />
             </div>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>উপজেলা</label>
-             <input name="upazila" value={form.upazila} onChange={handle}
-  placeholder="আপনার উপজেলা"
-  readOnly={!!localStorage.getItem('customer_upazila')}
-  style={{...inputStyle, background: localStorage.getItem('customer_upazila') ? '#fdf2f8' : 'white'
+              <input name="upazila" value={form.upazila} onChange={handle}
+                placeholder="আপনার উপজেলা"
+                readOnly={!!localStorage.getItem('customer_upazila')}
+                style={{ ...inputStyle, background: localStorage.getItem('customer_upazila') ? '#fdf2f8' : 'white' }} />
             </div>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>বিস্তারিত ঠিকানা *</label>
@@ -147,7 +141,6 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
           </div>
         </div>
 
-        {/* পেমেন্ট পদ্ধতি */}
         <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <h3 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '12px', fontSize: '15px' }}>পেমেন্ট পদ্ধতি</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
@@ -170,7 +163,6 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
             ))}
           </div>
 
-          {/* বিকাশ নির্দেশনা */}
           {form.payment === 'bkash' && (
             <div style={{ background: '#fdf2f8', border: `1px solid ${PINK_BORDER}`, borderRadius: '12px', padding: '12px', marginTop: '12px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: PINK, margin: '0 0 6px 0' }}>💗 বিকাশে পেমেন্ট করুন</p>
@@ -183,7 +175,6 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
             </div>
           )}
 
-          {/* নগদ নির্দেশনা */}
           {form.payment === 'nagad' && (
             <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '12px', padding: '12px', marginTop: '12px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#ea580c', margin: '0 0 6px 0' }}>🟠 নগদে পেমেন্ট করুন</p>
@@ -196,7 +187,6 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
             </div>
           )}
 
-          {/* ক্যাশ অন ডেলিভারি নির্দেশনা */}
           {form.payment === 'cod' && (
             <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '12px', marginTop: '12px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#15803d', margin: '0 0 4px 0' }}>🚚 ক্যাশ অন ডেলিভারি</p>
@@ -205,7 +195,6 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
           )}
         </div>
 
-        {/* অর্ডার সারসংক্ষেপ */}
         <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <h3 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '8px', fontSize: '15px' }}>অর্ডার সারসংক্ষেপ</h3>
           {cart.map(item => (
@@ -225,7 +214,6 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
         )}
       </div>
 
-      {/* নিচের বাটন */}
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
         <button onClick={submitOrder} disabled={loading}
           style={{
