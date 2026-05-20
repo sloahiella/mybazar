@@ -28,16 +28,16 @@ const inputStyle = {
 };
 
 export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
-  const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    district: '',
-    upazila: '',
-    address: '',
-    payment: 'cod',
-    transaction_id: '',
-  });
+ const [form, setForm] = useState({
+  name: localStorage.getItem('customer_name') || '',
+  phone: localStorage.getItem('customer_phone') || '',
+  email: '',
+  district: localStorage.getItem('customer_district') || '',
+  upazila: localStorage.getItem('customer_upazila') || '',
+  address: '',
+  payment: 'cod',
+  transaction_id: '',
+});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -112,26 +112,30 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>নাম *</label>
               <input name="name" value={form.name} onChange={handle}
-                placeholder="আপনার পূর্ণ নাম"
-                style={inputStyle} />
+  placeholder="আপনার পূর্ণ নাম"
+  readOnly={!!localStorage.getItem('customer_name')}
+  style={{...inputStyle,background: localStorage.getItem('customer_name') ? '#fdf2f8' : 'white'
             </div>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>ফোন নম্বর *</label>
               <input name="phone" value={form.phone} onChange={handle}
-                placeholder="01XXXXXXXXX"
-                style={inputStyle} />
+  placeholder="01XXXXXXXXX"
+  readOnly={!!localStorage.getItem('customer_phone')}
+  style={{...inputStyle,background: localStorage.getItem('customer_phone') ? '#fdf2f8' : 'white'
             </div>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>জেলা</label>
               <input name="district" value={form.district} onChange={handle}
-                placeholder="আপনার জেলা"
-                style={inputStyle} />
+  placeholder="আপনার জেলা"
+  readOnly={!!localStorage.getItem('customer_district')}
+  style={{...inputStyle, background: localStorage.getItem('customer_district') ? '#fdf2f8' : 'white'
             </div>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>উপজেলা</label>
-              <input name="upazila" value={form.upazila} onChange={handle}
-                placeholder="আপনার উপজেলা"
-                style={inputStyle} />
+             <input name="upazila" value={form.upazila} onChange={handle}
+  placeholder="আপনার উপজেলা"
+  readOnly={!!localStorage.getItem('customer_upazila')}
+  style={{...inputStyle, background: localStorage.getItem('customer_upazila') ? '#fdf2f8' : 'white'
             </div>
             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>বিস্তারিত ঠিকানা *</label>

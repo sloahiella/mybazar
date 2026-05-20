@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import ProductList from './components/ProductList';
+import CustomerAuth from './components/CustomerAuth';
 import { requestNotificationPermission, messaging, onMessage } from './firebase';
 
 const supabase = createClient(
@@ -121,8 +122,8 @@ function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => 
                 <div style={{ flex: 1, paddingRight: '8px' }}>
                   <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{item.products?.name}</p>
                   {item.products?.product_code && (
-  <p style={{ fontSize: '11px', color: '#3b82f6', margin: '0 0 2px 0' }}>কোড: {item.products?.product_code}</p>
-)}
+                    <p style={{ fontSize: '11px', color: '#3b82f6', margin: '0 0 2px 0' }}>কোড: {item.products?.product_code}</p>
+                  )}
                   <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>
                     {item.price} Tk/{item.products?.unit} × {item.quantity} {item.products?.unit}
                   </p>
@@ -158,6 +159,7 @@ export default function Home() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<string | null>(null);
+  const [customer, setCustomer] = useState<any>(null);
   const [loginError, setLoginError] = useState('');
   const [loginType, setLoginType] = useState<string>('admin');
   const [showAdminDrawer, setShowAdminDrawer] = useState(false);
@@ -178,6 +180,8 @@ export default function Home() {
     if (savedRole) setRole(savedRole);
     const savedAutoPrint = localStorage.getItem('autoPrint');
     if (savedAutoPrint === 'true') setAutoPrint(true);
+    const savedCustomerPhone = localStorage.getItem('customer_phone');
+    if (savedCustomerPhone) setCustomer({ phone: savedCustomerPhone });
   }, []);
 
   useEffect(() => {
@@ -249,35 +253,34 @@ export default function Home() {
     if (data) setBranches(data as Branch[]);
   }
 
- async function fetchOrders(filterPageId?: string) {
-  const editorPageId = localStorage.getItem('editor_page_id');
-  const currentPageId = filterPageId !== undefined ? filterPageId : localStorage.getItem('current_page_id');
-  const activePageId = currentPageId || (role === 'editor' ? editorPageId : null);
+  async function fetchOrders(filterPageId?: string) {
+    const editorPageId = localStorage.getItem('editor_page_id');
+    const currentPageId = filterPageId !== undefined ? filterPageId : localStorage.getItem('current_page_id');
+    const activePageId = currentPageId || (role === 'editor' ? editorPageId : null);
 
-  const { data } = await supabase
-    .from('orders')
-    .select('*, order_items(*, products(name, name_bn, unit, image_url, page_id, product_code))')
-    .order('created_at', { ascending: false });
+    const { data } = await supabase
+      .from('orders')
+      .select('*, order_items(*, products(name, name_bn, unit, image_url, page_id, product_code))')
+      .order('created_at', { ascending: false });
 
-  if (data) {
-    let filteredData = data;
-    if (activePageId) {
-      filteredData = data.filter((o: any) =>
-        o.order_items?.some((item: any) => {
-          const productPageId = item.products?.page_id;
-          // page_id null হলে হোম পেজের অর্ডার হিসেবে গণ্য হবে
-          if (!productPageId && !activePageId) return true;
-          return String(productPageId) === String(activePageId);
-        })
-      );
+    if (data) {
+      let filteredData = data;
+      if (activePageId) {
+        filteredData = data.filter((o: any) =>
+          o.order_items?.some((item: any) => {
+            const productPageId = item.products?.page_id;
+            if (!productPageId && !activePageId) return true;
+            return String(productPageId) === String(activePageId);
+          })
+        );
+      }
+      setOrders(filteredData);
+      setTotalOrders(filteredData.length);
+      const today = new Date().toDateString();
+      const todayOrders = filteredData.filter((o: any) => new Date(o.created_at).toDateString() === today);
+      setTodaySales(todayOrders.reduce((a: number, o: any) => a + o.total_amount, 0));
     }
-    setOrders(filteredData);
-    setTotalOrders(filteredData.length);
-    const today = new Date().toDateString();
-    const todayOrders = filteredData.filter((o: any) => new Date(o.created_at).toDateString() === today);
-    setTodaySales(todayOrders.reduce((a: number, o: any) => a + o.total_amount, 0));
   }
-}
 
   async function fetchNotifications() {
     const { data } = await supabase.from('notifications').select('*')
@@ -377,15 +380,6 @@ export default function Home() {
   const filteredSales = dateFilteredOrders.reduce((a: number, o: any) => a + o.total_amount, 0);
   const filteredOrders2 = dateFilteredOrders.length;
 
-  const filteredOrders = orders.filter(o =>
-    orderSearch === '' ||
-    o.customer_name?.toLowerCase().includes(orderSearch.toLowerCase()) ||
-    o.customer_phone?.includes(orderSearch) ||
-    String(o.id).includes(orderSearch) ||
-    new Date(o.created_at).toLocaleDateString('bn-BD').includes(orderSearch) ||
-    new Date(o.created_at).toLocaleDateString('en-US').includes(orderSearch)
-  );
-
   if (!selectedBranch) {
     return (
       <div style={{ minHeight: '100vh', background: PINK_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
@@ -452,13 +446,22 @@ export default function Home() {
     );
   }
 
+  if (!role && !customer && selectedBranch) {
+    return <CustomerAuth onSuccess={(data) => {
+      setCustomer(data);
+      localStorage.setItem('customer_phone', data.phone);
+      localStorage.setItem('customer_name', data.name);
+      localStorage.setItem('customer_district', data.district);
+      localStorage.setItem('customer_upazila', data.upazila);
+    }} />;
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#fdf2f8' }}>
       {selectedOrder && (
         <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={role === 'admin'} />
       )}
 
-      {/* হেডার */}
       <div style={{ background: PINK, color: 'white', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
@@ -509,23 +512,21 @@ export default function Home() {
         }}
       />
 
-      {/* Admin/Editor Drawer */}
       {showAdminDrawer && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowAdminDrawer(false)} />
           <div style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: '380px', background: 'white', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
             <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>
-  {role === 'editor'
-    ? `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel`
-    : localStorage.getItem('current_page_id')
-      ? `📋 ${localStorage.getItem('current_page_name') || 'Admin'} Panel`
-      : '👑 Admin Panel'}
-</h2>
+                {role === 'editor'
+                  ? `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel`
+                  : localStorage.getItem('current_page_id')
+                    ? `📋 ${localStorage.getItem('current_page_name') || 'Admin'} Panel`
+                    : '👑 Admin Panel'}
+              </h2>
               <button onClick={() => setShowAdminDrawer(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
 
-            {/* Date Filter */}
             <div style={{ padding: '16px' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', overflowX: 'auto' }}>
                 {[
@@ -549,7 +550,6 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* তারিখ সার্চ */}
               <input
                 type="text"
                 value={orderSearch}
@@ -558,7 +558,6 @@ export default function Home() {
                 style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '10px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: '#1f2937' }}
               />
 
-              {/* Stats */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div style={{ background: PINK_LIGHT, borderRadius: '12px', padding: '12px', textAlign: 'center', border: `1px solid ${PINK_BORDER}` }}>
                   <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>💰 Sales</p>
@@ -608,7 +607,6 @@ export default function Home() {
                 {dateFilteredOrders.length === 0 && (
                   <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার নেই</p>
                 )}
-
                 {dateFilteredOrders.map((order: any) => (
                   <div key={order.id}
                     onDoubleClick={() => setSelectedOrder(order)}
