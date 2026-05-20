@@ -447,7 +447,7 @@ export default function Home() {
   }
 
   if (!role && !customer && selectedBranch) {
-    return <CustomerAuth onSuccess={(data) => {
+    return <CustomerAuth onSuccess={(data: any) => {
       setCustomer(data);
       localStorage.setItem('customer_phone', data.phone);
       localStorage.setItem('customer_name', data.name);
