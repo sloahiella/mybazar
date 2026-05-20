@@ -12,11 +12,15 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
   const [showEdit, setShowEdit] = useState(false);
   const [showAddSub, setShowAddSub] = useState(false);
   const [showPasswordSet, setShowPasswordSet] = useState(false);
+  const [showPaymentSet, setShowPaymentSet] = useState(false);
   const [editName, setEditName] = useState(page.name);
   const [editNameBn, setEditNameBn] = useState(page.name_bn || '');
   const [subName, setSubName] = useState('');
   const [subNameBn, setSubNameBn] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [bkashNumber, setBkashNumber] = useState(page.bkash_number || '');
+  const [nagadNumber, setNagadNumber] = useState(page.nagad_number || '');
+  const [rocketNumber, setRocketNumber] = useState(page.rocket_number || '');
   const [subPages, setSubPages] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -44,13 +48,13 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
     onRefresh();
   }
 
- async function deletePage() {
-  if (!confirm('এই পেজ মুছে দেবেন?')) return;
-  const { error } = await supabase.from('pages').delete().eq('id', page.id);
-  if (error) { alert('সমস্যা: ' + error.message); return; }
-  setShowDotMenu(false);
-  onRefresh();
-}
+  async function deletePage() {
+    if (!confirm('এই পেজ মুছে দেবেন?')) return;
+    const { error } = await supabase.from('pages').delete().eq('id', page.id);
+    if (error) { alert('সমস্যা: ' + error.message); return; }
+    setShowDotMenu(false);
+    onRefresh();
+  }
 
   async function addSubPage() {
     if (!subName) return;
@@ -72,6 +76,16 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
     setShowPasswordSet(false);
     setNewPassword('');
     alert('Password সেট হয়েছে!');
+  }
+
+  async function savePaymentNumbers() {
+    await supabase.from('pages').update({
+      bkash_number: bkashNumber || null,
+      nagad_number: nagadNumber || null,
+      rocket_number: rocketNumber || null,
+    }).eq('id', page.id);
+    setShowPaymentSet(false);
+    alert('Payment নম্বর সেট হয়েছে!');
   }
 
   return (
@@ -140,6 +154,10 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
                       style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer' }}>
                       🔑 Password সেট করুন
                     </button>
+                    <button onClick={() => { setShowPaymentSet(true); setShowDotMenu(false); }}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer' }}>
+                      💳 Payment নম্বর সেট
+                    </button>
                     <button onClick={deletePage}
                       style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#dc2626' }}>
                       🗑️ মুছুন
@@ -181,6 +199,27 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
             <button onClick={setPassword}
               style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>সেট করুন</button>
             <button onClick={() => { setShowPasswordSet(false); setNewPassword(''); }}
+              style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>বাতিল</button>
+          </div>
+        </div>
+      )}
+
+      {showPaymentSet && (
+        <div style={{ marginLeft: '12px', background: '#f0fdf4', borderRadius: '8px', padding: '10px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <p style={{ fontSize: '12px', color: '#15803d', fontWeight: 'bold', margin: 0 }}>💳 Payment নম্বর সেট করুন</p>
+          <input value={bkashNumber} onChange={e => setBkashNumber(e.target.value)}
+            placeholder="💗 বিকাশ নম্বর"
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box', color: '#1f2937' }} />
+          <input value={nagadNumber} onChange={e => setNagadNumber(e.target.value)}
+            placeholder="🟠 নগদ নম্বর"
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box', color: '#1f2937' }} />
+          <input value={rocketNumber} onChange={e => setRocketNumber(e.target.value)}
+            placeholder="🚀 রকেট নম্বর"
+            style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box', color: '#1f2937' }} />
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button onClick={savePaymentNumbers}
+              style={{ background: '#15803d', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>সেট করুন</button>
+            <button onClick={() => setShowPaymentSet(false)}
               style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>বাতিল</button>
           </div>
         </div>

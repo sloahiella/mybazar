@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -11,8 +11,8 @@ const PINK = '#db2777';
 const PINK_LIGHT = '#fdf2f8';
 const PINK_BORDER = '#fbcfe8';
 
-const BKASH_NUMBER = '01872149655';
-const NAGAD_NUMBER = '01872149655';
+const ADMIN_BKASH = '01872149655';
+const ADMIN_NAGAD = '01872149655';
 
 const inputStyle = {
   border: `2px solid ${PINK_BORDER}`,
@@ -40,6 +40,23 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [bkashNumber, setBkashNumber] = useState(ADMIN_BKASH);
+  const [nagadNumber, setNagadNumber] = useState(ADMIN_NAGAD);
+
+  useEffect(() => {
+    fetchPaymentNumbers();
+  }, []);
+
+  async function fetchPaymentNumbers() {
+    const pageIds = [...new Set(cart.map(item => item.page_id).filter(Boolean))];
+    if (pageIds.length === 0) return;
+    const { data } = await supabase.from('pages').select('bkash_number, nagad_number')
+      .eq('id', pageIds[0]).single();
+    if (data) {
+      if (data.bkash_number) setBkashNumber(data.bkash_number);
+      if (data.nagad_number) setNagadNumber(data.nagad_number);
+    }
+  }
 
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -166,7 +183,7 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
           {form.payment === 'bkash' && (
             <div style={{ background: '#fdf2f8', border: `1px solid ${PINK_BORDER}`, borderRadius: '12px', padding: '12px', marginTop: '12px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: PINK, margin: '0 0 6px 0' }}>💗 বিকাশে পেমেন্ট করুন</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '3px 0' }}>📱 নম্বর: <strong>{BKASH_NUMBER}</strong></p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '3px 0' }}>📱 নম্বর: <strong>{bkashNumber}</strong></p>
               <p style={{ fontSize: '12px', color: '#374151', margin: '3px 0' }}>💰 পরিমাণ: <strong>{total.toFixed(0)} Tk</strong></p>
               <p style={{ fontSize: '11px', color: '#6b7280', margin: '6px 0 0 0' }}>বিকাশ Send Money করে Transaction ID লিখুন</p>
               <input name="transaction_id" value={form.transaction_id} onChange={handle}
@@ -178,7 +195,7 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
           {form.payment === 'nagad' && (
             <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '12px', padding: '12px', marginTop: '12px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#ea580c', margin: '0 0 6px 0' }}>🟠 নগদে পেমেন্ট করুন</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: '3px 0' }}>📱 নম্বর: <strong>{NAGAD_NUMBER}</strong></p>
+              <p style={{ fontSize: '12px', color: '#374151', margin: '3px 0' }}>📱 নম্বর: <strong>{nagadNumber}</strong></p>
               <p style={{ fontSize: '12px', color: '#374151', margin: '3px 0' }}>💰 পরিমাণ: <strong>{total.toFixed(0)} Tk</strong></p>
               <p style={{ fontSize: '11px', color: '#6b7280', margin: '6px 0 0 0' }}>নগদ Send Money করে Transaction ID লিখুন</p>
               <input name="transaction_id" value={form.transaction_id} onChange={handle}
