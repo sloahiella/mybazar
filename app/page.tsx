@@ -446,16 +446,6 @@ export default function Home() {
     );
   }
 
-  if (!role && !customer && selectedBranch) {
-    return <CustomerAuth onSuccess={(data: any) => {
-      setCustomer(data);
-      localStorage.setItem('customer_phone', data.phone);
-      localStorage.setItem('customer_name', data.name);
-      localStorage.setItem('customer_district', data.district);
-      localStorage.setItem('customer_upazila', data.upazila);
-    }} />;
-  }
-
   return (
     <div style={{ minHeight: '100vh', background: '#fdf2f8' }}>
       {selectedOrder && (

@@ -1,4 +1,5 @@
 'use client';
+import CustomerAuth from './CustomerAuth';
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import OrderForm from './OrderForm';
@@ -801,8 +802,18 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const total = cart.reduce((a, c) => a + c.price_per_unit * c.qty, 0);
 
   if (showOrder) {
-    return <OrderForm cart={cart} branch={branch} total={total}
-      onBack={() => setShowOrder(false)}
+  const savedPhone = localStorage.getItem('customer_phone');
+  if (!savedPhone) {
+    return <CustomerAuth onSuccess={(data) => {
+      localStorage.setItem('customer_phone', data.phone);
+      localStorage.setItem('customer_name', data.name);
+      localStorage.setItem('customer_district', data.district);
+      localStorage.setItem('customer_upazila', data.upazila);
+      setShowOrder(true);
+    }} />;
+  }
+  return <OrderForm cart={cart} branch={branch} total={total}
+    onBack={() => setShowOrder(false)}
       onSuccess={(id, phone) => {
         setOrderId(id); setShowOrder(false); setCart([]); setShowCart(false);
         if (onOrderSuccess) onOrderSuccess(id, phone);
