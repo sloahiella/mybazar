@@ -30,7 +30,7 @@ export default function SellerLogin() {
       return
     }
 
-    router.push('/seller/dashboard')
+    router.push('/')
     setLoading(false)
   }
 
