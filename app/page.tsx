@@ -295,10 +295,23 @@ export default function Home() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [orderSearch, setOrderSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [sellerUser, setSellerUser] = useState<any>(null)
+const [showSellerDrawer, setShowSellerDrawer] = useState(false)
   const [dateFilter, setDateFilter] = useState('today');
 
   useEffect(() => {
     fetchBranches();
+    async function checkSellerLogin() {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  const { data: seller } = await supabase
+    .from('sellers')
+    .select('*, profiles(full_name)')
+    .eq('profile_id', user.id)
+    .single()
+  if (seller?.is_approved) setSellerUser(seller)
+}
+    checkSellerLogin()
     const savedRole = localStorage.getItem('role');
     if (savedRole) setRole(savedRole);
     const savedAutoPrint = localStorage.getItem('autoPrint');
@@ -534,11 +547,7 @@ export default function Home() {
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: PINK, margin: '0 0 4px 0' }}>সোহেল মার্ট</h1>
             <p style={{ fontSize: '14px', color: '#9ca3af', margin: 0 }}>মাই বাজার</p>
           </div>
-          <div style={{textAlign:'center', marginBottom:'12px'}}>
-  <a href="/seller/register" style={{fontSize:'13px', color:'#16a34a', fontWeight:'bold', textDecoration:'none', border:'1px solid #16a34a', padding:'6px 14px', borderRadius:'20px'}}>
-    🏪 সেলার হিসেবে যোগ দিন
-  </a>
-</div>
+         
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {branches.map((branch) => (
               <button key={branch.id} onClick={() => setSelectedBranch(branch)}
@@ -597,6 +606,12 @@ export default function Home() {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {sellerUser && (
+  <button onClick={() => setShowSellerDrawer(true)}
+    style={{ position: 'relative', background: '#16a34a', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer' }}>
+    🏪
+  </button>
+)}
           {role === 'editor' && (
             <button onClick={() => { setShowAdminDrawer(true); fetchOrders(); }}
               style={{ background: '#f59e0b', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer' }}>
@@ -639,6 +654,58 @@ export default function Home() {
         }}
       />
 
+      {showSellerDrawer && (
+  <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowSellerDrawer(false)} />
+    <div style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: '380px', background: 'white', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
+      <div style={{ background: '#16a34a', color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>🏪 {sellerUser?.shop_name}</h2>
+        <button onClick={() => setShowSellerDrawer(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
+      </div>
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <a href="/seller/orders" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', textDecoration: 'none', color: '#111' }}>
+          <span style={{ fontSize: '24px' }}>🛒</span>
+          <div>
+            <p style={{ fontWeight: 'bold', margin: 0 }}>অর্ডার</p>
+            <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>অর্ডার দেখুন</p>
+          </div>
+        </a>
+        <a href="/seller/products" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', textDecoration: 'none', color: '#111' }}>
+          <span style={{ fontSize: '24px' }}>📦</span>
+          <div>
+            <p style={{ fontWeight: 'bold', margin: 0 }}>প্রোডাক্ট</p>
+            <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>প্রোডাক্ট ম্যানেজ করুন</p>
+          </div>
+        </a>
+        <a href="/seller/wallet" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', textDecoration: 'none', color: '#111' }}>
+          <span style={{ fontSize: '24px' }}>💰</span>
+          <div>
+            <p style={{ fontWeight: 'bold', margin: 0 }}>ওয়ালেট</p>
+            <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>আয় দেখুন</p>
+          </div>
+        </a>
+        <a href="/seller/withdraw" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', textDecoration: 'none', color: '#111' }}>
+          <span style={{ fontSize: '24px' }}>🏦</span>
+          <div>
+            <p style={{ fontWeight: 'bold', margin: 0 }}>উত্তোলন</p>
+            <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>টাকা তুলুন</p>
+          </div>
+        </a>
+        <a href="/seller/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', textDecoration: 'none', color: '#111' }}>
+          <span style={{ fontSize: '24px' }}>🔔</span>
+          <div>
+            <p style={{ fontWeight: 'bold', margin: 0 }}>নোটিফিকেশন</p>
+            <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>নতুন অর্ডার দেখুন</p>
+          </div>
+        </a>
+        <button onClick={async () => { await supabase.auth.signOut(); setSellerUser(null); setShowSellerDrawer(false); }}
+          style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '12px', padding: '16px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+          লগআউট
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       {showAdminDrawer && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowAdminDrawer(false)} />
