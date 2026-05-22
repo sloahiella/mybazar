@@ -520,7 +520,17 @@ export default function Home() {
 
         <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)', padding: '32px', maxWidth: '400px', width: '100%', margin: '0 16px' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', marginBottom: '12px' }} />
+           <img src={LOGO_URL} alt="লোগো" 
+  style={{ height: '80px', width: 'auto', borderRadius: '12px', marginBottom: '12px', cursor: 'pointer' }}
+  onClick={() => {
+    const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1;
+    sessionStorage.setItem('logoClick', String(count));
+    if (count >= 5) {
+      sessionStorage.removeItem('logoClick');
+      setShowLoginModal(true);
+    }
+  }}
+/>
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: PINK, margin: '0 0 4px 0' }}>সোহেল মার্ট</h1>
             <p style={{ fontSize: '14px', color: '#9ca3af', margin: 0 }}>মাই বাজার</p>
           </div>
