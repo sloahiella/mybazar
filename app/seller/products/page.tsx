@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
@@ -7,75 +7,73 @@ export default function SellerProducts() {
   const router = useRouter()
   const [seller, setSeller] = useState<any>(null)
   const [products, setProducts] = useState<any[]>([])
-  const [allProducts, setAllProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [form, setForm] = useState({ product_id: '', price: '', stock: '' })
-  const [adding, setAdding] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [features, setFeatures] = useState<string[]>([''])
+  const [form, setForm] = useState({
+    name: '', name_bn: '', product_code: '', price: '', stock: '',
+    unit: 'pcs', category: '', category_bn: '', description: ''
+  })
+  const [image, setImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState('')
 
-  useEffect(() => {
-    init()
-  }, [])
+  useEffect(() => { init() }, [])
 
   async function init() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/seller/login'); return }
-
-    const { data: sellerData } = await supabase
-      .from('sellers')
-      .select('*')
-      .eq('profile_id', user.id)
-      .single()
-
+    const { data: sellerData } = await supabase.from('sellers').select('*').eq('profile_id', user.id).single()
     if (!sellerData) { router.push('/seller/login'); return }
     setSeller(sellerData)
-
-    const { data: productData } = await supabase
-      .from('products')
-      .select('*')
-      .order('name', { ascending: true })
-    if (productData) setAllProducts(productData)
-
-    const { data: listingData } = await supabase
-      .from('product_listings')
-      .select('*, products(name, image_url)')
-      .eq('seller_id', sellerData.id)
-    if (listingData) setProducts(listingData)
-
+    fetchProducts(sellerData.id)
     setLoading(false)
   }
 
-  async function handleAdd(e: any) {
-    e.preventDefault()
-    setAdding(true)
+  async function fetchProducts(sellerId: string) {
+    const { data } = await supabase.from('products').select('*').eq('seller_id', sellerId).order('created_at', { ascending: false })
+    if (data) setProducts(data)
+  }
 
-    await supabase.from('product_listings').insert({
-      product_id: parseInt(form.product_id),
-      seller_id: seller.id,
+  async function handleSubmit(e: any) {
+    e.preventDefault()
+    if (!image) { alert('ছবি দিন!'); return }
+    setUploading(true)
+
+    const fileExt = image.name.split('.').pop()
+    const fileName = `seller-products/${seller.id}-${Date.now()}.${fileExt}`
+    const { error: uploadError } = await supabase.storage.from('products').upload(fileName, image)
+    if (uploadError) { alert('ছবি আপলোড হয়নি!'); setUploading(false); return }
+
+    const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName)
+
+    await supabase.from('products').insert({
+      name: form.name,
+      name_bn: form.name_bn || form.name,
+      product_code: form.product_code || null,
       price: parseFloat(form.price),
-      stock: parseInt(form.stock),
-      is_active: true,
+      stock: parseInt(form.stock) || 0,
+      unit: form.unit,
+      category: form.category,
+      category_bn: form.category_bn,
+      description: form.description,
+      features: features.filter(f => f.trim()),
+      image_url: urlData.publicUrl,
+      seller_id: seller.id,
+      is_approved: false
     })
 
-    setForm({ product_id: '', price: '', stock: '' })
-    const { data } = await supabase
-      .from('product_listings')
-      .select('*, products(name, image_url)')
-      .eq('seller_id', seller.id)
-    if (data) setProducts(data)
-    setAdding(false)
+    alert('প্রোডাক্ট যোগ হয়েছে! Admin অ্যাপ্রুভ করলে সাইটে দেখাবে।')
+    setForm({ name: '', name_bn: '', product_code: '', price: '', stock: '', unit: 'pcs', category: '', category_bn: '', description: '' })
+    setFeatures([''])
+    setImage(null)
+    setImagePreview('')
+    setShowForm(false)
+    fetchProducts(seller.id)
+    setUploading(false)
   }
 
-  async function deleteListing(id: number) {
-    await supabase.from('product_listings').delete().eq('id', id)
-    setProducts(products.filter((p) => p.id !== id))
-  }
-
-  const filteredProducts = allProducts.filter((p) =>
-    p.name?.toLowerCase().includes(search.toLowerCase())
-  )
-
-  const inp: any = { border: '2px solid #aaa', padding: '10px', borderRadius: '6px', fontSize: '15px', color: '#111', background: '#f9f9f9', width: '100%', boxSizing: 'border-box' }
+  const inp: any = { border: '2px solid #e5e7eb', borderRadius: '8px', padding: '10px', width: '100%', fontSize: '14px', color: '#111', background: '#f9fafb', boxSizing: 'border-box' }
 
   if (loading) return <p style={{textAlign:'center', marginTop:'40px'}}>লোড হচ্ছে...</p>
 
@@ -83,64 +81,115 @@ export default function SellerProducts() {
     <div style={{maxWidth:'700px', margin:'40px auto', padding:'20px'}}>
       <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'24px'}}>
         <h1 style={{fontSize:'22px', fontWeight:'bold', color:'#111', margin:0}}>📦 আমার প্রোডাক্ট</h1>
-        <button onClick={() => router.push('/seller/dashboard')}
-          style={{background:'#e5e7eb', color:'#374151', border:'none', borderRadius:'8px', padding:'8px 16px', fontSize:'14px', cursor:'pointer'}}>
-          ← ড্যাশবোর্ড
+        <button onClick={() => setShowForm(!showForm)}
+          style={{background:'#16a34a', color:'white', border:'none', borderRadius:'8px', padding:'10px 16px', fontSize:'14px', fontWeight:'bold', cursor:'pointer'}}>
+          {showForm ? '✕ বাতিল' : '+ প্রোডাক্ট যোগ'}
         </button>
       </div>
 
-      {/* প্রোডাক্ট যোগ করুন */}
-      <div style={{background:'#fff', border:'1px solid #e5e7eb', borderRadius:'12px', padding:'20px', marginBottom:'24px'}}>
-        <h2 style={{fontSize:'18px', fontWeight:'bold', color:'#111', marginBottom:'16px'}}>➕ প্রোডাক্ট যোগ করুন</h2>
-        
-        <input placeholder="🔍 প্রোডাক্ট খুঁজুন..." value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{...inp, marginBottom:'12px'}} />
-
-        <form onSubmit={handleAdd} style={{display:'flex', flexDirection:'column', gap:'12px'}}>
-          <select value={form.product_id} onChange={(e) => setForm({...form, product_id: e.target.value})} required style={inp}>
-            <option value="">প্রোডাক্ট সিলেক্ট করুন</option>
-            {filteredProducts.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-
-          <input name="price" type="number" placeholder="আপনার দাম (৳)" value={form.price}
-            onChange={(e) => setForm({...form, price: e.target.value})} required style={inp} />
-
-          <input name="stock" type="number" placeholder="স্টক (কতটা আছে)" value={form.stock}
-            onChange={(e) => setForm({...form, stock: e.target.value})} required style={inp} />
-
-          <button type="submit" disabled={adding}
-            style={{background:'#16a34a', color:'#fff', padding:'12px', borderRadius:'6px', fontSize:'16px', fontWeight:'bold', border:'none', cursor:'pointer'}}>
-            {adding ? 'যোগ হচ্ছে...' : '✅ যোগ করুন'}
-          </button>
-        </form>
-      </div>
-
-      {/* আমার লিস্টিং */}
-      <h2 style={{fontSize:'18px', fontWeight:'bold', color:'#111', marginBottom:'12px'}}>📋 আমার লিস্টিং</h2>
-      
-      {products.length === 0 && (
-        <p style={{color:'#888', textAlign:'center'}}>এখনো কোনো প্রোডাক্ট যোগ করেননি</p>
-      )}
-
-      {products.map((listing) => (
-        <div key={listing.id} style={{background:'#fff', border:'1px solid #e5e7eb', borderRadius:'12px', padding:'16px', marginBottom:'12px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-          <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-            {listing.products?.image_url && (
-              <img src={listing.products.image_url} alt="" style={{width:'50px', height:'50px', objectFit:'contain', borderRadius:'8px'}} />
-            )}
+      {showForm && (
+        <form onSubmit={handleSubmit} style={{background:'white', border:'1px solid #e5e7eb', borderRadius:'12px', padding:'20px', marginBottom:'24px'}}>
+          <h2 style={{fontSize:'16px', fontWeight:'bold', color:'#111', marginBottom:'16px'}}>+ নতুন পণ্য যোগ</h2>
+          <div style={{display:'flex', flexDirection:'column', gap:'12px'}}>
             <div>
-              <p style={{fontWeight:'bold', color:'#111', margin:'0 0 4px 0'}}>{listing.products?.name}</p>
-              <p style={{fontSize:'14px', color:'#16a34a', margin:'0 0 2px 0', fontWeight:'bold'}}>৳{listing.price}</p>
-              <p style={{fontSize:'13px', color:'#888', margin:0}}>স্টক: {listing.stock}টি</p>
+              <label style={{fontSize:'13px', fontWeight:'bold', color:'#555'}}>নাম *</label>
+              <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="প্রোডাক্টের নাম (ইংরেজি)" required style={inp} />
+            </div>
+            <div>
+              <label style={{fontSize:'13px', fontWeight:'bold', color:'#555'}}>বিকল্প নাম</label>
+              <input value={form.name_bn} onChange={e => setForm({...form, name_bn: e.target.value})} placeholder="প্রোডাক্টের নাম (বাংলা)" style={inp} />
+            </div>
+            <div>
+              <label style={{fontSize:'13px', fontWeight:'bold', color:'#555'}}>পণ্য কোড <span style={{color:'#9ca3af', fontWeight:'normal'}}>(ঐচ্ছিক)</span></label>
+              <input value={form.product_code} onChange={e => setForm({...form, product_code: e.target.value})} placeholder="যেমন: 1234" style={inp} />
+            </div>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px'}}>
+              <div>
+                <label style={{fontSize:'13px', fontWeight:'bold', color:'#555'}}>দাম *</label>
+                <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} placeholder="দাম" required style={inp} />
+              </div>
+              <div>
+                <label style={{fontSize:'13px', fontWeight:'bold', color:'#555'}}>ইউনিট</label>
+                <select value={form.unit} onChange={e => setForm({...form, unit: e.target.value})} style={inp}>
+                  <option value="Kg">Kg</option>
+                  <option value="Liter">Liter</option>
+                  <option value="pcs">pcs</option>
+                  <option value="Packet">Packet</option>
+                </select>
+              </div>
+            </div>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px'}}>
+              <div>
+                <label style={{fontSize:'13px', fontWeight:'bold', color:'#555'}}>ক্যাটাগরি (ইং)</label>
+                <input value={form.category} onChange={e => setForm({...form, category: e.target.value})} placeholder="Category" style={inp} />
+              </div>
+              <div>
+                <label style={{fontSize:'13px', fontWeight:'bold', color:'#555'}}>ক্যাটাগরি (বাং)</label>
+                <input value={form.category_bn} onChange={e => setForm({...form, category_bn: e.target.value})} placeholder="ক্যাটাগরি" style={inp} />
+              </div>
+            </div>
+            <div>
+              <label style={{fontSize:'13px', fontWeight:'bold', color:'#555'}}>প্রাথমিক স্টক</label>
+              <input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} placeholder="স্টক পরিমাণ" style={inp} />
+            </div>
+            <div>
+              <label style={{fontSize:'13px', fontWeight:'bold', color:'#555'}}>প্রধান ছবি *</label>
+              <input type="file" accept="image/*" onChange={e => {
+                const file = e.target.files?.[0]
+                if (file) { setImage(file); setImagePreview(URL.createObjectURL(file)) }
+              }} style={{...inp, padding:'6px'}} />
+              {imagePreview && <img src={imagePreview} alt="" style={{width:'100px', height:'100px', objectFit:'contain', marginTop:'8px', borderRadius:'8px'}} />}
+            </div>
+            <div>
+              <label style={{fontSize:'13px', fontWeight:'bold', color:'#555'}}>বৈশিষ্ট্য</label>
+              {features.map((f, i) => (
+                <div key={i} style={{display:'flex', gap:'8px', marginBottom:'6px'}}>
+                  <input value={f} onChange={e => { const arr = [...features]; arr[i] = e.target.value; setFeatures(arr) }}
+                    placeholder={`বৈশিষ্ট্য ${i + 1}`} style={inp} />
+                  {features.length > 1 && (
+                    <button type="button" onClick={() => setFeatures(features.filter((_, j) => j !== i))}
+                      style={{background:'#fee2e2', color:'#dc2626', border:'none', borderRadius:'8px', padding:'8px 12px', cursor:'pointer'}}>✕</button>
+                  )}
+                </div>
+              ))}
+              <button type="button" onClick={() => setFeatures([...features, ''])}
+                style={{background:'#f3f4f6', color:'#374151', border:'none', borderRadius:'8px', padding:'8px 16px', fontSize:'13px', cursor:'pointer'}}>
+                + বৈশিষ্ট্য যোগ
+              </button>
+            </div>
+            <div style={{display:'flex', gap:'8px'}}>
+              <button type="submit" disabled={uploading}
+                style={{flex:1, background: uploading ? '#9ca3af' : '#16a34a', color:'white', border:'none', borderRadius:'8px', padding:'12px', fontSize:'16px', fontWeight:'bold', cursor:'pointer'}}>
+                {uploading ? 'আপলোড হচ্ছে...' : '+ পণ্য যোগ করুন'}
+              </button>
+              <button type="button" onClick={() => setShowForm(false)}
+                style={{background:'#e5e7eb', color:'#374151', border:'none', borderRadius:'8px', padding:'12px 16px', fontSize:'14px', cursor:'pointer'}}>
+                বাতিল
+              </button>
             </div>
           </div>
-          <button onClick={() => deleteListing(listing.id)}
-            style={{background:'#fee2e2', color:'#ef4444', border:'none', borderRadius:'8px', padding:'8px 12px', fontSize:'14px', cursor:'pointer', fontWeight:'bold'}}>
-            🗑️ মুছুন
-          </button>
+        </form>
+      )}
+
+      {products.length === 0 && !showForm && (
+        <p style={{color:'#888', textAlign:'center'}}>এখনো কোনো প্রোডাক্ট নেই</p>
+      )}
+
+      {products.map((product) => (
+        <div key={product.id} style={{background:'white', border:'1px solid #e5e7eb', borderRadius:'12px', padding:'16px', marginBottom:'12px', display:'flex', gap:'12px', alignItems:'center'}}>
+          {product.image_url && <img src={product.image_url} alt="" style={{width:'60px', height:'60px', objectFit:'contain', borderRadius:'8px'}} />}
+          <div style={{flex:1}}>
+            <p style={{fontWeight:'bold', color:'#111', margin:'0 0 4px 0'}}>{product.name}</p>
+            <p style={{fontSize:'13px', color:'#16a34a', fontWeight:'bold', margin:'0 0 2px 0'}}>৳{product.price}</p>
+            <p style={{fontSize:'12px', color:'#888', margin:0}}>স্টক: {product.stock} {product.unit}</p>
+          </div>
+          <span style={{
+            fontSize:'12px', padding:'4px 10px', borderRadius:'20px', fontWeight:'bold',
+            background: product.is_approved ? '#dcfce7' : '#fef9c3',
+            color: product.is_approved ? '#15803d' : '#854d0e'
+          }}>
+            {product.is_approved ? '✅ অ্যাপ্রুভড' : '⏳ অপেক্ষমান'}
+          </span>
         </div>
       ))}
     </div>
