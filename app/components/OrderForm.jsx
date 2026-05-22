@@ -28,6 +28,7 @@ const inputStyle = {
 };
 
 export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
+  const uniqueSellers = [...new Set(cart.map(item => item.seller_id).filter(Boolean))];
   const [form, setForm] = useState({
     name: localStorage.getItem('customer_name') || '',
     phone: localStorage.getItem('customer_phone') || '',
@@ -99,6 +100,8 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
     const items = cart.map(item => ({
       order_id: order.id,
       product_id: item.id,
+      listing_id: item.listing_id || null,
+      seller_id: item.seller_id || null,
       quantity: item.qty,
       price: item.price_per_unit
     }));
@@ -216,12 +219,12 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
           <h3 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '8px', fontSize: '15px' }}>অর্ডার সারসংক্ষেপ</h3>
           {cart.map(item => (
             <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6b7280', padding: '6px 0', borderBottom: '1px dashed #e5e7eb' }}>
-            <span>{item.name} ({item.qty} {item.unit})</span>
+              <span>{item.name} ({item.qty} {item.unit})</span>
               <span style={{ fontWeight: 'bold', color: '#374151' }}>{(item.price_per_unit * item.qty).toFixed(0)} Tk</span>
             </div>
           ))}
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: PINK, marginTop: '8px', fontSize: '16px' }}>
-            <span>Total:</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: PINK, marginTop: '8px', fontSize: '16px', borderTop: '1px solid #e5e7eb', paddingTop: '8px' }}>
+            <span>সর্বমোট:</span>
             <span>{total.toFixed(0)} Tk</span>
           </div>
         </div>

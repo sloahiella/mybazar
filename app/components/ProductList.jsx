@@ -311,6 +311,8 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
   const [showDesc, setShowDesc] = useState(false);
+  const [showSellers, setShowSellers] = useState(false);
+const [listings, setListings] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const stock = product.stock?.[0]?.quantity || 0;
   const u = (product.unit || '').toLowerCase().trim();
@@ -333,6 +335,30 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
     if (isLiter && unit === 'ml') return q / 1000;
     return q;
   };
+async function fetchListings() {
+  const { data } = await supabase
+    .from('product_listings')
+    .select('*, sellers(shop_name)')
+    .eq('product_id', product.id)
+    .eq('is_active', true)
+    .order('price', { ascending: true });
+  if (data) setListings(data);
+  setShowSellers(!showSellers);
+}
+
+const [listingCount, setListingCount] = useState(0);
+
+useEffect(() => {
+  async function checkListings() {
+    const { count } = await supabase
+      .from('product_listings')
+      .select('*', { count: 'exact', head: true })
+      .eq('product_id', product.id)
+      .eq('is_active', true);
+    if (count) setListingCount(count);
+  }
+  checkListings();
+}, []);
 
   return (
     <div onDragOver={e => { e.preventDefault(); onDragOver && onDragOver(); }} onDrop={onDrop}
@@ -371,6 +397,27 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
         <div style={{ flex: 1 }} />
         {product.product_code && <p style={{ fontSize: '11px', color: '#3b82f6', fontWeight: '500', margin: '0 0 2px 0' }}>কোড: {product.product_code}</p>}
         <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '12px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
+       {listingCount >= 1 && (
+  <button onClick={fetchListings}
+    style={{fontSize:'11px', color:'#2563eb', background:'#eff6ff', border:'1px solid #bfdbfe', borderRadius:'6px', padding:'3px 8px', cursor:'pointer', marginBottom:'4px'}}>
+    🏪 সেলারদের দাম দেখুন ({listingCount}জন)
+  </button>
+)}
+
+{showSellers && listings.length > 0 && (
+  <div style={{background:'#f9fafb', border:'1px solid #e5e7eb', borderRadius:'8px', padding:'8px', marginBottom:'4px'}}>
+    {listings.map((listing) => (
+      <div key={listing.id} style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'4px 0', borderBottom:'1px dashed #e5e7eb'}}>
+        <span style={{fontSize:'11px', color:'#374151'}}>🏪 {listing.sellers?.shop_name}</span>
+        <span style={{fontSize:'12px', fontWeight:'bold', color:'#db2777'}}>৳{listing.price}</span>
+     <button onClick={() => onAdd({...product, price_per_unit: listing.price, seller_id: listing.seller_id, shop_name: listing.sellers?.shop_name}, 1)}
+  style={{fontSize:'11px', background:'#db2777', color:'white', border:'none', borderRadius:'6px', padding:'3px 8px', cursor:'pointer', marginLeft:'4px'}}>
+   🛒 Add
+</button>
+      </div>
+    ))}
+  </div>
+)}
         <p style={{ fontSize: '11px', color: stock <= 0 ? '#ef4444' : '#9ca3af', margin: '0 0 4px 0' }}>Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}</p>
         {product.description && (
           <div style={{ marginBottom: '4px' }}>
@@ -398,7 +445,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
               = {(getActualQty() * product.price_per_unit).toFixed(0)} Tk
             </p>
           )}
-          <button onClick={() => { const a = getActualQty(); if (a > 0) onAdd(product, a); }}
+         <button onClick={() => { const a = getActualQty(); if (a > 0) onAdd({...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart'}, a); }}
             style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '7px 4px', fontSize: '12px', width: '100%', cursor: 'pointer', fontWeight: '500' }}>
             🛒 ঝুড়িতে রাখুন
           </button>
@@ -787,10 +834,24 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
 
   const displayProducts = getDisplayProducts();
 
-  function addToCart(product, qty) {
+ function addToCart(product, qty) {
     const existing = cart.find(c => c.id === product.id);
-    if (existing) setCart(cart.map(c => c.id === product.id ? { ...c, qty: parseFloat((c.qty + qty).toFixed(3)) } : c));
-    else setCart([...cart, { ...product, qty }]);
+    if (existing) {
+      setCart(cart.map(c => c.id === product.id ? { ...c, qty: parseFloat((c.qty + qty).toFixed(3)) } : c));
+      return;
+    }
+
+  const cartSellerIds = [...new Set(cart.map(c => c.seller_id).filter(Boolean))];
+const newSellerId = product.seller_id;
+
+if (newSellerId && cartSellerIds.length > 0 && !cartSellerIds.includes(newSellerId)) {
+      const confirmed = window.confirm(
+        `প্রিয় কাস্টমার! 🛵 ${cartSellerIds.length + 1}টি দোকান থেকে অর্ডার করতে হলে — ডেলিভারি চার্জ ৳১০ বাড়বে।\n\nঠিক আছে, ঝুড়িতে রাখুন?`
+      );
+      if (!confirmed) return;
+    }
+
+    setCart([...cart, { ...product, qty }]);
   }
 
   function updateCartQty(id, qty) {

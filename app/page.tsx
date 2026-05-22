@@ -152,7 +152,130 @@ function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => 
     </div>
   );
 }
+function SellerManagement() {
+  const [sellers, setSellers] = useState<any[]>([])
 
+  useEffect(() => { fetchSellers() }, [])
+
+  async function fetchSellers() {
+    const { data } = await supabase
+      .from('sellers')
+      .select('*, profiles(full_name, phone)')
+      .order('created_at', { ascending: false })
+    if (data) setSellers(data)
+  }
+
+  async function approveSeller(id: string) {
+    await supabase.from('sellers').update({ is_approved: true }).eq('id', id)
+    fetchSellers()
+  }
+
+  async function rejectSeller(id: string) {
+    if (!confirm('এই সেলার মুছে দেবেন?')) return
+    await supabase.from('sellers').delete().eq('id', id)
+    fetchSellers()
+  }
+
+  return (
+    <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {sellers.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো সেলার নেই</p>}
+      {sellers.map((seller) => (
+        <div key={seller.id} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '0 0 2px 0' }}>🏪 {seller.shop_name}</p>
+              <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>👤 {seller.profiles?.full_name}</p>
+              <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>📱 {seller.profiles?.phone}</p>
+              <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>💳 {seller.bkash_number}</p>
+              <span style={{
+                fontSize: '11px', padding: '2px 8px', borderRadius: '20px', display: 'inline-block', marginTop: '4px',
+                background: seller.is_approved ? '#dcfce7' : '#fef9c3',
+                color: seller.is_approved ? '#15803d' : '#854d0e'
+              }}>
+                {seller.is_approved ? '✅ অ্যাপ্রুভড' : '⏳ অপেক্ষমান'}
+              </span>
+            </div>
+            {!seller.is_approved && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <button onClick={() => approveSeller(seller.id)}
+                  style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>
+                  ✅ Approve
+                </button>
+                <button onClick={() => rejectSeller(seller.id)}
+                  style={{ background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>
+                  ❌ Reject
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function WithdrawalManagement() {
+  const [requests, setRequests] = useState<any[]>([])
+
+  useEffect(() => { fetchRequests() }, [])
+
+  async function fetchRequests() {
+    const { data } = await supabase
+      .from('withdrawal_requests')
+      .select('*, sellers(shop_name)')
+      .order('created_at', { ascending: false })
+    if (data) setRequests(data)
+  }
+
+  async function approve(id: string) {
+    await supabase.from('withdrawal_requests').update({ status: 'completed' }).eq('id', id)
+    fetchRequests()
+  }
+
+  async function reject(id: string) {
+    await supabase.from('withdrawal_requests').update({ status: 'rejected' }).eq('id', id)
+    fetchRequests()
+  }
+
+  return (
+    <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {requests.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো রিকোয়েস্ট নেই</p>}
+      {requests.map((req) => (
+        <div key={req.id} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '0 0 2px 0' }}>🏪 {req.sellers?.shop_name}</p>
+              <p style={{ fontSize: '14px', color: '#16a34a', fontWeight: 'bold', margin: '2px 0' }}>৳{req.amount}</p>
+              <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>
+                {req.method === 'bkash' ? '💗 বিকাশ' : req.method === 'nagad' ? '🟠 নগদ' : '🏦 ব্যাংক'} → {req.account_number}
+              </p>
+              <p style={{ fontSize: '11px', color: '#888', margin: '2px 0' }}>{new Date(req.created_at).toLocaleDateString('bn-BD')}</p>
+              <span style={{
+                fontSize: '11px', padding: '2px 8px', borderRadius: '20px', display: 'inline-block', marginTop: '4px',
+                background: req.status === 'completed' ? '#dcfce7' : req.status === 'rejected' ? '#fee2e2' : '#fef9c3',
+                color: req.status === 'completed' ? '#15803d' : req.status === 'rejected' ? '#dc2626' : '#854d0e'
+              }}>
+                {req.status === 'completed' ? '✅ সম্পন্ন' : req.status === 'rejected' ? '❌ বাতিল' : '⏳ অপেক্ষমান'}
+              </span>
+            </div>
+            {req.status === 'pending' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <button onClick={() => approve(req.id)}
+                  style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>
+                  ✅ Approve
+                </button>
+                <button onClick={() => reject(req.id)}
+                  style={{ background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>
+                  ❌ Reject
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
 export default function Home() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
@@ -384,8 +507,7 @@ export default function Home() {
     return (
       <div style={{ minHeight: '100vh', background: PINK_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-          <button onClick={() => setShowLoginModal(true)}
-            style={{ background: 'white', border: `2px solid ${PINK}`, borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', cursor: 'pointer' }}>👤</button>
+         
           {role && (
             <>
               <span style={{ fontSize: '12px', background: PINK_LIGHT, color: PINK, padding: '4px 8px', borderRadius: '20px', fontWeight: '500', border: `1px solid ${PINK_BORDER}` }}>
@@ -402,7 +524,11 @@ export default function Home() {
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: PINK, margin: '0 0 4px 0' }}>সোহেল মার্ট</h1>
             <p style={{ fontSize: '14px', color: '#9ca3af', margin: 0 }}>মাই বাজার</p>
           </div>
-          <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: '16px', fontSize: '14px' }}>শাখা সিলেক্ট করুন</p>
+          <div style={{textAlign:'center', marginBottom:'12px'}}>
+  <a href="/seller/register" style={{fontSize:'13px', color:'#16a34a', fontWeight:'bold', textDecoration:'none', border:'1px solid #16a34a', padding:'6px 14px', borderRadius:'20px'}}>
+    🏪 সেলার হিসেবে যোগ দিন
+  </a>
+</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {branches.map((branch) => (
               <button key={branch.id} onClick={() => setSelectedBranch(branch)}
@@ -483,6 +609,7 @@ export default function Home() {
               )}
             </button>
           )}
+ 
           <button onClick={() => { setSelectedBranch(null); localStorage.removeItem('current_page_id'); }}
             style={{ fontSize: '13px', background: PINK_DARK, color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer' }}>
             {selectedBranch.name_bn || selectedBranch.name} ✕
@@ -578,7 +705,11 @@ export default function Home() {
             <div style={{ display: 'flex', gap: '8px', padding: '0 16px 12px', overflowX: 'auto' }}>
               {[
                 { key: 'orders', label: '📋 Orders' },
-                ...(role === 'admin' ? [{ key: 'notifications', label: `🔔 ${unreadCount > 0 ? `(${unreadCount})` : ''}` }] : []),
+...(role === 'admin' ? [
+  { key: 'notifications', label: `🔔 ${unreadCount > 0 ? `(${unreadCount})` : ''}` },
+  { key: 'sellers', label: '🏪 Sellers' },
+  { key: 'withdrawals', label: '💰 Withdraw' },
+] : []),
               ].map(t => (
                 <button key={t.key}
                   onClick={() => { setAdminTab(t.key); if (t.key === 'notifications') markAllRead(); }}
@@ -646,6 +777,13 @@ export default function Home() {
               </div>
             )}
 
+            {adminTab === 'sellers' && role === 'admin' && (
+  <SellerManagement />
+)}
+
+{adminTab === 'withdrawals' && role === 'admin' && (
+  <WithdrawalManagement />
+)}
             {adminTab === 'notifications' && role === 'admin' && (
               <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {notifications.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো নোটিফিকেশন নেই</p>}

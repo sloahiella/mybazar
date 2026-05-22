@@ -1,34 +1,35 @@
-import { initializeApp } from 'firebase/app';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { initializeApp, getApps } from 'firebase/app';
+import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAbfaau0zidV94U8HTTSBXzgLu4GZBBLIg",
-  authDomain: "sohelmart-7e956.firebaseapp.com",
-  projectId: "sohelmart-7e956",
-  storageBucket: "sohelmart-7e956.firebasestorage.app",
-  messagingSenderId: "440470435908",
-  appId: "1:440470435908:web:98162b93934fbd9fcb6411",
-  measurementId: "G-939NCE3JMD"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-export const messaging = typeof window !== 'undefined' ? getMessaging(app) : null;
+let messaging: any = null;
+try {
+  messaging = getMessaging(app);
+} catch (e) {}
 
-export const VAPID_KEY = "BCCxWiBzCSz6pkxtgsaBrRZOvj-HmqyRYh-WskWGm49_d43Nbg49vbk6jN1Hp07o-0TMMP_EPI5sDbAhrhlQXXU";
-
-export async function requestNotificationPermission() {
+async function requestNotificationPermission(): Promise<string | null> {
   try {
+    const supported = await isSupported();
+    if (!supported) return null;
     const permission = await Notification.requestPermission();
-    if (permission === 'granted' && messaging) {
-      const token = await getToken(messaging, { vapidKey: VAPID_KEY });
-      return token;
-    }
-    return null;
-  } catch (error) {
-    console.error('Notification permission error:', error);
+    if (permission !== 'granted') return null;
+    const token = await getToken(messaging, {
+      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+    });
+    return token;
+  } catch (e) {
     return null;
   }
 }
 
-export { onMessage };
+export { messaging, requestNotificationPermission, onMessage };
