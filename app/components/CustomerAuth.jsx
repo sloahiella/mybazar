@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -82,8 +82,23 @@ export default function CustomerAuth({ onSuccess }) {
   const [upazila, setUpazila] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const upazilas = district ? (districtUpazilas[district] || []) : [];
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const user = session.user;
+        const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+        const phone = user.phone || user.user_metadata?.phone || '00000000000';
+        localStorage.setItem('customer_name', name);
+        localStorage.setItem('customer_phone', phone);
+        localStorage.setItem('customer_district', '');
+        localStorage.setItem('customer_upazila', '');
+        onSuccess({ name, phone, district: '', upazila: '' });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
+  const upazilas = district ? (districtUpazilas[district] || []) : [];
   async function handleLogin() {
     if (!phone) { alert('ফোন নম্বর দিন!'); return; }
     setLoading(true);
@@ -180,9 +195,27 @@ export default function CustomerAuth({ onSuccess }) {
             </>
           )}
 
-          <button onClick={isLogin ? handleLogin : handleRegister} disabled={loading}
+       <button onClick={isLogin ? handleLogin : handleRegister} disabled={loading}
             style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.5 : 1, marginTop: '8px' }}>
             {loading ? 'অপেক্ষা করুন...' : isLogin ? 'লগিন করুন' : 'রেজিস্ট্রেশন করুন'}
+          </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '8px 0' }}>
+            <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
+            <span style={{ fontSize: '12px', color: '#9ca3af' }}>অথবা</span>
+            <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
+          </div>
+
+          <button onClick={async () => {
+            const { error } = await supabase.auth.signInWithOAuth({
+              provider: 'google',
+              options: { redirectTo: window.location.origin }
+            });
+            if (error) alert('সমস্যা: ' + error.message);
+          }}
+            style={{ background: 'white', color: '#374151', border: '2px solid #e5e7eb', borderRadius: '12px', padding: '12px', fontSize: '15px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%' }}>
+            <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', height: '20px' }} />
+            Google দিয়ে লগিন করুন
           </button>
         </div>
       </div>

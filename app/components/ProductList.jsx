@@ -664,6 +664,13 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [showOrders, setShowOrders] = useState(false);
   const [subPageIds, setSubPageIds] = useState([]);
+  const [showCustomerOrders, setShowCustomerOrders] = useState(false);
+
+  useEffect(() => {
+    function handleShowOrders() { setShowCustomerOrders(true); }
+    window.addEventListener('showCustomerOrders', handleShowOrders);
+    return () => window.removeEventListener('showCustomerOrders', handleShowOrders);
+  }, []);
 
   const isAdmin = role === 'admin';
   const isEditor = role === 'editor';
@@ -853,6 +860,7 @@ useEffect(() => {
   return (
     <div className="pb-24">
       {showOrders && <OrdersModal onClose={() => setShowOrders(false)} isAdmin={isAdmin || isEditor} />}
+     {showCustomerOrders && <OrdersModal onClose={() => setShowCustomerOrders(false)} isAdmin={false} />}
       {editingProduct && <EditProductModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={fetchProducts} />}
       {showAddModal && <AddProductModal branch={branch} defaultPage={addModalPage} onClose={() => setShowAddModal(false)} onSave={fetchProducts} />}
 

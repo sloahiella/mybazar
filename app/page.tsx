@@ -369,6 +369,24 @@ export default function Home() {
       const { data: seller } = await supabase.from('sellers').select('*, profiles(full_name)').eq('profile_id', user.id).single()
       if (seller?.is_approved) setSellerUser(seller)
     }
+    async function checkGoogleLogin() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        const user = session.user
+        const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
+        const phone = user.phone || user.user_metadata?.phone || user.email || '00000000000'
+       if (!localStorage.getItem('customer_phone')) {
+          const avatar = user.user_metadata?.avatar_url || ''
+          localStorage.setItem('customer_name', name)
+          localStorage.setItem('customer_phone', phone)
+          localStorage.setItem('customer_district', '')
+          localStorage.setItem('customer_upazila', '')
+          localStorage.setItem('customer_avatar', avatar)
+          setCustomer({ phone, name })
+        }
+      }
+    }
+    checkGoogleLogin()
     checkSellerLogin()
     const savedRole = localStorage.getItem('role');
     if (savedRole) setRole(savedRole);
@@ -528,7 +546,7 @@ export default function Home() {
     }} />
   </div>
 )}
-   <Header
+  <Header
   role={role}
   sellerUser={sellerUser}
   onSellerClick={() => setShowSellerDrawer(true)}
@@ -539,11 +557,22 @@ export default function Home() {
     fetchNotifications();
   }}
   onMenuClick={() => setShowPageMenu(true)}
-onCartClick={() => {
-  const savedPhone = localStorage.getItem('customer_phone');
-  if (savedPhone) { setOpenCart(true); }
-  else { setShowCustomerAuth(true); }
-}}
+  onOrdersClick={() => {
+    const savedPhone = localStorage.getItem('customer_phone');
+    if (savedPhone) {
+      setOpenCart(false);
+      // কাস্টমারের অর্ডার ProductList এ দেখাবে
+      const event = new CustomEvent('showCustomerOrders');
+      window.dispatchEvent(event);
+    } else if (role === 'admin' || role === 'editor') {
+      setShowAdminDrawer(true);
+    }
+  }}
+  onCartClick={() => {
+    const savedPhone = localStorage.getItem('customer_phone');
+    if (savedPhone) { setOpenCart(true); }
+    else { setShowCustomerAuth(true); }
+  }}
 />
      <ProductList
   branch={selectedBranch}
