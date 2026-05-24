@@ -1,4 +1,5 @@
 ﻿'use client';
+import Header from './components/Header'
 import SellerPanel from './components/SellerPanel'
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
@@ -355,6 +356,9 @@ export default function Home() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [sellerUser, setSellerUser] = useState<any>(null);
   const [showSellerDrawer, setShowSellerDrawer] = useState(false);
+  const [showPageMenu, setShowPageMenu] = useState(false);
+  const [openCart, setOpenCart] = useState(false);
+  const [showCustomerAuth, setShowCustomerAuth] = useState(false);
   const [dateFilter, setDateFilter] = useState('today');
 
   useEffect(() => {
@@ -512,22 +516,50 @@ export default function Home() {
   return (
     <div style={{ minHeight: '100vh', background: '#fdf2f8' }}>
       {selectedOrder && <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={role === 'admin'} />}
-      <div style={{ background: PINK, color: 'white', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
-          <div>
-            <h1 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, lineHeight: 1.2 }}>সোহেল মার্ট</h1>
-            <p style={{ fontSize: '11px', margin: 0, opacity: 0.8 }}>মাই বাজার</p>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {sellerUser && (<button onClick={() => setShowSellerDrawer(true)} style={{ position: 'relative', background: '#16a34a', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer' }}>🏪</button>)}
-          {role === 'editor' && (<button onClick={() => { setShowAdminDrawer(true); fetchOrders(); }} style={{ background: '#f59e0b', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer' }}>📋</button>)}
-          {role === 'admin' && (<button onClick={() => { setShowAdminDrawer(true); const pageId = localStorage.getItem('current_page_id'); fetchOrders(pageId || undefined); fetchNotifications(); }} style={{ position: 'relative', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', fontWeight: 'bold' }}>⋯{unreadCount > 0 && (<span style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: 'white', fontSize: '10px', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unreadCount}</span>)}</button>)}
-          <button onClick={() => { setSelectedBranch(null); localStorage.removeItem('current_page_id'); }} style={{ fontSize: '13px', background: PINK_DARK, color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer' }}>{selectedBranch.name_bn || selectedBranch.name} ✕</button>
-        </div>
-      </div>
-      <ProductList branch={selectedBranch} role={role} onOrderSuccess={(orderId: number, phone: string) => { localStorage.setItem('customer_phone', phone); }} onPageChange={(pageId: string | null) => { localStorage.setItem('current_page_id', pageId || ''); if (role === 'admin') fetchOrders(pageId || undefined); }} />
+   {showCustomerAuth && (
+  <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
+    <CustomerAuth onSuccess={(data: any) => {
+      localStorage.setItem('customer_phone', data.phone);
+      localStorage.setItem('customer_name', data.name);
+      localStorage.setItem('customer_district', data.district);
+      localStorage.setItem('customer_upazila', data.upazila);
+      setShowCustomerAuth(false);
+      setOpenCart(true);
+    }} />
+  </div>
+)}
+   <Header
+  role={role}
+  sellerUser={sellerUser}
+  onSellerClick={() => setShowSellerDrawer(true)}
+  onAdminClick={() => {
+    setShowAdminDrawer(true);
+    const pageId = localStorage.getItem('current_page_id');
+    fetchOrders(pageId || undefined);
+    fetchNotifications();
+  }}
+  onMenuClick={() => setShowPageMenu(true)}
+onCartClick={() => {
+  const savedPhone = localStorage.getItem('customer_phone');
+  if (savedPhone) { setOpenCart(true); }
+  else { setShowCustomerAuth(true); }
+}}
+/>
+     <ProductList
+  branch={selectedBranch}
+  role={role}
+  openMenu={showPageMenu}
+  onMenuClose={() => setShowPageMenu(false)}
+  openCart={openCart}
+onCartClose={() => setOpenCart(false)}
+  onOrderSuccess={(orderId: number, phone: string) => {
+    localStorage.setItem('customer_phone', phone);
+  }}
+  onPageChange={(pageId: string | null) => {
+    localStorage.setItem('current_page_id', pageId || '');
+    if (role === 'admin') fetchOrders(pageId || undefined);
+  }}
+/>
       {showSellerDrawer && <SellerPanel seller={sellerUser} onClose={() => setShowSellerDrawer(false)} />}
       {showAdminDrawer && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
