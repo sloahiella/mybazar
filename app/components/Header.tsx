@@ -83,27 +83,49 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
             <span style={{ fontSize: '10px' }}>{customerName ? customerName.split(' ')[0] : 'Profile'}</span>
           </button>
 
-          {/* Dropdown */}
+         {/* Sidebar */}
           {showProfile && (
-            <div style={{ position: 'absolute', right: 0, top: '70px', background: 'white', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', minWidth: '200px', zIndex: 999, overflow: 'hidden' }}>
-              {customerPhone ? (
-                <>
-                  <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', background: '#fdf2f8' }}>
-                    <p style={{ fontWeight: 'bold', color: '#1f2937', margin: 0, fontSize: '14px' }}>👤 {customerName}</p>
-                    <p style={{ color: '#6b7280', margin: '4px 0 0 0', fontSize: '12px' }}>📱 {customerPhone}</p>
+            <div style={{ position: 'fixed', inset: 0, zIndex: 999, display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ background: 'white', width: '280px', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
+                {customerPhone ? (
+                  <>
+                    <div style={{ background: PINK, padding: '24px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '56px', height: '56px', borderRadius: '50%', overflow: 'hidden', background: '#fbbf24', flexShrink: 0 }}>
+                        {customerAvatar ? <img src={customerAvatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 'bold', color: '#111' }}>{customerName?.[0]?.toUpperCase()}</div>}
+                      </div>
+                      <div>
+                        <p style={{ fontWeight: 'bold', color: 'white', margin: 0, fontSize: '16px' }}>{customerName}</p>
+                        <p style={{ color: 'rgba(255,255,255,0.8)', margin: '4px 0 0 0', fontSize: '12px' }}>{customerPhone}</p>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      {[
+                        { icon: '📋', label: 'আমার অর্ডার', onClick: () => { setShowProfile(false); onOrdersClick && onOrdersClick(); } },
+                        { icon: '❤️', label: 'আমার Wishlist', onClick: () => setShowProfile(false) },
+                        { icon: '📍', label: 'আমার ঠিকানা', onClick: () => setShowProfile(false) },
+                        { icon: '👤', label: 'Account তথ্য', onClick: () => setShowProfile(false) },
+                      ].map((item, i) => (
+                        <button key={i} onClick={item.onClick} style={{ width: '100%', padding: '14px 16px', background: 'none', border: 'none', borderBottom: '1px solid #f3f4f6', textAlign: 'left', cursor: 'pointer', fontSize: '14px', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span style={{ fontSize: '18px' }}>{item.icon}</span>
+                          {item.label}
+                        </button>
+                      ))}
+                      <button onClick={handleLogout} style={{ width: '100%', padding: '14px 16px', background: 'none', border: 'none', borderTop: '1px solid #e5e7eb', textAlign: 'left', cursor: 'pointer', fontSize: '14px', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
+                        <span style={{ fontSize: '18px' }}>🚪</span>
+                        লগআউট
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>👤</div>
+                    <p style={{ fontSize: '16px', color: '#374151', marginBottom: '16px' }}>লগইন করুন</p>
+                    <button onClick={() => { setShowProfile(false); onCartClick && onCartClick(); }} style={{ background: PINK, color: 'white', border: 'none', borderRadius: '12px', padding: '12px 24px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+                      🔑 লগইন করুন
+                    </button>
                   </div>
-                  <button onClick={() => { setShowProfile(false); onOrdersClick && onOrdersClick(); }} style={{ width: '100%', padding: '12px 16px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', fontSize: '14px', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    📋 আমার অর্ডার
-                  </button>
-                  <button onClick={handleLogout} style={{ width: '100%', padding: '12px 16px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', fontSize: '14px', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid #e5e7eb' }}>
-                    🚪 লগআউট
-                  </button>
-                </>
-              ) : (
-                <button onClick={() => { setShowProfile(false); onCartClick && onCartClick(); }} style={{ width: '100%', padding: '16px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', fontSize: '14px', color: PINK, fontWeight: 'bold' }}>
-                  🔑 লগইন করুন
-                </button>
-              )}
+                )}
+              </div>
             </div>
           )}
         </div>

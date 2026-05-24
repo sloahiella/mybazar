@@ -244,11 +244,7 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
         </>
       )}
 
-      {!isAdmin && (
-        <button onClick={() => onShowOrders && onShowOrders()} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', color: '#db2777', border: '2px solid #db2777', padding: '8px 14px', borderRadius: '12px', fontWeight: '600', fontSize: '14px', whiteSpace: 'nowrap', cursor: 'pointer' }}>
-          📋 অর্ডার লিস্ট
-        </button>
-      )}
+
     </div>
   );
 }
