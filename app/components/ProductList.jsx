@@ -11,6 +11,16 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    function check() { setIsMobile(window.innerWidth < 768) }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
 function isOfficeOpen() {
   const now = new Date();
   const totalMinutes = now.getHours() * 60 + now.getMinutes();
@@ -856,6 +866,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
 }
 
 export default function ProductList({ branch, role, onOrderSuccess, onPageChange, openMenu, onMenuClose, openCart, onCartClose }) {
+  const isMobile = useIsMobile()
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState([]);
@@ -1150,7 +1161,7 @@ useEffect(() => {
       {loading && <p style={{ textAlign: 'center', color: '#9ca3af', marginTop: '40px' }}>লোড হচ্ছে...</p>}
 
       {(!selectedPage && !search && !selectedCategory && !selectedName) ? null : (
-     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 items-stretch">
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '12px', padding: '16px' }}>
         {displayProducts.map((product, index) => (
           <ProductCard key={product.id} product={product} onAdd={addToCart} isAdmin={isAdmin} isEditor={isEditor} editorPageId={editorPageId} onEdit={setEditingProduct} onDoubleClick={(p) => setSelectedProduct(p)} isDragging={dragIndex === index} onDragStart={() => handleDragStart(index)} onDragOver={() => handleDragOver(index)} onDrop={() => handleDrop()} />
         ))}
