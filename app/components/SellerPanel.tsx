@@ -76,7 +76,7 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
 
   return (
     <div>
-      <div style={{ background: '#db2777', color: 'white', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', position: 'sticky', top: 0, zIndex: 10 }}>
+     <div style={{ background: '#db2777', color: 'white', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', position: 'sticky', top: 0, zIndex: 100 }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer' }}>←</button>
         <h2 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, flex: 1 }}>{pageName}</h2>
         <button onClick={() => setShowAddModal(true)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', borderRadius: '8px', padding: '6px 12px', fontSize: '13px', cursor: 'pointer' }}>+ পণ্য যোগ</button>
@@ -424,13 +424,6 @@ useEffect(() => {
           </button>
         </div>
       )}
-{tab === 'sellerpage' && selectedSellerPage && (
-        <SellerPageProducts
-          seller={seller}
-          pageId={selectedSellerPage}
-          onBack={() => setTab('products')}
-        />
-      )}
 
 {tab === 'products' && (
         <SellerProductsTab seller={seller} onSelectPage={(pageId) => { setSelectedSellerPage(pageId); setTab('sellerpage'); }} />
@@ -549,7 +542,19 @@ useEffect(() => {
     </>
   )
 
-  if (isAdmin) return <div>{content}</div>
+ if (isAdmin) return <div>{content}</div>
+
+  if (tab === 'sellerpage' && selectedSellerPage) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'white', overflowY: 'auto' }}>
+        <SellerPageProducts
+          seller={seller}
+          pageId={selectedSellerPage}
+          onBack={() => setTab('products')}
+        />
+      </div>
+    )
+  }
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
