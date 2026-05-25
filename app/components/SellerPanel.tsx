@@ -7,6 +7,80 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 )
 
+function SellerProductsTab({ seller }: { seller: any }) {
+  const [myPages, setMyPages] = useState<any[]>([])
+  const [allPages, setAllPages] = useState<any[]>([])
+  const [searchPage, setSearchPage] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState('')
+const [newPageName, setNewPageName] = useState('')
+
+useEffect(() => {
+    fetchMyPages()
+    fetchAllPages()
+  }, [])
+
+  async function fetchMyPages() {
+    const { data } = await supabase.from('seller_pages').select('*, pages(name, name_bn)').eq('seller_id', seller.id)
+    if (data) setMyPages(data)
+  }
+
+  async function fetchAllPages() {
+    const { data } = await supabase.from('pages').select('id, name, name_bn').order('name_bn')
+    if (data) setAllPages(data)
+  }
+
+ async function requestNewPage() {
+    if (!newPageName.trim()) return
+    await supabase.from('seller_pages').insert({ seller_id: seller.id, page_name: newPageName, status: 'pending' })
+    setMsg('✅ নতুন পেজ request পাঠানো হয়েছে! Admin approve করলে দেখাবে।')
+    setNewPageName('')
+    fetchMyPages()
+  }
+  async function requestPage(pageId: number) {
+    const already = myPages.find(p => String(p.page_id) === String(pageId))
+    if (already) { setMsg('এই পেজে আগেই যোগ করা হয়েছে!'); return; }
+    await supabase.from('seller_pages').insert({ seller_id: seller.id, page_id: pageId, status: 'approved' })
+    setMsg('✅ পেজ যোগ হয়েছে!')
+    fetchMyPages()
+  }
+
+  const filteredPages = allPages.filter(p =>
+    (p.name_bn || p.name).toLowerCase().includes(searchPage.toLowerCase())
+  )
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#111', margin: '0 0 12px 0' }}>📋 আমার পেজ লিস্ট</p>
+      {myPages.length === 0 && <p style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '16px' }}>কোনো পেজ নেই</p>}
+      {myPages.map(p => (
+        <div key={p.id} style={{ background: '#f9fafb', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e5e7eb' }}>
+          <p style={{ margin: 0, fontSize: '14px', fontWeight: '500', color: '#111' }}>{p.pages?.name_bn || p.pages?.name}</p>
+          <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '20px', background: p.status === 'approved' ? '#dcfce7' : '#fef9c3', color: p.status === 'approved' ? '#15803d' : '#854d0e' }}>
+            {p.status === 'approved' ? '✅ Approved' : '⏳ Pending'}
+          </span>
+        </div>
+      ))}
+
+      <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#111', margin: '16px 0 8px 0' }}>🔍 পেজ খুঁজুন ও যোগ করুন</p>
+      <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '12px', marginTop: '12px' }}>
+        <p style={{ fontWeight: 'bold', fontSize: '13px', color: '#15803d', margin: '0 0 8px 0' }}>➕ নতুন পেজ request করুন</p>
+        <input value={newPageName} onChange={e => setNewPageName(e.target.value)} placeholder="নতুন পেজের নাম লিখুন..."
+          style={{ border: '2px solid #bbf7d0', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '8px', boxSizing: 'border-box', color: '#1f2937' }} />
+        <button onClick={requestNewPage} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer', width: '100%' }}>Request পাঠান</button>
+      </div>
+      <input value={searchPage} onChange={e => setSearchPage(e.target.value)} placeholder="পেজের নাম লিখুন..."
+        style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '8px', boxSizing: 'border-box', color: '#1f2937' }} />
+      {msg && <p style={{ fontSize: '13px', color: '#16a34a', marginBottom: '8px' }}>{msg}</p>}
+      {filteredPages.map(p => (
+        <div key={p.id} style={{ background: 'white', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e5e7eb' }}>
+          <p style={{ margin: 0, fontSize: '14px', color: '#111' }}>{p.name_bn || p.name}</p>
+          <button onClick={() => requestPage(p.id)} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>+ Request</button>
+        </div>
+      ))}
+    </div>
+  )
+}
 export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any; onClose: () => void; isAdmin?: boolean }) {
  const [tab, setTab] = useState('menu')
 
@@ -84,13 +158,13 @@ useEffect(() => {
               <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>অর্ডার দেখুন</p>
             </div>
           </div>
-          <a href="/seller/products" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', textDecoration: 'none', color: '#111' }}>
+          <div onClick={() => setTab('products')} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', cursor: 'pointer' }}>
             <span style={{ fontSize: '24px' }}>📦</span>
             <div>
-              <p style={{ fontWeight: 'bold', margin: 0, color: '#111' }}>প্রোডাক্ট</p>
-              <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>প্রোডাক্ট ম্যানেজ করুন</p>
+              <p style={{ fontWeight: 'bold', margin: 0, color: '#111' }}>প্রোডাক্ট ও পেজ</p>
+              <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>পেজ ও প্রোডাক্ট ম্যানেজ করুন</p>
             </div>
-          </a>
+          </div>
           <a href="/seller/wallet" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', textDecoration: 'none', color: '#111' }}>
             <span style={{ fontSize: '24px' }}>💰</span>
             <div>
@@ -119,6 +193,9 @@ useEffect(() => {
         </div>
       )}
 
+{tab === 'products' && (
+        <SellerProductsTab seller={seller} />
+      )}
       {tab === 'orders' && (
         <div style={{ padding: '12px 16px' }}>
           <div style={{ display: 'flex', gap: '6px', marginBottom: '10px', overflowX: 'auto' }}>

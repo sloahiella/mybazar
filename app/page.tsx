@@ -262,12 +262,28 @@ function AdminSellerView({ seller, onBack }: { seller: any; onBack: () => void }
 function SellerManagement() {
   const [sellers, setSellers] = useState<any[]>([])
   const [selectedSeller, setSelectedSeller] = useState<any>(null)
+  const [pageRequests, setPageRequests] = useState<any[]>([])
 
-  useEffect(() => { fetchSellers() }, [])
+  useEffect(() => { fetchSellers(); fetchPageRequests(); }, [])
 
   async function fetchSellers() {
     const { data } = await supabase.from('sellers').select('*, profiles(full_name, phone)').order('created_at', { ascending: false })
     if (data) setSellers(data)
+  }
+
+  async function fetchPageRequests() {
+    const { data } = await supabase.from('seller_pages').select('*, sellers(shop_name), pages(name, name_bn)').eq('status', 'pending').order('created_at', { ascending: false })
+    if (data) setPageRequests(data)
+  }
+
+  async function approvePageRequest(id: string) {
+    await supabase.from('seller_pages').update({ status: 'approved' }).eq('id', id)
+    fetchPageRequests()
+  }
+
+  async function rejectPageRequest(id: string) {
+    await supabase.from('seller_pages').delete().eq('id', id)
+    fetchPageRequests()
   }
 
   async function approveSeller(id: string) {
@@ -287,6 +303,23 @@ function SellerManagement() {
 
   return (
     <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+     {pageRequests.length > 0 && (
+        <div style={{ marginBottom: '16px' }}>
+          <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#db2777', margin: '0 0 8px 0' }}>📋 Page Requests ({pageRequests.length})</p>
+          {pageRequests.map(req => (
+            <div key={req.id} style={{ background: '#fef9c3', border: '1px solid #fde68a', borderRadius: '10px', padding: '10px 12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <p style={{ fontWeight: 'bold', fontSize: '13px', margin: '0 0 2px 0' }}>🏪 {req.sellers?.shop_name}</p>
+                <p style={{ fontSize: '12px', color: '#555', margin: 0 }}>📄 {req.pages?.name_bn || req.pages?.name}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button onClick={() => approvePageRequest(req.id)} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer' }}>✅ Approve</button>
+                <button onClick={() => rejectPageRequest(req.id)} style={{ background: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer' }}>❌ Reject</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       {sellers.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো সেলার নেই</p>}
       {sellers.map((seller) => (
         <div key={seller.id} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px' }}>
