@@ -51,6 +51,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
   }
 
   return (
+   <>
     <div style={{ background: PINK, color: 'white', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '60px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
 
       {/* বাম দিক */}
@@ -182,5 +183,6 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
         <span style={{ fontSize: '10px', color: '#6b7280' }}>Profile</span>
       </button>
     </div>
+ </>
   )
 }
