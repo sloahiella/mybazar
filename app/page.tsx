@@ -177,9 +177,25 @@ function AdminSellerView({ seller, onBack }: { seller: any; onBack: () => void }
                   <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>অর্ডার #{item.order_id}</p>
                 </div>
               </div>
-              <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '20px', fontWeight: 'bold', background: item.order?.status === 'delivered' ? '#dcfce7' : item.order?.status === 'confirmed' ? '#dbeafe' : '#fef9c3', color: item.order?.status === 'delivered' ? '#15803d' : item.order?.status === 'confirmed' ? '#1d4ed8' : '#854d0e' }}>
-                {item.order?.status === 'delivered' ? '✅ ডেলিভারি' : item.order?.status === 'confirmed' ? '✔️ কনফার্ম' : '⏳ পেন্ডিং'}
-              </span>
+             <div>
+                <select value={item.order?.status || 'pending'} onChange={async e => { e.stopPropagation(); await supabase.from('orders').update({ status: e.target.value }).eq('id', item.order_id); fetchOrders(); }} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer', width: '100%' }}>
+                  <option value="pending">⏳ Pending</option>
+                  <option value="confirmed">✔️ Confirmed</option>
+                  <option value="shipped">🚚 Shipped</option>
+                  <option value="delivered">✅ Delivered</option>
+                </select>
+                {item.order?.status === 'shipped' && (
+                  <input
+                    placeholder="ট্র্যাকিং লিংক দিন..."
+                    defaultValue={item.order?.tracking_url || ''}
+                    onBlur={async e => {
+                      await supabase.from('orders').update({ tracking_url: e.target.value }).eq('id', item.order_id);
+                      fetchOrders();
+                    }}
+                    style={{ border: '1px solid #e5e7eb', borderRadius: '6px', padding: '4px 6px', fontSize: '11px', width: '100%', outline: 'none', color: '#1f2937', marginTop: '4px', boxSizing: 'border-box' }}
+                  />
+                )}
+              </div>
             </div>
           </div>
         ))}
