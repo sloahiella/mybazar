@@ -277,7 +277,20 @@ function SellerManagement() {
   }
 
   async function approvePageRequest(id: string) {
-    await supabase.from('seller_pages').update({ status: 'approved' }).eq('id', id)
+    const req = pageRequests.find(r => String(r.id) === String(id))
+    if (req?.page_name && !req?.page_id) {
+      const { data: newPage } = await supabase.from('pages').insert({
+        name: req.page_name,
+        name_bn: req.page_name,
+        branch_id: 1,
+        is_active: true
+      }).select().single()
+      if (newPage) {
+        await supabase.from('seller_pages').update({ status: 'approved', page_id: newPage.id }).eq('id', id)
+      }
+    } else {
+      await supabase.from('seller_pages').update({ status: 'approved' }).eq('id', id)
+    }
     fetchPageRequests()
   }
 

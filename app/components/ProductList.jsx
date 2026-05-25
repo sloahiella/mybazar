@@ -956,7 +956,7 @@ useEffect(() => {
     if (selectedPage) {
       baseProducts = products.filter(p => String(p.page_id) === String(selectedPage.id) || subPageIds.map(String).includes(String(p.page_id)));
     }
-    if (!isAdmin && !isEditor) { baseProducts = baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0); }
+    if (!isAdmin && !isEditor) { baseProducts = baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0 || p.seller_id); }
     if (search !== '' || selectedName) {
       let allBase = (isAdmin || isEditor) ? products : products.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
       let filtered = allBase.filter(p => search === '' || p.name.toLowerCase().includes(search.toLowerCase()) || (p.name_bn && p.name_bn.toLowerCase().includes(search.toLowerCase())) || (p.product_code && p.product_code.toLowerCase().includes(search.toLowerCase())) || (p.category && p.category.toLowerCase().includes(search.toLowerCase())) || (p.category_bn && p.category_bn.includes(search)));

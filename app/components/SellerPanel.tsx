@@ -14,6 +14,11 @@ function SellerProductsTab({ seller }: { seller: any }) {
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
 const [newPageName, setNewPageName] = useState('')
+const [openMenuId, setOpenMenuId] = useState<any>(null)
+const [addProductPageId, setAddProductPageId] = useState<any>(null)
+const [productForm, setProductForm] = useState({ name: '', price: '', unit: 'pcs', description: '', stock: '' })
+const [uploading, setUploading] = useState(false)
+const [productImage, setProductImage] = useState('')
 
 useEffect(() => {
     fetchMyPages()
@@ -37,6 +42,41 @@ useEffect(() => {
     setNewPageName('')
     fetchMyPages()
   }
+  async function uploadImage(e: any) {
+    const file = e.target.files?.[0]; if (!file) return;
+    setUploading(true);
+    const fileName = `${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from('products').upload(fileName, file);
+    if (error) { alert('Error: ' + error.message); setUploading(false); return; }
+    const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName);
+    setProductImage(urlData.publicUrl);
+    setUploading(false);
+  }
+
+  async function addProduct(pageId: number) {
+    if (!productForm.name || !productForm.price) { alert('Name and price required!'); return; }
+    const { data: branchData } = await supabase.from('pages').select('branch_id').eq('id', pageId).single()
+  const { data: inserted } = await supabase.from('products').insert({
+      name: productForm.name,
+      price_per_unit: parseFloat(productForm.price),
+      unit: productForm.unit,
+      description: productForm.description,
+      image_url: productImage,
+      page_id: pageId,
+      branch_id: branchData?.branch_id,
+      seller_id: seller.id,
+      is_active: true,
+      product_code: `${Date.now()}`,
+      sort_order: 9999
+    }).select().single()
+   if (inserted && productForm.stock) {
+      await supabase.from('stock').insert({ product_id: inserted.id, quantity: parseFloat(productForm.stock) })
+    }
+    setMsg('✅ Product added successfully!')
+   setProductForm({ name: '', price: '', unit: 'pcs', description: '', stock: '' })
+    setProductImage('')
+    setAddProductPageId(null)
+  }
   async function requestPage(pageId: number) {
     const already = myPages.find(p => String(p.page_id) === String(pageId))
     if (already) { setMsg('এই পেজে আগেই যোগ করা হয়েছে!'); return; }
@@ -54,14 +94,52 @@ useEffect(() => {
       <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#111', margin: '0 0 12px 0' }}>📋 আমার পেজ লিস্ট</p>
       {myPages.length === 0 && <p style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '16px' }}>কোনো পেজ নেই</p>}
       {myPages.map(p => (
-        <div key={p.id} style={{ background: '#f9fafb', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e5e7eb' }}>
-          <p style={{ margin: 0, fontSize: '14px', fontWeight: '500', color: '#111' }}>{p.pages?.name_bn || p.pages?.name}</p>
-          <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '20px', background: p.status === 'approved' ? '#dcfce7' : '#fef9c3', color: p.status === 'approved' ? '#15803d' : '#854d0e' }}>
-            {p.status === 'approved' ? '✅ Approved' : '⏳ Pending'}
-          </span>
+     <div key={p.id} style={{ background: '#f9fafb', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e5e7eb' }}>
+          <p onClick={() => setAddProductPageId(p.page_id || p.id)} style={{ margin: 0, fontSize: '14px', fontWeight: '500', color: '#111', flex: 1, cursor: 'pointer' }}>{p.pages?.name_bn || p.pages?.name || p.page_name || 'Unknown'}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '20px', background: p.status === 'approved' ? '#dcfce7' : '#fef9c3', color: p.status === 'approved' ? '#15803d' : '#854d0e' }}>
+              {p.status === 'approved' ? '✅ Approved' : '⏳ Pending'}
+            </span>
+            <div style={{ position: 'relative' }}>
+              <button onClick={() => setOpenMenuId(openMenuId === p.id ? null : p.id)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#6b7280', padding: '2px 6px' }}>⋯</button>
+              {openMenuId === p.id && (
+                <div style={{ position: 'absolute', right: 0, top: '28px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 10, minWidth: '140px' }}>
+                <button onClick={() => { setOpenMenuId(null); }} style={{ width: '100%', padding: '10px 14px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', fontSize: '13px', color: '#1f2937', borderBottom: '1px solid #f3f4f6' }}>📁 Add Sub Page</button>
+                  <button onClick={async () => { setOpenMenuId(null); if (!confirm('Are you sure you want to delete this page?')) return; await supabase.from('seller_pages').delete().eq('id', p.id); fetchMyPages(); }} style={{ width: '100%', padding: '10px 14px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', fontSize: '13px', color: '#dc2626' }}>🗑️ Delete</button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       ))}
 
+     {addProductPageId && (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 99999, padding: '16px', paddingTop: '70px', overflowY: 'auto' }}>
+          <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '440px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#16a34a', margin: 0 }}>+ New Product</h2>
+              <button onClick={() => setAddProductPageId(null)} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#9ca3af' }}>✕</button>
+            </div>
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div><label style={{ fontSize: '12px', color: '#6b7280' }}>Name *</label><input value={productForm.name} onChange={e => setProductForm({...productForm, name: e.target.value})} placeholder="Product name" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+              <div><label style={{ fontSize: '12px', color: '#6b7280' }}>Price *</label><input value={productForm.price} type="number" onChange={e => setProductForm({...productForm, price: e.target.value})} placeholder="0" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+              <div><label style={{ fontSize: '12px', color: '#6b7280' }}>Unit</label><select value={productForm.unit} onChange={e => setProductForm({...productForm, unit: e.target.value})} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="pcs">pcs</option><option value="Kg">Kg</option><option value="Liter">Liter</option><option value="packet">Packet</option></select></div>
+              <div style={{ background: '#f0fdf4', borderRadius: '8px', padding: '12px' }}>
+                <label style={{ fontSize: '12px', color: '#15803d', fontWeight: 'bold' }}>Product Image</label>
+                {productImage && <img src={productImage} alt="preview" style={{ width: '100%', objectFit: 'contain', borderRadius: '8px', marginTop: '8px', maxHeight: '120px' }} />}
+                <input type="file" accept="image/*" onChange={uploadImage} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
+                {uploading && <p style={{ fontSize: '12px', color: '#16a34a', marginTop: '4px' }}>Uploading...</p>}
+              </div>
+             <div><label style={{ fontSize: '12px', color: '#6b7280' }}>Stock (Optional)</label><input value={productForm.stock} type="number" onChange={e => setProductForm({...productForm, stock: e.target.value})} placeholder="0" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+              <div><label style={{ fontSize: '12px', color: '#6b7280' }}>Description</label><textarea value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} rows={3} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'vertical', color: '#1f2937' }} /></div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', padding: '16px', borderTop: '1px solid #e5e7eb' }}>
+              <button onClick={() => addProduct(addProductPageId)} disabled={uploading} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', flex: 1, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>+ Add Product</button>
+              <button onClick={() => setAddProductPageId(null)} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '12px', padding: '12px 20px', fontSize: '16px', cursor: 'pointer' }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
       <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#111', margin: '16px 0 8px 0' }}>🔍 পেজ খুঁজুন ও যোগ করুন</p>
       <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '12px', marginTop: '12px' }}>
         <p style={{ fontWeight: 'bold', fontSize: '13px', color: '#15803d', margin: '0 0 8px 0' }}>➕ নতুন পেজ request করুন</p>
