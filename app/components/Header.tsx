@@ -155,5 +155,32 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
 
       {showProfile && <div onClick={() => setShowProfile(false)} style={{ position: 'fixed', inset: 0, zIndex: 998 }} />}
     </div>
+
+    {/* Mobile Bottom Navigation */}
+    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '60px', zIndex: 100, boxShadow: '0 -2px 8px rgba(0,0,0,0.08)' }} className="md:hidden">
+      <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px' }}>
+        <span style={{ fontSize: '20px' }}>🏠</span>
+        <span style={{ fontSize: '10px', color: '#6b7280' }}>Home</span>
+      </button>
+      <button onClick={onMenuClick} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px' }}>
+        <span style={{ fontSize: '20px' }}>☰</span>
+        <span style={{ fontSize: '10px', color: '#6b7280' }}>Category</span>
+      </button>
+      <button onClick={onCartClick} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px', position: 'relative' }}>
+        <span style={{ fontSize: '20px' }}>🛒</span>
+        {cartCount > 0 && <span style={{ position: 'absolute', top: '4px', right: '8px', background: PINK, color: 'white', fontSize: '10px', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{cartCount}</span>}
+        <span style={{ fontSize: '10px', color: '#6b7280' }}>Cart</span>
+      </button>
+      <button style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px' }}>
+        <span style={{ fontSize: '20px' }}>💬</span>
+        <a href="https://wa.me/8801872149655" target="_blank" rel="noreferrer" style={{ fontSize: '10px', color: '#6b7280', textDecoration: 'none' }}>Live Chat</a>
+      </button>
+      <button onClick={() => setShowProfile(!showProfile)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px' }}>
+        <div style={{ width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden', background: customerName ? '#fbbf24' : '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: customerName ? '12px' : '16px', fontWeight: 'bold', color: customerName ? '#111' : '#6b7280' }}>
+          {customerAvatar ? <img src={customerAvatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : customerName ? customerName[0].toUpperCase() : '👤'}
+        </div>
+        <span style={{ fontSize: '10px', color: '#6b7280' }}>Profile</span>
+      </button>
+    </div>
   )
 }
