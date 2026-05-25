@@ -58,11 +58,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <button onClick={onMenuClick} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer', padding: '4px' }}>☰</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
-          <div>
-            <h1 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, lineHeight: 1.2 }}>সোহেল মার্ট</h1>
-            <p style={{ fontSize: '10px', margin: 0, opacity: 0.8 }}>মাই বাজার</p>
-          </div>
+       <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
         </div>
       </div>
 
