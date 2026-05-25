@@ -154,7 +154,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
     </div>
 
     {/* Mobile Bottom Navigation */}
-    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '60px', zIndex: 100, boxShadow: '0 -2px 8px rgba(0,0,0,0.08)' }} className="md:hidden">
+    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #e5e7eb', display: window.innerWidth < 768 ? 'flex' : 'none', justifyContent: 'space-around', alignItems: 'center', height: '60px', zIndex: 100, boxShadow: '0 -2px 8px rgba(0,0,0,0.08)' }}>
       <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px' }}>
         <span style={{ fontSize: '20px' }}>🏠</span>
         <span style={{ fontSize: '10px', color: '#6b7280' }}>Home</span>
