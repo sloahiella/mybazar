@@ -19,6 +19,14 @@ const [addProductPageId, setAddProductPageId] = useState<any>(null)
 const [productForm, setProductForm] = useState({ name: '', price: '', unit: 'pcs', description: '', stock: '' })
 const [uploading, setUploading] = useState(false)
 const [productImage, setProductImage] = useState('')
+const [myProducts, setMyProducts] = useState<any[]>([])
+
+useEffect(() => { fetchMyProducts() }, [])
+
+async function fetchMyProducts() {
+  const { data } = await supabase.from('products').select('*, stock(*)').eq('seller_id', seller.id).eq('is_active', true).order('created_at', { ascending: false })
+  if (data) setMyProducts(data)
+}
 
 useEffect(() => {
     fetchMyPages()
@@ -75,6 +83,7 @@ useEffect(() => {
     setMsg('✅ Product added successfully!')
    setProductForm({ name: '', price: '', unit: 'pcs', description: '', stock: '' })
     setProductImage('')
+    fetchMyProducts()
     setAddProductPageId(null)
   }
   async function requestPage(pageId: number) {
@@ -93,6 +102,21 @@ useEffect(() => {
     <div style={{ padding: '16px' }}>
       <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#111', margin: '0 0 12px 0' }}>📋 আমার পেজ লিস্ট</p>
       {myPages.length === 0 && <p style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '16px' }}>কোনো পেজ নেই</p>}
+      {myProducts.length > 0 && (
+        <div style={{ marginBottom: '16px' }}>
+          <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '0 0 8px 0' }}>📦 আমার প্রোডাক্ট ({myProducts.length})</p>
+          {myProducts.map(prod => (
+            <div key={prod.id} style={{ background: 'white', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid #e5e7eb' }}>
+              {prod.image_url && <img src={prod.image_url} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} />}
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: '#111' }}>{prod.name}</p>
+                <p style={{ margin: 0, fontSize: '12px', color: '#16a34a' }}>৳{prod.price_per_unit} | Stock: {prod.stock?.[0]?.quantity || 0}</p>
+              </div>
+              <button onClick={async () => { if (!confirm('Delete this product?')) return; await supabase.from('products').delete().eq('id', prod.id); fetchMyProducts(); }} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', padding: '4px 8px', fontSize: '12px', cursor: 'pointer' }}>🗑️</button>
+            </div>
+          ))}
+        </div>
+      )}
       {myPages.map(p => (
      <div key={p.id} style={{ background: '#f9fafb', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e5e7eb' }}>
           <p onClick={() => setAddProductPageId(p.page_id || p.id)} style={{ margin: 0, fontSize: '14px', fontWeight: '500', color: '#111', flex: 1, cursor: 'pointer' }}>{p.pages?.name_bn || p.pages?.name || p.page_name || 'Unknown'}</p>
