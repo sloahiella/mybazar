@@ -635,12 +635,26 @@ onCartClose={() => setOpenCart(false)}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                         <p style={{ fontWeight: 'bold', color: PINK, margin: 0 }}>{order.total_amount} Tk</p>
-                        <select value={order.status} onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value); }} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer' }}>
+                      <select value={order.status} onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value); }} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer' }}>
                           <option value="pending">Pending</option>
                           <option value="confirmed">Confirmed</option>
+                         <option value="shipped">🚚 Shipped</option>
                           <option value="delivered">Delivered</option>
                           {role === 'admin' && <option value="cancelled">Cancelled</option>}
                         </select>
+                        {order.status === 'shipped' && (
+                          <div style={{ marginTop: '4px', display: 'flex', gap: '4px' }}>
+                            <input
+                              placeholder="ট্র্যাকিং লিংক দিন..."
+                              defaultValue={order.tracking_url || ''}
+                              onBlur={async e => {
+                                await supabase.from('orders').update({ tracking_url: e.target.value }).eq('id', order.id);
+                                fetchOrders();
+                              }}
+                              style={{ border: '1px solid #e5e7eb', borderRadius: '6px', padding: '4px 6px', fontSize: '11px', width: '100%', outline: 'none', color: '#1f2937' }}
+                            />
+                          </div>
+                        )}
                         <button onClick={e => { e.stopPropagation(); setSelectedOrder(order); }} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '4px 10px', fontSize: '12px', cursor: 'pointer' }}>🖨️ Print/Save</button>
                       </div>
                     </div>

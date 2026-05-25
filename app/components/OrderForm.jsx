@@ -97,19 +97,21 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
       return;
     }
 
-    const items = cart.map(item => ({
+const items = cart.map(item => ({
       order_id: order.id,
       product_id: item.id,
-      listing_id: item.listing_id || null,
-      seller_id: item.seller_id || null,
       quantity: item.qty,
       price: item.price_per_unit
     }));
-
     await supabase.from('order_items').insert(items);
-
     setLoading(false);
     onSuccess(order.id, form.phone);
+    return;
+    if (itemsError) {
+      console.error('order_items error details:', JSON.stringify(itemsError));
+      console.error('items data:', JSON.stringify(items));
+    }
+  
   }
 
   return (

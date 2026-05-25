@@ -292,9 +292,12 @@ function OrdersModal({ onClose, isAdmin = false }) {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ fontWeight: 'bold', color: '#db2777', fontSize: '18px', margin: '0 0 6px 0' }}>{order.total_amount} Tk</p>
-                    <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '20px', background: order.status === 'delivered' ? '#dcfce7' : order.status === 'confirmed' ? '#dbeafe' : order.status === 'cancelled' ? '#fee2e2' : '#fef9c3', color: order.status === 'delivered' ? '#15803d' : order.status === 'confirmed' ? '#1d4ed8' : order.status === 'cancelled' ? '#dc2626' : '#854d0e' }}>
-                      {order.status === 'delivered' ? '✅ ডেলিভারি' : order.status === 'confirmed' ? '✔️ কনফার্ম' : order.status === 'cancelled' ? '❌ বাতিল' : '⏳ পেন্ডিং'}
+                    <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '20px', background: order.status === 'delivered' ? '#dcfce7' : order.status === 'confirmed' ? '#dbeafe' : order.status === 'shipped' ? '#ede9fe' : order.status === 'cancelled' ? '#fee2e2' : '#fef9c3', color: order.status === 'delivered' ? '#15803d' : order.status === 'confirmed' ? '#1d4ed8' : order.status === 'shipped' ? '#7c3aed' : order.status === 'cancelled' ? '#dc2626' : '#854d0e' }}>
+                     {order.status === 'delivered' ? '✅ Delivered' : order.status === 'confirmed' ? '✔️ Confirmed' : order.status === 'shipped' ? '🚚 Shipped' : order.status === 'cancelled' ? '❌ Cancelled' : '⏳ Pending'}
                     </span>
+                    {order.status === 'shipped' && order.tracking_url && (
+                      <a href={order.tracking_url} target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: '6px', background: '#7c3aed', color: 'white', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', textAlign: 'center', textDecoration: 'none', fontWeight: 'bold' }}>🚚 ট্র্যাক করুন</a>
+                    )}
                   </div>
                 </div>
               </div>
@@ -342,6 +345,219 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
   );
 }
 
+function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin }) {
+  const [qty, setQty] = useState('');
+  const [unit, setUnit] = useState(product.unit);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [activeTab, setActiveTab] = useState('description');
+  const [reviews, setReviews] = useState([]);
+  const [reviewText, setReviewText] = useState('');
+  const [specifications, setSpecifications] = useState('');
+  const [editingSpec, setEditingSpec] = useState(false);
+  const [newSpec, setNewSpec] = useState('');
+  const u = (product.unit || '').toLowerCase().trim();
+  const isKg = u === 'kg';
+  const isLiter = u === 'liter' || u === 'l';
+  const isPiece = !isKg && !isLiter;
+  const stock = product.stock?.[0]?.quantity || 0;
+
+  const allImages = [];
+  if (product.image_url) allImages.push(product.image_url);
+  if (product.product_images) {
+    product.product_images.sort((a, b) => a.sort_order - b.sort_order).forEach(img => {
+      if (img.image_url && img.image_url !== product.image_url) allImages.push(img.image_url);
+    });
+  }
+
+  useEffect(() => {
+    setQty('');
+    setUnit(product.unit);
+    setCurrentImageIndex(0);
+    setActiveTab('description');
+    async function fetchRelated() {
+      const { data } = await supabase.from('products').select('*, stock(*), product_images(*)').eq('page_id', product.page_id).eq('is_active', true).neq('id', product.id).limit(10);
+      if (data) setRelatedProducts(data);
+    }
+    async function fetchReviews() {
+      const { data } = await supabase.from('reviews').select('*').eq('product_id', product.id).order('created_at', { ascending: false });
+      if (data) setReviews(data);
+    }
+    async function fetchSpec() {
+      const { data } = await supabase.from('products').select('specifications').eq('id', product.id).single();
+      if (data?.specifications) setSpecifications(data.specifications);
+    }
+    if (product.page_id) fetchRelated();
+    fetchReviews();
+    fetchSpec();
+  }, [product.id]);
+
+  const getActualQty = () => {
+    const q = parseFloat(qty);
+    if (!q || q <= 0) return 0;
+    if (isKg && unit === 'gm') return q / 1000;
+    if (isLiter && unit === 'ml') return q / 1000;
+    return q;
+  };
+
+  async function submitReview() {
+    if (!reviewText.trim()) return;
+    const phone = localStorage.getItem('customer_phone') || 'anonymous';
+    const name = localStorage.getItem('customer_name') || 'কাস্টমার';
+    await supabase.from('reviews').insert({ product_id: product.id, customer_phone: phone, customer_name: name, review: reviewText });
+    setReviewText('');
+    const { data } = await supabase.from('reviews').select('*').eq('product_id', product.id).order('created_at', { ascending: false });
+    if (data) setReviews(data);
+  }
+
+  async function deleteReview(id) {
+    if (!confirm('এই রিভিউ মুছে দেবেন?')) return;
+    await supabase.from('reviews').delete().eq('id', id);
+    setReviews(reviews.filter(r => r.id !== id));
+  }
+
+  async function saveSpec() {
+    await supabase.from('products').update({ specifications: newSpec }).eq('id', product.id);
+    setSpecifications(newSpec);
+    setEditingSpec(false);
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'white', zIndex: 9999, overflowY: 'auto' }}>
+      <div style={{ background: '#db2777', color: 'white', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', position: 'sticky', top: 0, zIndex: 10 }}>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer' }}>←</button>
+        <h2 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.name}</h2>
+        {isAdmin && <button onClick={() => {}} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', borderRadius: '8px', padding: '6px 12px', fontSize: '13px', cursor: 'pointer' }}>✏️ Edit</button>}
+      </div>
+
+      <div style={{ display: 'flex', gap: '12px', padding: '16px' }}>
+        <div style={{ width: '45%', flexShrink: 0 }}>
+          <img src={allImages[currentImageIndex] || ''} alt={product.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '12px' }} />
+          {allImages.length > 1 && (
+            <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
+              {allImages.map((img, i) => (
+                <img key={i} src={img} alt="" onClick={() => setCurrentImageIndex(i)} style={{ width: '75px', height: '75px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer', border: i === currentImageIndex ? '2px solid #db2777' : '2px solid #e5e7eb' }} />
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '17px', margin: '0 0 10px 0', lineHeight: 1.4 }}>{product.name}</p>
+          {product.discount_percent > 0 ? (
+            <div style={{ marginBottom: '12px' }}>
+              <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '24px', margin: '0 0 2px 0' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</p>
+              <p style={{ margin: 0 }}>
+                <span style={{ color: '#9ca3af', fontSize: '15px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
+                {' '}
+                <span style={{ color: '#f97316', fontSize: '14px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
+              </p>
+            </div>
+          ) : (
+            <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '20px', margin: '0 0 12px 0' }}>৳{product.price_per_unit}/{product.unit}</p>
+          )}
+          {product.product_code && <p style={{ fontSize: '13px', color: '#3b82f6', margin: '0 0 6px 0' }}>কোড: {product.product_code}</p>}
+          <p style={{ fontSize: '13px', color: stock <= 0 ? '#ef4444' : '#6b7280', margin: '0 0 10px 0' }}>Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}</p>
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
+            <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty} onChange={e => setQty(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 6px', width: '100%', fontSize: '13px', color: '#1f2937', outline: 'none' }} placeholder="পরিমাণ" />
+            {!isPiece ? (
+              <select value={unit} onChange={e => setUnit(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', background: 'white' }}>
+                {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
+                {isLiter && <><option value={product.unit}>L</option><option value="ml">ml</option></>}
+              </select>
+            ) : (
+              <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 8px', fontSize: '12px', color: '#6b7280', background: '#f9fafb', flexShrink: 0, display: 'flex', alignItems: 'center' }}>pcs</span>
+            )}
+          </div>
+          {qty && parseFloat(qty) > 0 && <p style={{ fontSize: '12px', color: '#db2777', fontWeight: 'bold', background: '#fdf2f8', padding: '4px 8px', borderRadius: '6px', margin: '0 0 8px 0' }}>= {(getActualQty() * product.price_per_unit).toFixed(0)} Tk</p>}
+          <button onClick={() => { const a = getActualQty(); if (a > 0) { onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart' }, a); onClose(); } }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '10px', padding: '10px', fontSize: '13px', width: '100%', cursor: 'pointer', fontWeight: 'bold' }}>🛒 ঝুড়িতে রাখুন</button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', borderBottom: '2px solid #e5e7eb', padding: '0 16px' }}>
+        {['description', 'specifications', 'reviews'].map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '10px 16px', fontSize: '14px', fontWeight: '500', border: 'none', background: 'none', cursor: 'pointer', borderBottom: activeTab === tab ? '2px solid #db2777' : '2px solid transparent', marginBottom: '-2px', color: activeTab === tab ? '#db2777' : '#6b7280' }}>
+            {tab === 'description' ? 'Description' : tab === 'specifications' ? 'Specifications' : `Reviews (${reviews.length})`}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ padding: '16px' }}>
+        {activeTab === 'description' && (
+          <div style={{ border: '1.5px solid #db2777', borderRadius: '12px', padding: '14px' }}>
+            <p style={{ fontSize: '14px', color: '#4b5563', margin: 0, lineHeight: 1.8, whiteSpace: 'pre-line' }}>{product.description || 'কোনো বিবরণ নেই।'}</p>
+          </div>
+        )}
+
+        {activeTab === 'specifications' && (
+          <div style={{ border: '1.5px solid #e5e7eb', borderRadius: '12px', padding: '14px' }}>
+            {isAdmin && !editingSpec && (
+              <button onClick={() => { setNewSpec(specifications); setEditingSpec(true); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '13px', cursor: 'pointer', marginBottom: '12px' }}>✏️ Edit</button>
+            )}
+            {editingSpec ? (
+              <div>
+                <textarea value={newSpec} onChange={e => setNewSpec(e.target.value)} rows={6} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', color: '#1f2937', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} placeholder="Specifications লিখুন..." />
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                  <button onClick={saveSpec} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer' }}>সেভ</button>
+                  <button onClick={() => setEditingSpec(false)} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer' }}>বাতিল</button>
+                </div>
+              </div>
+            ) : (
+              <p style={{ fontSize: '14px', color: '#4b5563', margin: 0, lineHeight: 1.8, whiteSpace: 'pre-line' }}>{specifications || 'কোনো Specifications নেই।'}</p>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'reviews' && (
+          <div>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+              <input value={reviewText} onChange={e => setReviewText(e.target.value)} placeholder="আপনার রিভিউ লিখুন..." style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '13px', color: '#1f2937', outline: 'none' }} />
+              <button onClick={submitReview} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: '600' }}>পাঠান</button>
+            </div>
+            {reviews.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '20px 0' }}>কোনো রিভিউ নেই</p>}
+            {reviews.map(r => (
+              <div key={r.id} style={{ background: '#f9fafb', borderRadius: '10px', padding: '12px', marginBottom: '8px', border: '1px solid #e5e7eb' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '13px', margin: '0 0 4px 0' }}>👤 {r.customer_name}</p>
+                    <p style={{ fontSize: '13px', color: '#4b5563', margin: '0 0 4px 0' }}>{r.review}</p>
+                    <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>{new Date(r.created_at).toLocaleDateString('bn-BD')}</p>
+                  </div>
+                  {isAdmin && <button onClick={() => deleteReview(r.id)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', cursor: 'pointer' }}>🗑️</button>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {relatedProducts.length > 0 && (
+        <div style={{ padding: '0 16px 24px' }}>
+          <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 12px 0' }}>🛍️ এই পেজের আরো পণ্য</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' }}>
+            {relatedProducts.map(p => (
+              <div key={p.id} onClick={() => onSelectProduct(p)} style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', overflow: 'hidden', cursor: 'pointer' }}>
+                {p.image_url && <img src={p.image_url} alt={p.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} />}
+                <div style={{ padding: '8px' }}>
+                  <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
+                  {p.discount_percent > 0 ? (
+                    <div>
+                      <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '14px' }}>৳{Math.round(p.price_per_unit * (1 - p.discount_percent / 100))}</span>
+                      {' '}
+                      <span style={{ color: '#9ca3af', fontSize: '12px', textDecoration: 'line-through' }}>৳{p.price_per_unit}</span>
+                    </div>
+                  ) : (
+                    <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '14px', margin: 0 }}>৳{p.price_per_unit}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, onDoubleClick, isDragging, onDragStart, onDragOver, onDrop }) {
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
@@ -395,7 +611,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
         </div>
       )}
       {allImages.length > 0 && (
-        <div style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }} onClick={() => allImages.length > 1 && setCurrentImageIndex(prev => (prev + 1) % allImages.length)}>
+        <div style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }} onClick={() => onDoubleClick(product)}>
           <img src={allImages[currentImageIndex]} alt={product.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' }} />
           {allImages.length > 1 && (
             <div style={{ position: 'absolute', bottom: '4px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '4px' }}>
@@ -405,11 +621,11 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
         </div>
       )}
    <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <div onDoubleClick={() => onDoubleClick(product)} style={{ cursor: 'pointer', userSelect: 'none', marginBottom: '4px' }}>
+        <div onClick={() => onDoubleClick(product)} style={{ cursor: 'pointer', userSelect: 'none', marginBottom: '4px' }}>
           <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '13px', lineHeight: '1.4', wordBreak: 'break-word', margin: 0 }}>{product.name}</p>
         </div>
         <div style={{ flex: 1 }} />
-        {product.product_code && <p style={{ fontSize: '11px', color: '#3b82f6', fontWeight: '500', margin: '0 0 2px 0' }}>কোড: {product.product_code}</p>}
+       
        {product.discount_percent > 0 ? (
   <div style={{ margin: '2px 0' }}>
     <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '13px' }}>
@@ -439,13 +655,8 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
             ))}
           </div>
         )}
-        <p style={{ fontSize: '11px', color: stock <= 0 ? '#ef4444' : '#9ca3af', margin: '0 0 4px 0' }}>Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}</p>
-        {product.description && (
-          <div style={{ marginBottom: '4px' }}>
-            <button onClick={() => setShowDesc(!showDesc)} style={{ fontSize: '11px', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>বৈশিষ্ট্য {showDesc ? '▲' : '▼'}</button>
-            {showDesc && <p style={{ fontSize: '11px', color: '#4b5563', background: '#eff6ff', padding: '6px', borderRadius: '6px', margin: '4px 0 0 0' }}>{product.description}</p>}
-          </div>
-        )}
+       
+    
         <div style={{ marginTop: '4px' }}>
           <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
             <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty} onChange={e => setQty(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', width: '100%', fontSize: '12px', color: '#1f2937', outline: 'none', minWidth: 0 }} placeholder="পরিমাণ" />
@@ -665,8 +876,9 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const [showOrders, setShowOrders] = useState(false);
   const [subPageIds, setSubPageIds] = useState([]);
   const [showCustomerOrders, setShowCustomerOrders] = useState(false);
-
-  useEffect(() => {
+const [selectedProduct, setSelectedProduct] = useState(null);
+ 
+useEffect(() => {
     function handleShowOrders() { setShowCustomerOrders(true); }
     window.addEventListener('showCustomerOrders', handleShowOrders);
     return () => window.removeEventListener('showCustomerOrders', handleShowOrders);
@@ -859,6 +1071,7 @@ useEffect(() => {
 
   return (
     <div className="pb-24">
+   {selectedProduct && <ProductDetailModal product={selectedProduct} onClose={() => setSelectedProduct(null)} onAdd={addToCart} onSelectProduct={(p) => setSelectedProduct(p)} isAdmin={isAdmin} />}
       {showOrders && <OrdersModal onClose={() => setShowOrders(false)} isAdmin={isAdmin || isEditor} />}
      {showCustomerOrders && <OrdersModal onClose={() => setShowCustomerOrders(false)} isAdmin={false} />}
       {editingProduct && <EditProductModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={fetchProducts} />}
@@ -939,7 +1152,7 @@ useEffect(() => {
       {(!selectedPage && !search && !selectedCategory && !selectedName) ? null : (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 items-stretch">
         {displayProducts.map((product, index) => (
-          <ProductCard key={product.id} product={product} onAdd={addToCart} isAdmin={isAdmin} isEditor={isEditor} editorPageId={editorPageId} onEdit={setEditingProduct} onDoubleClick={(p) => setSelectedName(p.name)} isDragging={dragIndex === index} onDragStart={() => handleDragStart(index)} onDragOver={() => handleDragOver(index)} onDrop={() => handleDrop()} />
+          <ProductCard key={product.id} product={product} onAdd={addToCart} isAdmin={isAdmin} isEditor={isEditor} editorPageId={editorPageId} onEdit={setEditingProduct} onDoubleClick={(p) => setSelectedProduct(p)} isDragging={dragIndex === index} onDragStart={() => handleDragStart(index)} onDragOver={() => handleDragOver(index)} onDrop={() => handleDrop()} />
         ))}
      {!loading && displayProducts.length === 0 && <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#9ca3af', marginTop: '40px' }}>কোনো পণ্য পাওয়া যায়নি</p>}
       </div>
