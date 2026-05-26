@@ -10,14 +10,7 @@ const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
-const mobileGridStyle = `
-  @media (max-width: 767px) {
-    .product-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  }
-  @media (min-width: 768px) {
-    .product-grid { grid-template-columns: repeat(4, 1fr) !important; }
-  }
-`;
+const mobileGridStyle = ``;
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
