@@ -10,9 +10,17 @@ const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
+const mobileGridStyle = `
+  @media (max-width: 767px) {
+    .product-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+  @media (min-width: 768px) {
+    .product-grid { grid-template-columns: repeat(4, 1fr) !important; }
+  }
+`;
 
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(true)
   useEffect(() => {
     function check() { setIsMobile(window.innerWidth < 768) }
     check()
@@ -1160,13 +1168,15 @@ useEffect(() => {
       {isAdmin && <p style={{ fontSize: '12px', textAlign: 'center', color: '#f59e0b', marginBottom: '4px' }}>⠿ আইকন ধরে Drag করে পণ্য সাজান</p>}
       {loading && <p style={{ textAlign: 'center', color: '#9ca3af', marginTop: '40px' }}>লোড হচ্ছে...</p>}
 
-      {(!selectedPage && !search && !selectedCategory && !selectedName) ? null : (
-    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '12px', padding: '16px' }}>
+    {(!selectedPage && !search && !selectedCategory && !selectedName) ? null : (
+    <><style>{mobileGridStyle}</style>
+    <div className="product-grid" style={{ display: 'grid', gap: '12px', padding: '16px' }}>
         {displayProducts.map((product, index) => (
           <ProductCard key={product.id} product={product} onAdd={addToCart} isAdmin={isAdmin} isEditor={isEditor} editorPageId={editorPageId} onEdit={setEditingProduct} onDoubleClick={(p) => setSelectedProduct(p)} isDragging={dragIndex === index} onDragStart={() => handleDragStart(index)} onDragOver={() => handleDragOver(index)} onDrop={() => handleDrop()} />
         ))}
-     {!loading && displayProducts.length === 0 && <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#9ca3af', marginTop: '40px' }}>কোনো পণ্য পাওয়া যায়নি</p>}
+  {!loading && displayProducts.length === 0 && <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#9ca3af', marginTop: '40px' }}>কোনো পণ্য পাওয়া যায়নি</p>}
       </div>
+    </>
 )}
 
       {cart.length > 0 && (
