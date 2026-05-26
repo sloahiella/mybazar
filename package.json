@@ -13,7 +13,7 @@
     "@supabase/supabase-js": "^2.104.1",
     "@tailwindcss/forms": "^0.5.11",
     "firebase": "^12.13.0",
-    "next": "16.2.4",
+    "next": "^15.5.18",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-to-print": "^3.3.0"
