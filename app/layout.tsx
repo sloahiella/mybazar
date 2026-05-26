@@ -16,6 +16,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Sohelmart | মাই বাজার",
   description: "অনলাইনে কেনাকাটা করুন সহজেই",
+  icons: {
+    icon: "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/LOGO%20.jpeg",
+    apple: "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/LOGO%20.jpeg",
+  },
 };
 
 export const viewport = {

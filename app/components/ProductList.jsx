@@ -20,7 +20,7 @@ const mobileGridStyle = `
 `;
 
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(true)
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
