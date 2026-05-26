@@ -1170,7 +1170,7 @@ useEffect(() => {
 
     {(!selectedPage && !search && !selectedCategory && !selectedName) ? null : (
     <><style>{mobileGridStyle}</style>
-    <div className="product-grid" style={{ display: 'grid', gap: '12px', padding: '16px' }}>
+    <div className="product-grid" style={{ display: 'grid', gap: '12px', padding: '16px', gridTemplateColumns: 'repeat(2, 1fr)' }}>
         {displayProducts.map((product, index) => (
           <ProductCard key={product.id} product={product} onAdd={addToCart} isAdmin={isAdmin} isEditor={isEditor} editorPageId={editorPageId} onEdit={setEditingProduct} onDoubleClick={(p) => setSelectedProduct(p)} isDragging={dragIndex === index} onDragStart={() => handleDragStart(index)} onDragOver={() => handleDragOver(index)} onDrop={() => handleDrop()} />
         ))}
