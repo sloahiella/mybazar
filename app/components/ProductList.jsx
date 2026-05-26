@@ -471,7 +471,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
               </p>
             </div>
           ) : (
-            <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '20px', margin: '0 0 12px 0' }}>৳{product.price_per_unit}/{product.unit}</p>
+           <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '20px', margin: '0 0 12px 0' }}>৳{product.price_per_unit}</p>
           )}
           {product.product_code && <p style={{ fontSize: '13px', color: '#3b82f6', margin: '0 0 6px 0' }}>কোড: {product.product_code}</p>}
           <p style={{ fontSize: '13px', color: stock <= 0 ? '#ef4444' : '#6b7280', margin: '0 0 10px 0' }}>Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}</p>
