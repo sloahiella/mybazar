@@ -397,6 +397,7 @@ function WithdrawalManagement() {
   )
 }
 
+export const dynamic = 'force-dynamic';
 export default function Home() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
