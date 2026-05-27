@@ -35,6 +35,7 @@ export default function RootLayout({
   return (
     <html lang="bn">
       <head>
+        <link rel="icon" href="https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/LOGO%20.jpeg" />
         <Script
           src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
           defer
