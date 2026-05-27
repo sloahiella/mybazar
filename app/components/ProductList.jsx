@@ -1144,11 +1144,28 @@ useEffect(() => {
 
     {(!selectedPage && !search && !selectedCategory && !selectedName) ? null : (
     <><style>{mobileGridStyle}</style>
-<div className="product-grid" style={{display:'grid', gap:'8px', padding:'12px'}}>
+<div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-3">
         {displayProducts.map((product, index) => (
-          <ProductCard key={product.id} product={product} onAdd={addToCart} isAdmin={isAdmin} isEditor={isEditor} editorPageId={editorPageId} onEdit={setEditingProduct} onDoubleClick={(p) => setSelectedProduct(p)} isDragging={dragIndex === index} onDragStart={() => handleDragStart(index)} onDragOver={() => handleDragOver(index)} onDrop={() => handleDrop()} />
+          <ProductCard 
+            key={product.id} 
+            product={product} 
+            onAdd={addToCart} 
+            isAdmin={isAdmin} 
+            isEditor={isEditor} 
+            editorPageId={editorPageId} 
+            onEdit={setEditingProduct} 
+            onDoubleClick={(p) => setSelectedProduct(p)} 
+            isDragging={dragIndex === index} 
+            onDragStart={() => handleDragStart(index)} 
+            onDragOver={() => handleDragOver(index)} 
+            onDrop={() => handleDrop()} 
+          />
         ))}
-  {!loading && displayProducts.length === 0 && <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#9ca3af', marginTop: '40px' }}>কোনো পণ্য পাওয়া যায়নি</p>}
+        {!loading && displayProducts.length === 0 && (
+          <p className="col-span-full text-center text-gray-400 mt-10">
+            কোনো পণ্য পাওয়া যায়নি
+          </p>
+        )}
       </div>
     </>
 )}
