@@ -62,10 +62,9 @@ function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2px 1fr', border: `2px solid ${PINK}`, borderRadius: '8px', overflow: 'hidden', marginBottom: '16px' }}>
             <div style={{ padding: '14px', background: PINK_LIGHT }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
+              <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
                 <div>
                   <h1 style={{ fontSize: '16px', fontWeight: 'bold', color: PINK, margin: 0 }}>সোহেল মার্ট</h1>
-                  <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>মাই বাজার</p>
                 </div>
               </div>
               <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 sohelmart.com</p>
@@ -214,7 +213,6 @@ function AdminSellerView({ seller, onBack }: { seller: any; onBack: () => void }
               <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
               <div>
                 <h1 style={{ fontSize: '16px', fontWeight: 'bold', color: PINK, margin: 0 }}>সোহেল মার্ট</h1>
-                <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>মাই বাজার</p>
               </div>
             </div>
             <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 sohelmart.com</p>
@@ -566,7 +564,7 @@ export default function Home() {
             <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', marginBottom: '12px', cursor: 'pointer' }}
               onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: PINK, margin: '0 0 4px 0' }}>সোহেল মার্ট</h1>
-            <p style={{ fontSize: '14px', color: '#9ca3af', margin: 0 }}>মাই বাজার</p>
+          
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {branches.map((branch) => (<button key={branch.id} onClick={() => setSelectedBranch(branch)} style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer' }}>{branch.name_bn || branch.name}</button>))}
