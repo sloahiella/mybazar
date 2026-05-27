@@ -1,4 +1,4 @@
-﻿
+
 'use client';
 import CustomerAuth from './CustomerAuth';
 import { useEffect, useState, useRef } from 'react';
