@@ -65,28 +65,9 @@ function CategoryGrid({ branch, onSelectPage }) {
                 )}
               </div>
             </div>
-         <p style={{ fontSize: '15px', color: '#1f2937', fontWeight: '600', margin: '4px 0 2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {pageProducts[page.id]?.name || (page.name_bn || page.name)}
-            </p>
-          {pageProducts[page.id]?.discount_percent > 0 ? (
-              <div>
-              <span style={{ fontSize: '16px', color: '#db2777', fontWeight: 'bold' }}>
-                  ৳{Math.round(pageProducts[page.id].price_per_unit * (1 - pageProducts[page.id].discount_percent / 100))}
-                </span>
-                {' '}
-                <span style={{ fontSize: '13px', color: '#9ca3af', textDecoration: 'line-through' }}>
-                  ৳{pageProducts[page.id].price_per_unit}
-                </span>
-                {' '}
-               <span style={{ fontSize: '13px', color: '#f97316', fontWeight: 'bold' }}>
-                  ({pageProducts[page.id].discount_percent}% OFF)
-                </span>
-              </div>
-            ) : (
-             <p style={{ fontSize: '16px', color: '#db2777', fontWeight: 'bold', margin: 0 }}>
-                {pageProducts[page.id]?.price_per_unit ? `${pageProducts[page.id].price_per_unit} Tk` : ''}
-              </p>
-           )}
+        <p style={{ fontSize: '13px', color: '#1f2937', fontWeight: '600', margin: '4px 0 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
+  {page.name_bn || page.name}
+</p>
           </div>
         ))}
       </div>
