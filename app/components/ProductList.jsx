@@ -1145,8 +1145,8 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         onShowOrders={() => setShowOrders(true)}
       />
 
-      <div className="px-4 pt-4">
-        <div className="flex items-center gap-2 mb-3">
+      <div className="px-4 pt-2">
+  <div className="flex items-center gap-2 mb-1">
           {selectedPage && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <button onClick={() => {
@@ -1173,16 +1173,16 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         </div>
         <SubPageChips selectedPage={selectedPage} branch={branch} isAdmin={isAdmin} onSelectPage={handlePageSelect} />
       </div>
-      <div className="p-4">
-        <input type="text" placeholder="🔍 পণ্যের নাম বা কোড লিখুন..." value={search} onChange={e => { setSearch(e.target.value); setSelectedCategory(null); setSelectedName(null); }} style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '12px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} />
-      </div>
+      // ✅ এই কোডটুকু পেস্ট করুন (প্যাডিং এবং ফালতু গ্যাপ উধাও)
+<div className="px-4 py-2">
+  <input type="text" placeholder="🔍 পণ্যের নাম বা কোড লিখুন..." value={search} onChange={e => { setSearch(e.target.value); setSelectedCategory(null); setSelectedName(null); }} style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} />
+</div>
 
-      {!selectedPage && !search && !selectedCategory && !selectedName && (
-        <>
-          <CategoryGrid branch={branch} onSelectPage={handlePageSelect} />
-          <div style={{ height: '20px' }} />
-        </>
-      )}
+{!selectedPage && !search && !selectedCategory && !selectedName && (
+  <>
+    <CategoryGrid branch={branch} onSelectPage={handlePageSelect} />
+  </>
+)}
        
       {selectedName && (
         <div className="px-4 mb-2">
@@ -1210,7 +1210,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       {(!selectedPage && !search && !selectedCategory && !selectedName) ? null : (
         <>
           <style>{mobileGridStyle}</style>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-3">
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-1.5 pt-0">
             {displayProducts.map((product, index) => (
               <ProductCard  
                 key={product.id} 
