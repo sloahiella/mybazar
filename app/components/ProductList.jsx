@@ -325,15 +325,39 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
   if (pages.length === 0) return null;
 
   return (
-    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-      {pages.map(page => (
-        <button key={page.id} onClick={() => onSelectPage(page)}
-          style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', border: '2px solid #db2777', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: 'white', color: '#db2777' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#db2777'; e.currentTarget.style.color = 'white'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#db2777'; }}>
-          {page.name_bn || page.name}
-        </button>
-      ))}
+    <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '8px 4px', scrollbarWidth: 'none' }}>
+      {pages.map(page => {
+        // হোমপেজে (যখন কোনো পেজ সিলেক্টেড নাই) মেইন ক্যাটাগরির পাশে অ্যারো দেখাবে
+        const showArrow = !selectedPage;
+
+        return (
+          <button key={page.id} onClick={() => onSelectPage(page)}
+            style={{ 
+              padding: '6px 0', 
+              fontSize: '14px', 
+              fontWeight: '600', 
+              border: 'none', 
+              background: 'none', 
+              cursor: 'pointer', 
+              whiteSpace: 'nowrap', 
+              flexShrink: 0, 
+              color: '#374151',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              borderBottom: '2px solid transparent'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#db2777'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#374151'; }}>
+            
+            {/* পেজের নাম */}
+            {page.name_bn || page.name}
+            
+            {/* নামের পাশে সুন্দর ইন্ডিকেটর আইকন */}
+            {showArrow && <span style={{ fontSize: '10px', color: '#9ca3af' }}>▼</span>}
+          </button>
+        );
+      })}
     </div>
   );
 }
