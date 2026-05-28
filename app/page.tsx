@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import ProductList from './components/ProductList';
 import CustomerAuth from './components/CustomerAuth';
-import HeroBanner from './components/HeroBanner'; // 👈 ১. এখানে আপনার হিরো ব্যানারটি ইম্পোর্ট করা হলো
+import HeroBanner from './components/HeroBanner'; 
 import { requestNotificationPermission, messaging, onMessage } from './firebase';
 
 const supabase = createClient(
@@ -174,7 +174,7 @@ function AdminSellerView({ seller, onBack }: { seller: any; onBack: () => void }
                 <div>
                   <p style={{ fontWeight: 'bold', color: '#111', margin: '0 0 2px 0', fontSize: '13px' }}>{item.products?.name}</p>
                   <p style={{ fontSize: '12px', color: '#16a34a', fontWeight: 'bold', margin: '0 0 2px 0' }}>৳{item.price * item.quantity}</p>
-                  <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>অর্ডার #{item.order_id}</p>
+                  <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>অर्डर #{item.order_id}</p>
                 </div>
               </div>
              <div>
@@ -457,6 +457,25 @@ export default function Home() {
     if (savedPhone) setCustomer({ phone: savedPhone });
   }, []);
 
+  // ব্রাউজারের ব্যাক বাটন ট্র্যাক করার লিসেনার
+  useEffect(() => {
+    const handlePopState = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlPageId = urlParams.get('page');
+      
+      if (urlPageId) {
+        localStorage.setItem('current_page_id', urlPageId);
+        if (role === 'admin') fetchOrders(urlPageId);
+      } else {
+        localStorage.setItem('current_page_id', '');
+        if (role === 'admin') fetchOrders(undefined);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [role]);
+
   useEffect(() => {
     if (role === 'admin' || role === 'editor') {
       fetchOrders();
@@ -596,65 +615,72 @@ export default function Home() {
   return (
     <div style={{ minHeight: '100vh', background: '#fdf2f8' }}>
       {selectedOrder && <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={role === 'admin'} />}
-   {showCustomerAuth && (
-  <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
-    <CustomerAuth onSuccess={(data: any) => {
-      localStorage.setItem('customer_phone', data.phone);
-      localStorage.setItem('customer_name', data.name);
-      localStorage.setItem('customer_district', data.district);
-      localStorage.setItem('customer_upazila', data.upazila);
-      setShowCustomerAuth(false);
-      setOpenCart(true);
-    }} />
-  </div>
-)}
-  <Header
-  role={role}
-  sellerUser={sellerUser}
-  onSellerClick={() => setShowSellerDrawer(true)}
-  onAdminClick={() => {
-    setShowAdminDrawer(true);
-    const pageId = localStorage.getItem('current_page_id');
-    fetchOrders(pageId || undefined);
-    fetchNotifications();
-  }}
-  onMenuClick={() => setShowPageMenu(true)}
-  onOrdersClick={() => {
-    const savedPhone = localStorage.getItem('customer_phone');
-    if (savedPhone) {
-      setOpenCart(false);
-      // কাস্টমারের অর্ডার ProductList এ দেখাবে
-      const event = new CustomEvent('showCustomerOrders');
-      window.dispatchEvent(event);
-    } else if (role === 'admin' || role === 'editor') {
-      setShowAdminDrawer(true);
-    }
-  }}
-  onCartClick={() => {
-    const savedPhone = localStorage.getItem('customer_phone');
-    if (savedPhone) { setOpenCart(true); }
-    else { setShowCustomerAuth(true); }
-  }}
-/>
+      {showCustomerAuth && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
+          <CustomerAuth onSuccess={(data: any) => {
+            localStorage.setItem('customer_phone', data.phone);
+            localStorage.setItem('customer_name', data.name);
+            localStorage.setItem('customer_district', data.district);
+            localStorage.setItem('customer_upazila', data.upazila);
+            setShowCustomerAuth(false);
+            setOpenCart(true);
+          }} />
+        </div>
+      )}
+      <Header
+        role={role}
+        sellerUser={sellerUser}
+        onSellerClick={() => setShowSellerDrawer(true)}
+        onAdminClick={() => {
+          setShowAdminDrawer(true);
+          const pageId = localStorage.getItem('current_page_id');
+          fetchOrders(pageId || undefined);
+          fetchNotifications();
+        }}
+        onMenuClick={() => setShowPageMenu(true)}
+        onOrdersClick={() => {
+          const savedPhone = localStorage.getItem('customer_phone');
+          if (savedPhone) {
+            setOpenCart(false);
+            const event = new CustomEvent('showCustomerOrders');
+            window.dispatchEvent(event);
+          } else if (role === 'admin' || role === 'editor') {
+            setShowAdminDrawer(true);
+          }
+        }}
+        onCartClick={() => {
+          const savedPhone = localStorage.getItem('customer_phone');
+          if (savedPhone) { setOpenCart(true); }
+          else { setShowCustomerAuth(true); }
+        }}
+      />
 
-      {/* 👈 ২. হেডারের ঠিক নিচে আপনার এই চমৎকার নতুন ব্যানারটি বসে গেল */}
+      {/* হেডারের ঠিক নিচে অটো-স্লাইডিং হিরো ব্যানার */}
       <HeroBanner />
 
       <ProductList
-  branch={selectedBranch}
-  role={role}
-  openMenu={showPageMenu}
-  onMenuClose={() => setShowPageMenu(false)}
-  openCart={openCart}
-onCartClose={() => setOpenCart(false)}
-  onOrderSuccess={(orderId: number, phone: string) => {
-    localStorage.setItem('customer_phone', phone);
-  }}
-  onPageChange={(pageId: string | null) => {
-    localStorage.setItem('current_page_id', pageId || '');
-    if (role === 'admin') fetchOrders(pageId || undefined);
-  }}
-/>
+        branch={selectedBranch}
+        role={role}
+        openMenu={showPageMenu}
+        onMenuClose={() => setShowPageMenu(false)}
+        openCart={openCart}
+        onCartClose={() => setOpenCart(false)}
+        onOrderSuccess={(orderId: number, phone: string) => {
+          localStorage.setItem('customer_phone', phone);
+        }}
+        onPageChange={(pageId: string | null) => {
+          localStorage.setItem('current_page_id', pageId || '');
+          if (role === 'admin') fetchOrders(pageId || undefined);
+          
+          // ব্রাউজারের ব্যাক বাটন ট্র্যাকিংয়ের জন্য হিস্ট্রি কুয়েরি পুশ
+          if (pageId) {
+            window.history.pushState({ page: pageId }, '', `?page=${pageId}`);
+          } else {
+            window.history.pushState(null, '', window.location.pathname);
+          }
+        }}
+      />
+
       {showSellerDrawer && <SellerPanel seller={sellerUser} onClose={() => setShowSellerDrawer(false)} />}
       {showAdminDrawer && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
@@ -701,10 +727,10 @@ onCartClose={() => setOpenCart(false)}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                         <p style={{ fontWeight: 'bold', color: PINK, margin: 0 }}>{order.total_amount} Tk</p>
-                      <select value={order.status} onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value); }} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer' }}>
+                        <select value={order.status} onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value); }} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer' }}>
                           <option value="pending">Pending</option>
                           <option value="confirmed">Confirmed</option>
-                         <option value="shipped">🚚 Shipped</option>
+                          <option value="shipped">🚚 Shipped</option>
                           <option value="delivered">Delivered</option>
                           {role === 'admin' && <option value="cancelled">Cancelled</option>}
                         </select>
@@ -733,7 +759,7 @@ onCartClose={() => setOpenCart(false)}
                 ))}
               </div>
             )}
-            {adminTab === 'orders' && role === 'admin' && <SellerManagement />}
+            {adminTab === 'sellers' && role === 'admin' && <SellerManagement />}
             {adminTab === 'withdrawals' && role === 'admin' && <WithdrawalManagement />}
             {adminTab === 'notifications' && role === 'admin' && (
               <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
