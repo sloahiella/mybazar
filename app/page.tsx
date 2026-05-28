@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import ProductList from './components/ProductList';
 import CustomerAuth from './components/CustomerAuth';
+import HeroBanner from './components/HeroBanner'; // 👈 ১. এখানে আপনার হিরো ব্যানারটি ইম্পোর্ট করা হলো
 import { requestNotificationPermission, messaging, onMessage } from './firebase';
 
 const supabase = createClient(
@@ -486,7 +487,7 @@ export default function Home() {
       const audioContext = new AudioContext();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      oscillator.connect(gainNode); gainNode.connect(audioContext.destination);
+       oscillator.connect(gainNode); gainNode.connect(audioContext.destination);
       oscillator.frequency.value = 880;
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
@@ -635,7 +636,11 @@ export default function Home() {
     else { setShowCustomerAuth(true); }
   }}
 />
-     <ProductList
+
+      {/* 👈 ২. হেডারের ঠিক নিচে আপনার এই চমৎকার নতুন ব্যানারটি বসে গেল */}
+      <HeroBanner />
+
+      <ProductList
   branch={selectedBranch}
   role={role}
   openMenu={showPageMenu}
@@ -728,7 +733,7 @@ onCartClose={() => setOpenCart(false)}
                 ))}
               </div>
             )}
-            {adminTab === 'sellers' && role === 'admin' && <SellerManagement />}
+            {adminTab === 'orders' && role === 'admin' && <SellerManagement />}
             {adminTab === 'withdrawals' && role === 'admin' && <WithdrawalManagement />}
             {adminTab === 'notifications' && role === 'admin' && (
               <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
