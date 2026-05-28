@@ -1173,7 +1173,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         </div>
         <SubPageChips selectedPage={selectedPage} branch={branch} isAdmin={isAdmin} onSelectPage={handlePageSelect} />
       </div>
-      // ✅ এই কোডটুকু পেস্ট করুন (প্যাডিং এবং ফালতু গ্যাপ উধাও)
+      
 <div className="px-4 py-2">
   <input type="text" placeholder="🔍 পণ্যের নাম বা কোড লিখুন..." value={search} onChange={e => { setSearch(e.target.value); setSelectedCategory(null); setSelectedName(null); }} style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} />
 </div>
