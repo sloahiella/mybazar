@@ -7,7 +7,7 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
 
-function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth = 0, closeMenu }) {
+function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth = 0, closeMenu, onDragStart, onDragOver, onDrop, isDragging }) {
   const [showDotMenu, setShowDotMenu] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showAddSub, setShowAddSub] = useState(false);
@@ -25,7 +25,11 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  useEffect(() => { fetchSubPages(); }, []);
+  // সাব-ক্যাটাগরির ড্রাগ অ্যান্ড ড্রপ স্টেট
+  const [subDragIndex, setSubDragIndex] = useState(null);
+  const [subDragOverIndex, setSubDragOverIndex] = useState(null);
+
+  useEffect(() => { fetchSubPages(); }, [page.id]);
 
   async function fetchSubPages() {
     const { data } = await supabase.from('pages').select('*').eq('parent_id', page.id).order('sort_order');
@@ -71,6 +75,22 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
     setShowPaymentSet(false); alert('Payment নম্বর সেট হয়েছে!');
   }
 
+  // সাব-ক্যাটাগরি ড্রাগ লজিক
+  function handleSubDragStart(index) { setSubDragIndex(index); }
+  function handleSubDragOver(index) { if (subDragIndex !== null && subDragIndex !== index) setSubDragOverIndex(index); }
+  async function handleSubDrop() {
+    if (subDragIndex === null || subDragOverIndex === null || subDragIndex === subDragOverIndex) { setSubDragIndex(null); setSubDragOverIndex(null); return; }
+    const items = Array.from(subPages);
+    const [removed] = items.splice(subDragIndex, 1);
+    items.splice(subDragOverIndex, 0, removed);
+    setSubPages(items);
+    setSubDragIndex(null); setSubDragOverIndex(null);
+    for (let i = 0; i < items.length; i++) {
+      await supabase.from('pages').update({ sort_order: i }).eq('id', items[i].id);
+    }
+    fetchSubPages();
+  }
+
   const toggleExpand = (e) => {
     e.stopPropagation();
     setIsExpanded(!isExpanded);
@@ -82,7 +102,11 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
   const inp = { border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', width: '100%', boxSizing: 'border-box', color: '#1f2937' };
 
   return (
-    <div style={{ marginLeft: depth > 0 ? 12 : 0 }}>
+    <div 
+      onDragOver={e => { e.preventDefault(); onDragOver && onDragOver(); }} 
+      onDrop={onDrop}
+      style={{ marginLeft: depth > 0 ? 12 : 0, opacity: isDragging ? 0.5 : 1, border: isDragging ? '1px dashed #db2777' : 'none' }}
+    >
       {showEdit ? (
         <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <input value={editNameBn} onChange={e => setEditNameBn(e.target.value)} placeholder="বাংলা নাম" style={inp} />
@@ -94,12 +118,24 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'relative', borderBottom: depth === 0 ? '1px solid #f3f4f6' : 'none' }}>
+          
+          {/* 👑 এডমিনের জন্য ক্যাটাগরি ড্রয়ারে ড্রাগ করার আইকন */}
+          {isAdmin && (
+            <span 
+              draggable 
+              onDragStart={onDragStart} 
+              style={{ background: '#f3f4f6', color: '#9ca3af', fontSize: '12px', padding: '4px 6px', borderRadius: '4px', cursor: 'grab', userSelect: 'none', marginLeft: '6px' }}
+            >
+              ⠿
+            </span>
+          )}
+
           <div 
             onClick={() => { onSelectPage(page); closeMenu(); }} 
             style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer', background: selectedPage?.id === page.id ? '#db2777' : 'transparent', color: selectedPage?.id === page.id ? 'white' : '#374151', opacity: page.is_active === false ? 0.5 : 1 }}
           >
             <span style={{ display: 'flex', alignItems: 'center' }}>
-              {depth > 0 && <span style={{ color: '#9ca3af', marginRight: '6px' }}>└─</span>}
+              {depth > 0 && !isAdmin && <span style={{ color: '#9ca3af', marginRight: '6px' }}>└─</span>}
               {page.name_bn || page.name}
               {page.is_active === false && <span style={{ fontSize: '10px', color: '#ef4444', marginLeft: '4px' }}>(বন্ধ)</span>}
             </span>
@@ -173,8 +209,21 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
 
       {hasSubPages && isExpanded && (
         <div style={{ background: '#fafafa', borderRadius: '8px', padding: '4px 0', marginTop: '2px' }}>
-          {visibleSubPages.map(sub => (
-            <PageItem key={sub.id} page={sub} selectedPage={selectedPage} onSelectPage={onSelectPage} isAdmin={isAdmin} onRefresh={() => { fetchSubPages(); onRefresh(); }} depth={depth + 1} closeMenu={closeMenu} />
+          {visibleSubPages.map((sub, sIndex) => (
+            <PageItem 
+              key={sub.id} 
+              page={sub} 
+              selectedPage={selectedPage} 
+              onSelectPage={onSelectPage} 
+              isAdmin={isAdmin} 
+              onRefresh={() => { fetchSubPages(); onRefresh(); }} 
+              depth={depth + 1} 
+              closeMenu={closeMenu}
+              onDragStart={() => handleSubDragStart(sIndex)}
+              onDragOver={() => handleSubDragOver(sIndex)}
+              onDrop={handleSubDrop}
+              isDragging={subDragIndex === sIndex}
+            />
           ))}
         </div>
       )}
@@ -189,6 +238,10 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
   const [newPageName, setNewPageName] = useState('');
   const [newPageNameBn, setNewPageNameBn] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // মেইন ক্যাটাগরির ড্রাগ স্টেট
+  const [menuDragIndex, setMenuDragIndex] = useState(null);
+  const [menuDragOverIndex, setMenuDragOverIndex] = useState(null);
 
   useEffect(() => { fetchPages(); }, [branch]);
 
@@ -214,6 +267,22 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
     fetchPages(); setLoading(false);
   }
 
+  // মেইন ক্যাটাগরি ড্রাগ অ্যান্ড ড্রপ হ্যান্ডলার
+  function handleMenuDragStart(index) { setMenuDragIndex(index); }
+  function handleMenuDragOver(index) { if (menuDragIndex !== null && menuDragIndex !== index) setMenuDragOverIndex(index); }
+  async function handleMenuDrop() {
+    if (menuDragIndex === null || menuDragOverIndex === null || menuDragIndex === menuDragOverIndex) { setMenuDragIndex(null); setMenuDragOverIndex(null); return; }
+    const items = Array.from(pages);
+    const [removed] = items.splice(menuDragIndex, 1);
+    items.splice(menuDragOverIndex, 0, removed);
+    setPages(items);
+    setMenuDragIndex(null); setMenuDragOverIndex(null);
+    for (let i = 0; i < items.length; i++) {
+      await supabase.from('pages').update({ sort_order: i }).eq('id', items[i].id);
+    }
+    fetchPages();
+  }
+
   const visiblePages = isAdmin ? pages : pages.filter(p => p.is_active !== false);
 
   return (
@@ -226,23 +295,33 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
         <>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }} onClick={closeMenu} />
           
-          {/* মেইন ড্রয়ার কন্টেইনার - এটিকে flexbox লেআউট বানানো হয়েছে */}
           <div style={{ position: 'fixed', left: 0, top: 0, bottom: 0, background: 'white', zIndex: 9999, width: '300px', display: 'flex', flexDirection: 'column', boxShadow: '4px 0 20px rgba(0,0,0,0.2)' }}>
             
-            {/* হেডার (সবসময় উপরে ফিক্সড থাকবে) */}
             <div style={{ background: '#db2777', color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 20 }}>
               <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>☰ ক্যাটাগরি</h2>
               <button onClick={closeMenu} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
 
-            {/* স্ক্রোলিং এরিয়া - শুধুমাত্র ক্যাটাগরি এবং পেজগুলো এখানে স্ক্রোল হবে */}
             <div style={{ padding: '8px', flex: 1, overflowY: 'auto' }}>
               <button onClick={() => { onSelectPage(null); closeMenu(); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: '500', border: 'none', cursor: 'pointer', marginBottom: '4px', background: !selectedPage ? '#db2777' : 'transparent', color: !selectedPage ? 'white' : '#374151' }}>
                 🏠 সব পণ্য
               </button>
               
-              {visiblePages.map(page => (
-                <PageItem key={page.id} page={page} selectedPage={selectedPage} onSelectPage={(p) => { onSelectPage(p); }} isAdmin={isAdmin} onRefresh={fetchPages} depth={0} closeMenu={closeMenu} />
+              {visiblePages.map((page, index) => (
+                <PageItem 
+                  key={page.id} 
+                  page={page} 
+                  selectedPage={selectedPage} 
+                  onSelectPage={(p) => { onSelectPage(p); }} 
+                  isAdmin={isAdmin} 
+                  onRefresh={fetchPages} 
+                  depth={0} 
+                  closeMenu={closeMenu}
+                  onDragStart={() => handleMenuDragStart(index)}
+                  onDragOver={() => handleMenuDragOver(index)}
+                  onDrop={handleMenuDrop}
+                  isDragging={menuDragIndex === index}
+                />
               ))}
               
               {isAdmin && selectedPage && (
@@ -272,7 +351,6 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
               )}
             </div>
 
-            {/* যোগাযোগ এরিয়া (সবসময় নিচে ফিক্সড হয়ে আটকে থাকবে) */}
             <div style={{ borderTop: '1px solid #e5e7eb', padding: '16px', background: '#ffffff', flexShrink: 0 }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: '0 0 8px 0' }}>📞 যোগাযোগ</p>
               <a href="tel:01872149655" style={{ display: 'block', fontSize: '13px', color: '#555', margin: '4px 0', textDecoration: 'none' }}>📱 01872149655</a>
