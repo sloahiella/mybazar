@@ -1175,11 +1175,10 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       </div>
 
       {!selectedPage && !search && !selectedCategory && !selectedName && (
-        <>
-          <CategoryGrid branch={branch} onSelectPage={handlePageSelect} />
-          {/* 👑 এখানে নিচে থাকা ২০ পিক্সেলের ফালতু ফাঁকা উচ্চতার স্পেসার ডিভটি ডিলিট করে দেওয়া হলো */}
-        </>
-      )}
+  <>
+    <CategoryGrid branch={branch} onSelectPage={handlePageSelect} role={role} /> {/* 👈 এখানে role={role} যোগ হলো */}
+  </>
+)}
        
       {selectedName && (
         <div className="px-4 mb-2">
