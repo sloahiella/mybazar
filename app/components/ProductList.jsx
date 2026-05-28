@@ -53,11 +53,12 @@ function CategoryGrid({ branch, onSelectPage }) {
   if (pages.length === 0) return null;
 
   return (
-    <div style={{ padding: '0 16px 16px' }}>
+    // 👑 মোবাইলে ক্যাটাগরি গ্রিডের প্যাডিং কমানো হলো
+    <div style={{ padding: '0 12px 8px' }}>
       <div className="flex flex-wrap gap-2 justify-between">
         {pages.map(page => (
           <div key={page.id} onClick={() => onSelectPage(page)} className="w-[calc(50%-4px)] md:w-[calc(25%-6px)] cursor-pointer text-center flex-shrink-0">
-            <div style={{ position: 'relative', width: '100%', paddingBottom: '100%', borderRadius: '12px', overflow: 'hidden', background: '#e0f2fe', marginBottom: '6px' }}>
+            <div style={{ position: 'relative', width: '100%', paddingBottom: '100%', borderRadius: '12px', overflow: 'hidden', background: '#e0f2fe', marginBottom: '4px' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
                 {pageProducts[page.id] ? (
                   <img src={pageProducts[page.id].image_url} alt={page.name_bn || page.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -66,7 +67,7 @@ function CategoryGrid({ branch, onSelectPage }) {
                 )}
               </div>
             </div>
-            <p style={{ fontSize: '13px', color: '#1f2937', fontWeight: '600', margin: '4px 0 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
+            <p style={{ fontSize: '13px', color: '#1f2937', fontWeight: '600', margin: '2px 0 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
               {page.name_bn || page.name}
             </p>
           </div>
@@ -325,15 +326,16 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
   if (pages.length === 0) return null;
 
   return (
-    <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '8px 4px', scrollbarWidth: 'none' }}>
+    // 👑 মোবাইলে সাবক্যাটাগরির চিপস মেনুর স্পেস পারফেক্ট করা হলো
+    <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', padding: '4px 2px', scrollbarWidth: 'none' }}>
       {pages.map(page => {
         const showArrow = !selectedPage;
 
         return (
           <button key={page.id} onClick={() => onSelectPage(page)}
             style={{ 
-              padding: '6px 0', 
-              fontSize: '14px', 
+              padding: '4px 0', 
+              fontSize: '13px', 
               fontWeight: '600', 
               border: 'none', 
               background: 'none', 
@@ -764,8 +766,8 @@ function EditProductModal({ product, onClose, onSave }) {
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>দাম (Tk)</label><input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label><select name="unit" value={form.unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="Kg">Kg</option><option value="Liter">Liter</option><option value="pcs">pcs</option><option value="packet">Packet</option></select></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>পেজ সিলেক্ট করুন</label><select name="page_id" value={form.page_id} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="">-- পেজ সিলেক্ট করুন --</option>{pages.map(page => <option key={page.id} value={page.id}>{page.name_bn || page.name}</option>)}</select></div>
-          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ക্যাട്ടഗരി (ইং)</label><input name="category" value={form.category} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
-          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ക্যাട്ടഗരി (বাং)</label><input name="category_bn" value={form.category_bn} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ക্যাട്ടগরি (ইং)</label><input name="category" value={form.category} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ക্যাട്ടগরি (বাং)</label><input name="category_bn" value={form.category_bn} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div style={{ background: '#f0fdf4', borderRadius: '8px', padding: '12px' }}>
             <label style={{ fontSize: '12px', color: '#15803d', fontWeight: 'bold' }}>প্রধান ছবি</label>
             {form.image_url && <img src={form.image_url} alt="main" style={{ width: '100%', objectFit: 'contain', borderRadius: '8px', marginTop: '8px', maxHeight: '120px' }} />}
@@ -907,7 +909,6 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       const savedPhone = localStorage.getItem('customer_phone');
       if (savedPhone) {
         setShowCart(true);
-        // কার্ট ওপেন হলে ব্রাউজার হিস্ট্রিতে পুশ
         window.history.pushState({ cartView: true }, '', `?cart=true`);
       } else {
         setShowOrder(true);
@@ -922,25 +923,20 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
     else setSubPageIds([]);
   }
 
-  // 🛠️ মেইন ব্যাক বাটন লিসেনার - যা ধাপে ধাপে গোভ্যালির মতো আগের পেজে নিয়ে আসবে
   useEffect(() => {
     const handlePopState = (event) => {
-      // ১. যদি কাস্টমার প্রোডাক্ট ডিটেইলসের ভেতরে থাকে, তবে শুধু প্রোডাক্ট মডাল বন্ধ করবে
       if (selectedProduct) {
         setSelectedProduct(null);
         return;
       }
-      // ২. যদি কার্ট খোলা থাকে, কার্ট বন্ধ করবে
       if (showCart) {
         setShowCart(false);
         return;
       }
-      // ৩. যদি অর্ডার ফর্ম খোলা থাকে, সেটি বন্ধ করবে
       if (showOrder) {
         setShowOrder(false);
         return;
       }
-      // ৪. যদি কোনো ক্যাটাগরি পেজের ভেতরে থাকে, এক ধাপ পেছনে নিয়ে যাবে
       if (selectedPage) {
         const prevPage = pageHistory[pageHistory.length - 1] || null;
         setPageHistory(prev => prev.slice(0, -1));
@@ -951,7 +947,6 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         if (onPageChange) onPageChange(prevPage ? String(prevPage.id) : null);
         return;
       }
-      // ৫. বাকি এডমিন বা সেলার ড্রয়ার বন্ধ করার লজিক
       if (showOrders) { setShowOrders(false); return; }
       if (editingProduct) { setEditingProduct(null); return; }
       if (showAddModal) { setShowAddModal(false); return; }
@@ -961,7 +956,6 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
     return () => window.removeEventListener('popstate', handlePopState);
   }, [selectedProduct, showCart, showOrder, selectedPage, pageHistory, showOrders, editingProduct, showAddModal]);
 
-  // কোনো ভিউ ওপেন হলে হিস্ট্রিতে স্টেট রাখার ট্রিগার
   useEffect(() => {
     if (editingProduct || showAddModal || showOrder || showOrders) {
       window.history.pushState(null, '', window.location.href);
@@ -1040,7 +1034,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const handlePageSelect = (page) => {
     if (page) {
       setPageHistory(prev => [...prev, selectedPage]);
-      window.history.pushState({ page: page.id }, '', `?page=${page.id}`); // ক্যাটাগরি পেজে ঢুকলে হিস্ট্রি পুশ
+      window.history.pushState({ page: page.id }, '', `?page=${page.id}`);
     } else {
       setPageHistory([]);
       window.history.pushState(null, '', window.location.pathname);
@@ -1145,8 +1139,9 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         onShowOrders={() => setShowOrders(true)}
       />
 
-      <div className="px-4 pt-2">
-  <div className="flex items-center gap-2 mb-1">
+      {/* 👑 মোবাইলে ক্যাটাগরি লেখা এবং অ্যারো বাটনের অতিরিক্ত স্পেস ও মার্জিন pt-4 থেকে pt-1 এবং mb-3 থেকে mb-0.5 করা হলো */}
+      <div className="px-4 pt-1">
+        <div className="flex items-center gap-2 mb-0.5">
           {selectedPage && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <button onClick={() => {
@@ -1173,16 +1168,18 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         </div>
         <SubPageChips selectedPage={selectedPage} branch={branch} isAdmin={isAdmin} onSelectPage={handlePageSelect} />
       </div>
-      
-<div className="px-4 py-2">
-  <input type="text" placeholder="🔍 পণ্যের নাম বা কোড লিখুন..." value={search} onChange={e => { setSearch(e.target.value); setSelectedCategory(null); setSelectedName(null); }} style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} />
-</div>
 
-{!selectedPage && !search && !selectedCategory && !selectedName && (
-  <>
-    <CategoryGrid branch={branch} onSelectPage={handlePageSelect} />
-  </>
-)}
+      {/* 👑 সার্চ বক্সের অতিরিক্ত প্যাডিং এবং ইনপুট ফিল্ডের হাইট মোবাইলের জন্য অপ্টিমাইজড করা হলো (p-4 থেকে py-1.5 px-4) */}
+      <div className="px-4 py-1.5">
+        <input type="text" placeholder="🔍 পণ্যের নাম বা কোড লিখুন..." value={search} onChange={e => { setSearch(e.target.value); setSelectedCategory(null); setSelectedName(null); }} style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} />
+      </div>
+
+      {!selectedPage && !search && !selectedCategory && !selectedName && (
+        <>
+          <CategoryGrid branch={branch} onSelectPage={handlePageSelect} />
+          {/* 👑 এখানে নিচে থাকা ২০ পিক্সেলের ফালতু ফাঁকা উচ্চতার স্পেসার ডিভটি ডিলিট করে দেওয়া হলো */}
+        </>
+      )}
        
       {selectedName && (
         <div className="px-4 mb-2">
@@ -1194,12 +1191,12 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       )}
 
       {(selectedPage || search || selectedCategory || selectedName) && (
-        <div className="px-4 flex gap-2 overflow-x-auto pb-2">
-          <button onClick={() => { setSelectedCategory(null); setSelectedName(null); }} style={{ padding: '8px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: '2px solid #db2777', cursor: 'pointer', background: !selectedCategory && !selectedName ? '#db2777' : 'white', color: !selectedCategory && !selectedName ? 'white' : '#db2777' }}>সব পণ্য</button>
+        <div className="px-4 flex gap-2 overflow-x-auto pb-1.5">
+          <button onClick={() => { setSelectedCategory(null); setSelectedName(null); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: '2px solid #db2777', cursor: 'pointer', background: !selectedCategory && !selectedName ? '#db2777' : 'white', color: !selectedCategory && !selectedName ? 'white' : '#db2777' }}>সব পণ্য</button>
           {categories.map(cat => {
             const catProducts = products.filter(p => p.category === cat);
             const catName = catProducts[0]?.category_bn || cat;
-            return <button key={cat} onClick={() => { setSelectedCategory(cat); setSelectedName(null); }} style={{ padding: '8px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: '2px solid #db2777', cursor: 'pointer', background: selectedCategory === cat ? '#db2777' : 'white', color: selectedCategory === cat ? 'white' : '#db2777' }}>{catName} ({catProducts.length})</button>;
+            return <button key={cat} onClick={() => { setSelectedCategory(cat); setSelectedName(null); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: '2px solid #db2777', cursor: 'pointer', background: selectedCategory === cat ? '#db2777' : 'white', color: selectedCategory === cat ? 'white' : '#db2777' }}>{catName} ({catProducts.length})</button>;
           })}
         </div>
       )}
@@ -1210,7 +1207,8 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       {(!selectedPage && !search && !selectedCategory && !selectedName) ? null : (
         <>
           <style>{mobileGridStyle}</style>
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-1.5 pt-0">
+          {/* 👑 প্রোডাক্ট গ্রিড কার্ডগুলোর ভেতরের প্যাডিং p-3 থেকে কমিয়ে p-1.5 এবং উপরের অংশ pt-0 করে একদম টাইট দেওয়া হলো */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-1.5 pt-0">
             {displayProducts.map((product, index) => (
               <ProductCard  
                 key={product.id} 
@@ -1222,7 +1220,6 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
                 onEdit={setEditingProduct} 
                 onDoubleClick={(p) => {
                   setSelectedProduct(p);
-                  // প্রোডাক্ট ডিটেইলে ডাবল ক্লিক করলে ব্রাউজার হিস্ট্রিতে পুশ
                   window.history.pushState({ productDetail: true }, '', `?product=${p.id}`);
                 }} 
                 isDragging={dragIndex === index} 
@@ -1243,7 +1240,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       {cart.length > 0 && (
         <div onClick={() => {
           setShowCart(true);
-          window.history.pushState({ cartView: true }, '', `?cart=true`); // কার্ট ওপেন করলেও হিস্ট্রি পুশ
+          window.history.pushState({ cartView: true }, '', `?cart=true`);
         }} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#db2777', color: 'white', padding: '16px', cursor: 'pointer' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>🛒 {cart.length} টি পণ্য</span>
