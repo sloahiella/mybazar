@@ -1,5 +1,5 @@
 ﻿'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -23,8 +23,6 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
   const [rocketNumber, setRocketNumber] = useState(page.rocket_number || '');
   const [subPages, setSubPages] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // গোভ্যালি অ্যাপের মতো সাব-পেজ ওপেন/ক্লজ স্টেট ট্র্যাক করার জন্য
   const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => { fetchSubPages(); }, []);
@@ -58,7 +56,7 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
     await supabase.from('pages').insert({ name: subName, name_bn: subNameBn || subName, parent_id: page.id, branch_id: page.branch_id, sort_order: subPages.length, is_active: true });
     setSubName(''); setSubNameBn(''); setShowAddSub(false);
     fetchSubPages(); setLoading(false);
-    setIsExpanded(true); // নতুন সাব-পেজ অ্যাড হলে অটোমেটিক ড্রপডাউনটি খুলে যাবে
+    setIsExpanded(true);
   }
 
   async function setPassword() {
@@ -74,7 +72,7 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
   }
 
   const toggleExpand = (e) => {
-    e.stopPropagation(); // মেইন পেজ সিলেকশন ইভেন্টকে ব্লক করার জন্য
+    e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
 
@@ -96,8 +94,6 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'relative', borderBottom: depth === 0 ? '1px solid #f3f4f6' : 'none' }}>
-          
-          {/* মেইন ক্যাটাগরির টেক্সট বাটন */}
           <div 
             onClick={() => { onSelectPage(page); closeMenu(); }} 
             style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer', background: selectedPage?.id === page.id ? '#db2777' : 'transparent', color: selectedPage?.id === page.id ? 'white' : '#374151', opacity: page.is_active === false ? 0.5 : 1 }}
@@ -109,7 +105,6 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
             </span>
           </div>
 
-          {/* যদি সাব-পেজ থাকে, তবেই শুধু ডানপাশে ড্রপডাউন করার অ্যারো বাটনটি শো করবে */}
           {hasSubPages && (
             <button 
               onClick={toggleExpand}
@@ -128,7 +123,7 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
                   <div style={{ position: 'absolute', right: 0, top: '32px', background: 'white', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', zIndex: 9999, width: '180px', border: '1px solid #e5e7eb' }}>
                     <button onClick={() => { setShowEdit(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>✏️ নাম পরিবর্তন</button>
                     <button onClick={togglePage} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>{page.is_active === false ? '👁️ চালু করুন' : '🚫 বন্ধ করুন'}</button>
-                    <button onClick={() => { setShowAddSub(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>CN_PLUS সাব-পেজ যোগ</button>
+                    <button onClick={() => { setShowAddSub(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>➕ সাব-পেজ যোগ</button>
                     <button onClick={() => { setShowPasswordSet(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>🔑 Password সেট করুন</button>
                     <button onClick={() => { setShowPaymentSet(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>💳 Payment নম্বর সেট</button>
                     <button onClick={deletePage} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#dc2626' }}>🗑️ মুছুন</button>
@@ -176,7 +171,6 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
         </div>
       )}
 
-      {/* সাব-পেজগুলো অ্যানিমেশন সহ শুধুমাত্র expanded হলেই লোড হবে */}
       {hasSubPages && isExpanded && (
         <div style={{ background: '#fafafa', borderRadius: '8px', padding: '4px 0', marginTop: '2px' }}>
           {visibleSubPages.map(sub => (
@@ -231,17 +225,22 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
       {isOpen && (
         <>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }} onClick={closeMenu} />
-          <div style={{ position: 'fixed', left: 0, top: 0, bottom: 0, background: 'white', zIndex: 9999, width: '300px', overflowY: 'auto', boxShadow: '4px 0 20px rgba(0,0,0,0.2)' }}>
+          
+          {/* মেইন ড্রয়ার কন্টেইনার - এটিকে flexbox লেআউট বানানো হয়েছে */}
+          <div style={{ position: 'fixed', left: 0, top: 0, bottom: 0, background: 'white', zIndex: 9999, width: '300px', display: 'flex', flexDirection: 'column', boxShadow: '4px 0 20px rgba(0,0,0,0.2)' }}>
+            
+            {/* হেডার (সবসময় উপরে ফিক্সড থাকবে) */}
             <div style={{ background: '#db2777', color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 20 }}>
               <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>☰ ক্যাটাগরি</h2>
               <button onClick={closeMenu} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
-            <div style={{ padding: '8px' }}>
+
+            {/* স্ক্রোলিং এরিয়া - শুধুমাত্র ক্যাটাগরি এবং পেজগুলো এখানে স্ক্রোল হবে */}
+            <div style={{ padding: '8px', flex: 1, overflowY: 'auto' }}>
               <button onClick={() => { onSelectPage(null); closeMenu(); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: '500', border: 'none', cursor: 'pointer', marginBottom: '4px', background: !selectedPage ? '#db2777' : 'transparent', color: !selectedPage ? 'white' : '#374151' }}>
                 🏠 সব পণ্য
               </button>
               
-              {/* মেইন লুপ */}
               {visiblePages.map(page => (
                 <PageItem key={page.id} page={page} selectedPage={selectedPage} onSelectPage={(p) => { onSelectPage(p); }} isAdmin={isAdmin} onRefresh={fetchPages} depth={0} closeMenu={closeMenu} />
               ))}
@@ -271,13 +270,16 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
                   )}
                 </div>
               )}
-              <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '8px', padding: '16px' }}>
-                <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: '0 0 8px 0' }}>📞 যোগাযোগ</p>
-                <a href="tel:01872149655" style={{ display: 'block', fontSize: '13px', color: '#555', margin: '4px 0', textDecoration: 'none' }}>📱 01872149655</a>
-                <a href="https://wa.me/8801872149655" target="_blank" rel="noreferrer" style={{ display: 'block', fontSize: '13px', color: '#25D366', fontWeight: 'bold', margin: '4px 0', textDecoration: 'none' }}>💬 WhatsApp: 01872149655</a>
-                <a href="https://sohelmart.com" target="_blank" rel="noreferrer" style={{ display: 'block', fontSize: '13px', color: '#2563eb', margin: '4px 0', textDecoration: 'none' }}>🌐 sohelmart.com</a>
-              </div>
             </div>
+
+            {/* যোগাযোগ এরিয়া (সবসময় নিচে ফিক্সড হয়ে আটকে থাকবে) */}
+            <div style={{ borderTop: '1px solid #e5e7eb', padding: '16px', background: '#ffffff', flexShrink: 0 }}>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: '0 0 8px 0' }}>📞 যোগাযোগ</p>
+              <a href="tel:01872149655" style={{ display: 'block', fontSize: '13px', color: '#555', margin: '4px 0', textDecoration: 'none' }}>📱 01872149655</a>
+              <a href="https://wa.me/8801872149655" target="_blank" rel="noreferrer" style={{ display: 'block', fontSize: '13px', color: '#25D366', fontWeight: 'bold', margin: '4px 0', textDecoration: 'none' }}>💬 WhatsApp: 01872149655</a>
+              <a href="https://sohelmart.com" target="_blank" rel="noreferrer" style={{ display: 'block', fontSize: '13px', color: '#2563eb', margin: '4px 0', textDecoration: 'none' }}>🌐 sohelmart.com</a>
+            </div>
+
           </div>
         </>
       )}
