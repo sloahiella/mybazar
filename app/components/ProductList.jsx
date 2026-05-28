@@ -233,7 +233,7 @@ function OrdersModal({ onClose, isAdmin = false }) {
 
   async function fetchOrders(p) {
     if (!p) return;
-    loading(true);
+    setLoading(true);
     const { data } = await supabase.from('orders').select('*, order_items(*, products(name, name_bn, unit, image_url, product_code))').eq('customer_phone', p).order('created_at', { ascending: false });
     if (data) setOrders(data);
     setLoading(false); setSearched(true);
@@ -281,7 +281,7 @@ function OrdersModal({ onClose, isAdmin = false }) {
                     <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '14px', margin: '0 0 4px 0' }}>অर्डर #{order.id}</p>
                     {isAdmin && <p style={{ fontSize: '12px', color: '#374151', margin: '0 0 2px 0' }}>{order.customer_name}</p>}
                     <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px 0' }}>{new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
-                    <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>{order.order_items?.length} টি পণ্য</p>
+                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px 0' }}>{order.order_items?.length} টি পণ্য</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ fontWeight: 'bold', color: '#db2777', fontSize: '18px', margin: '0 0 6px 0' }}>{order.total_amount} Tk</p>
@@ -327,7 +327,6 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
   return (
     <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '8px 4px', scrollbarWidth: 'none' }}>
       {pages.map(page => {
-        // হোমপেজে (যখন কোনো পেজ সিলেক্টেড নাই) মেইন ক্যাটাগরির পাশে অ্যারো দেখাবে
         const showArrow = !selectedPage;
 
         return (
@@ -349,11 +348,7 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
             }}
             onMouseEnter={e => { e.currentTarget.style.color = '#db2777'; }}
             onMouseLeave={e => { e.currentTarget.style.color = '#374151'; }}>
-            
-            {/* পেজের নাম */}
             {page.name_bn || page.name}
-            
-            {/* নামের পাশে সুন্দর ইন্ডিকেটর আইকন */}
             {showArrow && <span style={{ fontSize: '10px', color: '#9ca3af' }}>▼</span>}
           </button>
         );
@@ -579,7 +574,6 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
 function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, onDoubleClick, isDragging, onDragStart, onDragOver, onDrop }) {
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
-  const [showDesc, setShowDesc] = useState(false);
   const [showSellers, setShowSellers] = useState(false);
   const [listings, setListings] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -770,8 +764,8 @@ function EditProductModal({ product, onClose, onSave }) {
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>দাম (Tk)</label><input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label><select name="unit" value={form.unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="Kg">Kg</option><option value="Liter">Liter</option><option value="pcs">pcs</option><option value="packet">Packet</option></select></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>পেজ সিলেক্ট করুন</label><select name="page_id" value={form.page_id} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="">-- পেজ সিলেক্ট করুন --</option>{pages.map(page => <option key={page.id} value={page.id}>{page.name_bn || page.name}</option>)}</select></div>
-          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ക্যাটাഗരി (ইং)</label><input name="category" value={form.category} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
-          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ക্যাটাগরি (বাং)</label><input name="category_bn" value={form.category_bn} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ക্যাട്ടഗരി (ইং)</label><input name="category" value={form.category} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ക্যাട്ടഗരി (বাং)</label><input name="category_bn" value={form.category_bn} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div style={{ background: '#f0fdf4', borderRadius: '8px', padding: '12px' }}>
             <label style={{ fontSize: '12px', color: '#15803d', fontWeight: 'bold' }}>প্রধান ছবি</label>
             {form.image_url && <img src={form.image_url} alt="main" style={{ width: '100%', objectFit: 'contain', borderRadius: '8px', marginTop: '8px', maxHeight: '120px' }} />}
@@ -913,6 +907,8 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       const savedPhone = localStorage.getItem('customer_phone');
       if (savedPhone) {
         setShowCart(true);
+        // কার্ট ওপেন হলে ব্রাউজার হিস্ট্রিতে পুশ
+        window.history.pushState({ cartView: true }, '', `?cart=true`);
       } else {
         setShowOrder(true);
       }
@@ -926,23 +922,51 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
     else setSubPageIds([]);
   }
 
+  // 🛠️ মেইন ব্যাক বাটন লিসেনার - যা ধাপে ধাপে গোভ্যালির মতো আগের পেজে নিয়ে আসবে
   useEffect(() => {
-    const handlePopState = () => {
+    const handlePopState = (event) => {
+      // ১. যদি কাস্টমার প্রোডাক্ট ডিটেইলসের ভেতরে থাকে, তবে শুধু প্রোডাক্ট মডাল বন্ধ করবে
+      if (selectedProduct) {
+        setSelectedProduct(null);
+        return;
+      }
+      // ২. যদি কার্ট খোলা থাকে, কার্ট বন্ধ করবে
+      if (showCart) {
+        setShowCart(false);
+        return;
+      }
+      // ৩. যদি অর্ডার ফর্ম খোলা থাকে, সেটি বন্ধ করবে
+      if (showOrder) {
+        setShowOrder(false);
+        return;
+      }
+      // ৪. যদি কোনো ক্যাটাগরি পেজের ভেতরে থাকে, এক ধাপ পেছনে নিয়ে যাবে
+      if (selectedPage) {
+        const prevPage = pageHistory[pageHistory.length - 1] || null;
+        setPageHistory(prev => prev.slice(0, -1));
+        setSelectedPage(prevPage);
+        localStorage.setItem('current_page_id', prevPage ? String(prevPage.id) : '');
+        if (prevPage) fetchSubPageIds(prevPage.id);
+        else setSubPageIds([]);
+        if (onPageChange) onPageChange(prevPage ? String(prevPage.id) : null);
+        return;
+      }
+      // ৫. বাকি এডমিন বা সেলার ড্রয়ার বন্ধ করার লজিক
       if (showOrders) { setShowOrders(false); return; }
       if (editingProduct) { setEditingProduct(null); return; }
       if (showAddModal) { setShowAddModal(false); return; }
-      if (showOrder) { setShowOrder(false); return; }
-      if (showCart) { setShowCart(false); return; }
     };
+
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [showOrders, editingProduct, showAddModal, showCart, showOrder]);
+  }, [selectedProduct, showCart, showOrder, selectedPage, pageHistory, showOrders, editingProduct, showAddModal]);
 
+  // কোনো ভিউ ওপেন হলে হিস্ট্রিতে স্টেট রাখার ট্রিগার
   useEffect(() => {
-    if (editingProduct || showAddModal || showCart || showOrder || showOrders) {
+    if (editingProduct || showAddModal || showOrder || showOrders) {
       window.history.pushState(null, '', window.location.href);
     }
-  }, [editingProduct, showAddModal, showCart, showOrder, showOrders]);
+  }, [editingProduct, showAddModal, showOrder, showOrders]);
 
   async function fetchProducts() {
     setLoading(true);
@@ -1014,8 +1038,13 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const total = cart.reduce((a, c) => a + c.price_per_unit * c.qty, 0);
 
   const handlePageSelect = (page) => {
-    if (page) setPageHistory(prev => [...prev, selectedPage]);
-    else setPageHistory([]);
+    if (page) {
+      setPageHistory(prev => [...prev, selectedPage]);
+      window.history.pushState({ page: page.id }, '', `?page=${page.id}`); // ক্যাটাগরি পেজে ঢুকলে হিস্ট্রি পুশ
+    } else {
+      setPageHistory([]);
+      window.history.pushState(null, '', window.location.pathname);
+    }
     setSelectedPage(page);
     setSelectedName(null);
     setSelectedCategory(null);
@@ -1091,7 +1120,15 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
 
   return (
     <div className="pb-24">
-      {selectedProduct && <ProductDetailModal product={selectedProduct} onClose={() => setSelectedProduct(null)} onAdd={addToCart} onSelectProduct={(p) => setSelectedProduct(p)} isAdmin={isAdmin} />}
+      {selectedProduct && (
+        <ProductDetailModal 
+          product={selectedProduct} 
+          onClose={() => setSelectedProduct(null)} 
+          onAdd={addToCart} 
+          onSelectProduct={(p) => setSelectedProduct(p)} 
+          isAdmin={isAdmin} 
+        />
+      )}
       {showOrders && <OrdersModal onClose={() => setShowOrders(false)} isAdmin={isAdmin || isEditor} />}
       {showCustomerOrders && <OrdersModal onClose={() => setShowCustomerOrders(false)} isAdmin={false} />}
       {editingProduct && <EditProductModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={fetchProducts} />}
@@ -1123,6 +1160,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
                 if (prevPage) fetchSubPageIds(prevPage.id);
                 else setSubPageIds([]);
                 if (onPageChange) onPageChange(prevPage ? String(prevPage.id) : null);
+                window.history.pushState(null, '', prevPage ? `?page=${prevPage.id}` : window.location.pathname);
               }} style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', border: 'none', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer' }}>
                 ← {pageHistory[pageHistory.length - 1]?.name_bn || pageHistory[pageHistory.length - 1]?.name || 'হোম'}
               </button>
@@ -1182,7 +1220,11 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
                 isEditor={isEditor} 
                 editorPageId={editorPageId} 
                 onEdit={setEditingProduct} 
-                onDoubleClick={(p) => setSelectedProduct(p)} 
+                onDoubleClick={(p) => {
+                  setSelectedProduct(p);
+                  // প্রোডাক্ট ডিটেইলে ডাবল ক্লিক করলে ব্রাউজার হিস্ট্রিতে পুশ
+                  window.history.pushState({ productDetail: true }, '', `?product=${p.id}`);
+                }} 
                 isDragging={dragIndex === index} 
                 onDragStart={() => handleDragStart(index)} 
                 onDragOver={() => handleDragOver(index)} 
@@ -1199,7 +1241,10 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       )}
 
       {cart.length > 0 && (
-        <div onClick={() => setShowCart(true)} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#db2777', color: 'white', padding: '16px', cursor: 'pointer' }}>
+        <div onClick={() => {
+          setShowCart(true);
+          window.history.pushState({ cartView: true }, '', `?cart=true`); // কার্ট ওপেন করলেও হিস্ট্রি পুশ
+        }} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#db2777', color: 'white', padding: '16px', cursor: 'pointer' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>🛒 {cart.length} টি পণ্য</span>
             <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{total.toFixed(0)} Tk</span>
