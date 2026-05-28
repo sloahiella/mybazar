@@ -8,7 +8,8 @@ const supabase = createClient(
 )
 
 const LOGO_URL = 'https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/Untitled%20folder/logo.jpg'
-const PINK = '#db2777'
+// 👑 হেডারের কালার ব্যানারের সাথে মিলিয়ে গাঢ় পিঙ্ক (Deep Pink) করা হলো
+const PINK = '#be185d' 
 
 export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, onAdminClick, sellerUser, onSellerClick, onOrdersClick }: {
   cartCount?: number
@@ -24,6 +25,15 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
   const [customerName, setCustomerName] = useState<string | null>(null)
   const [customerPhone, setCustomerPhone] = useState<string | null>(null)
   const [customerAvatar, setCustomerAvatar] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // মোবাইল স্ক্রিন ট্র্যাক করার হুক
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     function updateCustomer() {
@@ -58,7 +68,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <button onClick={onMenuClick} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer', padding: '4px' }}>☰</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-       <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
+          <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
         </div>
       </div>
 
@@ -79,21 +89,22 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
           </button>
         )}
 
-        {/* Profile বাটন → CustomerAuth খুলবে */}
-        <button onClick={onCartClick} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+        {/* 👑 মোবাইল ভার্সনে ওপরের Profile বাটনটি লুকিয়ে ফেলা হলো */}
+        <button onClick={onCartClick} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '8px', display: isMobile ? 'none' : 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
           <div style={{ width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', background: customerName ? '#fbbf24' : 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: customerName ? '14px' : '18px', fontWeight: 'bold', color: customerName ? '#111' : 'white' }}>
             {customerAvatar ? <img src={customerAvatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : customerName ? customerName[0].toUpperCase() : '👤'}
           </div>
           <span style={{ fontSize: '10px' }}>{customerName ? customerName.split(' ')[0] : 'Profile'}</span>
         </button>
 
-        <button style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+        {/* 👑 মোবাইল ভার্সনে ওপরের Wishlist বাটনটি লুকিয়ে ফেলা হলো */}
+        <button style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '8px', display: isMobile ? 'none' : 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
           <span style={{ fontSize: '20px' }}>♡</span>
           <span style={{ fontSize: '10px' }}>Wishlist</span>
         </button>
 
-        {/* Cart বাটন → Sidebar খুলবে */}
-        <div style={{ position: 'relative' }}>
+        {/* 👑 মোবাইল ভার্সনে ওপরের Cart বাটনটি লুকিয়ে ফেলা হলো */}
+        <div style={{ position: 'relative', display: isMobile ? 'none' : 'block' }}>
           <button onClick={() => setShowProfile(!showProfile)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
             <span style={{ fontSize: '20px' }}>🛒</span>
             {cartCount > 0 && (
@@ -154,7 +165,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
     </div>
 
     {/* Mobile Bottom Navigation */}
-    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #e5e7eb', display: window.innerWidth < 768 ? 'flex' : 'none', justifyContent: 'space-around', alignItems: 'center', height: '60px', zIndex: 100, boxShadow: '0 -2px 8px rgba(0,0,0,0.08)' }}>
+    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #e5e7eb', display: isMobile ? 'flex' : 'none', justifyContent: 'space-around', alignItems: 'center', height: '60px', zIndex: 100, boxShadow: '0 -2px 8px rgba(0,0,0,0.08)' }}>
       <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px' }}>
         <span style={{ fontSize: '20px' }}>🏠</span>
         <span style={{ fontSize: '10px', color: '#6b7280' }}>Home</span>
@@ -165,7 +176,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
       </button>
       <button onClick={onCartClick} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px', position: 'relative' }}>
         <span style={{ fontSize: '20px' }}>🛒</span>
-        {cartCount > 0 && <span style={{ position: 'absolute', top: '4px', right: '8px', background: PINK, color: 'white', fontSize: '10px', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{cartCount}</span>}
+        {cartCount > 0 && <span style={{ position: 'absolute', top: '4px', right: '8px', background: '#db2777', color: 'white', fontSize: '10px', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{cartCount}</span>}
         <span style={{ fontSize: '10px', color: '#6b7280' }}>Cart</span>
       </button>
       <button style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px' }}>
