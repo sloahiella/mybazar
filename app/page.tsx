@@ -457,18 +457,21 @@ export default function Home() {
     if (savedPhone) setCustomer({ phone: savedPhone });
   }, []);
 
-  // ব্রাউজারের ব্যাক বাটন ট্র্যাক করার লিসেনার
+ // ব্রাউজারের ব্যাক বাটন ট্র্যাক করার আপডেটেড লিসেনার
   useEffect(() => {
     const handlePopState = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const urlPageId = urlParams.get('page');
+      const urlProductId = urlParams.get('product'); // 👈 প্রোডাক্ট আইডি ট্র্যাক করার জন্য নতুন লাইন
       
-      if (urlPageId) {
-        localStorage.setItem('current_page_id', urlPageId);
-        if (role === 'admin') fetchOrders(urlPageId);
+      // যদি ইউআরএল-এ প্রোডাক্ট বা পেজ আইডি থাকে, তবে ব্যাক চাপলে পেজ রিফ্রেশ করে আগের মোডে আনবে
+      if (urlProductId || urlPageId) {
+        window.location.reload(); // 👈 এটি ব্যাক চাপলে কাস্টমারকে নিরাপদে আগের সাইটেই রাখবে, বের হতে দেবে না
       } else {
         localStorage.setItem('current_page_id', '');
         if (role === 'admin') fetchOrders(undefined);
+        // যদি একদম মেইন হোমপেজে চলে আসে, তবে ইউআরএল পরিষ্কার করে রিফ্রেশ করবে
+        window.location.href = window.location.pathname;
       }
     };
 
