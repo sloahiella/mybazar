@@ -786,7 +786,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
         
         <div style={{ marginTop: '4px' }}>
           <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-            <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty} onChange={e => setQty(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', width: '100%', fontSize: '12px', color: '#1f2937', outline: 'none', minWidth: 0 }} placeholder="পরিমাণ" />
+            <input type="number" min="0" step={isPiece ? 'পরিমাণ লিখুন' : '0.001'} value={qty} onChange={e => setQty(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', width: '100%', fontSize: '12px', color: '#1f2937', outline: 'none', minWidth: 0 }} placeholder="পরিমাণ" />
             {!isPiece && (
               <select value={unit} onChange={e => setUnit(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 2px', fontSize: '11px', background: 'white', flexShrink: 0 }}>
                 {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
