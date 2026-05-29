@@ -9,6 +9,11 @@ import CustomerAuth from './components/CustomerAuth';
 import HeroBanner from './components/HeroBanner';
 import { requestNotificationPermission, messaging, onMessage } from './firebase';
 
+// 👑 নতুন ৩টি আকর্ষণীয় ফিচার মডিউল এখানে ইমপোর্ট করা হলো
+import FeatureBar from './components/FeatureBar';
+import CategoryCircles from './components/CategoryCircles';
+import FlashSale from './components/FlashSale';
+
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
@@ -57,7 +62,7 @@ function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => 
           <div style={{ display: 'flex', gap: '8px' }}>
             {isAdmin && <button onClick={handlePrint} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>🖨️ Print</button>}
             <button onClick={handleSave} style={{ background: PINK, color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>💾 Save</button>
-            <button onClick={onClose} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', cursor: 'pointer' }}>✕</button>
+            <button onClick={onClose} style={{ style: 'none', background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', cursor: 'pointer' }}>✕</button>
           </div>
         </div>
         <div ref={printRef} style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
@@ -658,6 +663,11 @@ export default function Home() {
 
       {/* হেডারের ঠিক নিচে অটো-স্লাইডিং হিরো ব্যানার */}
       <HeroBanner />
+
+      {/* 👑 এই মাঝখানের ফাঁকা জায়গায় ৩টি আকর্ষণীয় নতুন মডিউল কানেক্ট করা হলো */}
+      <FeatureBar />
+      <CategoryCircles />
+      <FlashSale />
 
       <ProductList
         branch={selectedBranch}
