@@ -1,14 +1,15 @@
+cat << 'EOF' > app/components/FeatureBar.jsx
 'use client';
 
 export default function FeatureBar() {
   const features = [
-    { icon: '⚡', title: 'দ্রুত হোম ডেলিভারি', desc: 'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি' },
-    { icon: '🛡️', title: '১০০% অরিジナル পণ্য', desc: 'সেরা কোয়ালিটির আসল পণ্য' },
+    { icon: '🚚', title: 'দ্রুত হোম ডেলিভারি', desc: 'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি' },
+    { icon: '🛡️', title: '১০০% অরিজিনাল পণ্য', desc: 'সেরা কোয়ালিটির আসল পণ্য' },
     { icon: '💬', title: '২৪/৭ কাস্টমার সাপোর্ট', desc: 'যেকোনো প্রয়োজনে লাইভ চ্যাট বা কল' }
   ];
 
   return (
-    <div className="w-full bg-white border-b border-gray-100 py-3 px-4">
+    <div className="w-full bg-white border-b border-gray-100 py-3 px-4 box-border">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
         {features.map((f, i) => (
           <div key={i} className="flex items-center justify-center gap-3 bg-pink-50/40 p-3 rounded-xl border border-pink-100/30">
@@ -23,3 +24,4 @@ export default function FeatureBar() {
     </div>
   );
 }
+EOF

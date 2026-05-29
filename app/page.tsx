@@ -231,7 +231,7 @@ function AdminSellerView({ seller, onBack }: { seller: any; onBack: () => void }
             <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>নাম: <strong>{selected.order?.customer_name}</strong></p>
             <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ফোন: {selected.order?.customer_phone}</p>
             <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>জেলা: {selected.order?.district}, {selected.order?.upazila}</p>
-            <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ঠিকানা: {order.address}</p>
+            <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ঠিকানা: {selected.order?.address}</p>
             <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 2px 0', fontWeight: 'bold' }}>অর্ডার #: {selected.order_id}</p>
           </div>
         </div>
@@ -380,7 +380,8 @@ function WithdrawalManagement() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '0 0 2px 0' }}>🏪 {req.sellers?.shop_name}</p>
-              <p style={{ fontSize: '14px', color: '#16a34a', font  Weight: 'bold', margin: '2px 0' }}>৳{req.amount}</p>
+              {/* 👑 লাইন ৩৮৩: এখানে টাইপো 'font  Weight' থেকে ডাবল স্পেস মুছে পুরোপুরি ঠিক করে দেওয়া হয়েছে ভাই */}
+              <p style={{ fontSize: '14px', color: '#16a34a', fontWeight: 'bold', margin: '2px 0' }}>৳{req.amount}</p>
               <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>{req.method === 'bkash' ? '💗 বিকাশ' : req.method === 'nagad' ? '🟠 নগদ' : '🏦 ব্যাংক'} → {req.account_number}</p>
               <p style={{ fontSize: '11px', color: '#888', margin: '2px 0' }}>{new Date(req.created_at).toLocaleDateString('bn-BD')}</p>
               <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '20px', display: 'inline-block', marginTop: '4px', background: req.status === 'completed' ? '#dcfce7' : req.status === 'rejected' ? '#fee2e2' : '#fef9c3', color: req.status === 'completed' ? '#15803d' : req.status === 'rejected' ? '#dc2626' : '#854d0e' }}>
@@ -414,7 +415,6 @@ export default function Home() {
   const [orders, setOrders] = useState<any[]>([]);
   const [todaySales, setTodaySales] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
-  // 👑 লাইন ৪১৭: এখানে 'm' সরিয়ে পারফেক্টলি '=' বসানো হয়েছে
   const [adminTab, setAdminTab] = useState('orders');
   const [autoPrint, setAutoPrint] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -563,7 +563,6 @@ export default function Home() {
   function toggleAutoPrint() { const newVal = !autoPrint; setAutoPrint(newVal); localStorage.setItem('autoPrint', newVal.toString()); }
 
   const getFilteredByDate = (data: any[]) => {
-    const document: any = null;
     const now = new Date();
     if (orderSearch) { return data.filter((o: any) => { const dateStr = new Date(o.created_at).toLocaleDateString('bn-BD'); const dateStrEn = new Date(o.created_at).toLocaleDateString('en-US'); return String(o.id).includes(orderSearch) || dateStr.includes(orderSearch) || dateStrEn.toLowerCase().includes(orderSearch.toLowerCase()) || (o.customer_name && o.customer_name.toLowerCase().includes(orderSearch.toLowerCase())) || (o.customer_phone && o.customer_phone.includes(orderSearch)); }); }
     return data.filter((o: any) => {
@@ -587,7 +586,7 @@ export default function Home() {
           {role && (<><span style={{ fontSize: '12px', background: PINK_LIGHT, color: PINK, padding: '4px 8px', borderRadius: '20px', fontWeight: '500', border: `1px solid ${PINK_BORDER}` }}>{role === 'admin' ? '👑 Admin' : `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'}`}</span><button onClick={handleLogout} style={{ fontSize: '12px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>লগআউট</button></>)}
         </div>
         <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)', padding: '32px', maxWidth: '400px', width: '100%', margin: '0 16px' }}>
-          <div style={{ text_align: 'center', marginBottom: '24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', marginBottom: '12px', cursor: 'pointer' }}
               onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: PINK, margin: '0 0 4px 0' }}>সোহেল মার্ট</h1>
@@ -701,7 +700,6 @@ export default function Home() {
             </div>
             <div style={{ padding: '16px' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', overflowX: 'auto' }}>
-                {/* 👑 লাইন ৭০২: এখানে টাইপো 'font  Weight' ফিক্স করে 'fontWeight' করা হয়েছে */}
                 {[{ key: 'today', label: 'আজকে' }, { key: 'yesterday', label: 'গতকাল' }, { key: 'week', label: 'এই সপ্তাহ' }, { key: 'month', label: 'এই মাস' }].map(d => (<button key={d.key} onClick={() => { setDateFilter(d.key); setOrderSearch(''); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', border: '2px solid', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, borderColor: dateFilter === d.key ? PINK : '#e5e7eb', background: dateFilter === d.key ? PINK : 'white', color: dateFilter === d.key ? 'white' : '#374151' }}>{d.label}</button>))}
               </div>
               <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)} placeholder="🔍 তারিখ, নাম, ফোন বা অর্ডার নম্বর..." style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '10px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: '#1f2937' }} />
@@ -773,8 +771,8 @@ export default function Home() {
             {adminTab === 'withdrawals' && role === 'admin' && <WithdrawalManagement />}
             {adminTab === 'notifications' && role === 'admin' && (
               <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {notifications.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো নোটিফিшением নেই</p>}
-                {notifications.map((n: any) => (<div key={n.id} style={{ padding: '12px', borderRadius: '12px', border: '1px solid', borderColor: n.is_read ? '#e5e7eb' : PINK_BORDER, background: n.is_read ? '#f9fafb' : PINK_LIGHT }}><p style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', margin: '0 0 4px 0' }}>🔔 {n.message}</p><p style={{ fontSize: '12px', color: '#9ca3af', margin 0 }}>{new Date(n.created_at).toLocaleString('bn-BD')}</p></div>))}
+                {notifications.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো নোটিফিকেশনে নেই</p>}
+                {notifications.map((n: any) => (<div key={n.id} style={{ padding: '12px', borderRadius: '12px', border: '1px solid', borderColor: n.is_read ? '#e5e7eb' : PINK_BORDER, background: n.is_read ? '#f9fafb' : PINK_LIGHT }}><p style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', margin: '0 0 4px 0' }}>🔔 {n.message}</p><p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>{new Date(n.created_at).toLocaleString('bn-BD')}</p></div>))}
               </div>
             )}
           </div>
