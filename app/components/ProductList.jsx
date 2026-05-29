@@ -754,7 +754,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
       }}
     >
       {product.discount_percent > 0 && (
-        <span style={{ position: 'absolute', top: '6px', left: '6px', background: '#db2777', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px', zIndex: 10 }}>
+        <span style={{ position: 'absolute', top: '6px', right: '6px', background: '#db2777', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px', zIndex: 10 }}>
           {product.discount_percent}% ছাড়
         </span>
       )}
@@ -1307,7 +1307,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
             <span style={{ fontWeight: 'bold', color: '#374151', fontSize: '18px' }}>Total:</span>
             <span style={{ fontWeight: 'bold', color: '#db2777', fontSize: '20px' }}>{total.toFixed(0)} Tk</span>
           </div>
-          <button onClick={() => officeOpen && setShowOrder(true)} style={{ width: '100%', background: officeOpen ? '#db2777' : '#9ca3af', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '18px', fontWeight: 'bold', cursor: officeOpen ? 'pointer' : 'not-allowed' }}>{officeOpen ? 'অर्डर করুন' : '🔴 অফিস বন্ধ'}</button>
+          <button onClick={() => officeOpen && setShowOrder(true)} style={{ width: '100%', background: officeOpen ? '#db2777' : '#9ca3af', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '18px', fontWeight: 'bold', cursor: officeOpen ? 'pointer' : 'not-allowed' }}>{officeOpen ? 'অর্ডার করুন' : '🔴 অফিস বন্ধ'}</button>
         </div>
       </div>
     );
