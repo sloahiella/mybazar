@@ -811,7 +811,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
             {isPiece && <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', color: '#6b7280', background: '#f9fafb', flexShrink: 0 }}>pcs</span>}
           </div>
           {qty && parseFloat(qty) > 0 && <p style={{ fontSize: '11px', color: '#db2777', fontWeight: 'bold', background: '#fdf2f8', padding: '3px 6px', borderRadius: '6px', border: '1px solid #fbcfe8', margin: '0 0 4px 0' }}>= {(getActualQty() * product.price_per_unit).toFixed(0)} Tk</p>}
-          <button onClick={() => { const savedPhone = localStorage.getItem('customer_phone'); if (!savedPhone) { alert('অর্ডার করতে আগে লগিন করুন!'); return; } const a = getActualQty(); if (a > 0) onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart' }, a); else onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart' }, 1); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '7px 4px', fontSize: '12px', width: '100%', cursor: 'pointer', fontWeight: '500' }}>🛒 ঝুড়িতে রাখুন</button>
+          <button onClick={() => { const savedPhone = localStorage.getItem('customer_phone'); if (!savedPhone) { setShowCart(true); return; } const a = getActualQty(); if (a > 0) onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart' }, a); else onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart' }, 1); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '7px 4px', fontSize: '12px', width: '100%', cursor: 'pointer', fontWeight: '500' }}>🛒 ঝুড়িতে রাখুন</button>
         </div>
       </div>
     </div>
