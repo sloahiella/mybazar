@@ -159,7 +159,7 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
                   <div style={{ position: 'absolute', right: 0, top: '32px', background: 'white', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', zIndex: 9999, width: '180px', border: '1px solid #e5e7eb' }}>
                     <button onClick={() => { setShowEdit(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>✏️ নাম পরিবর্তন</button>
                     <button onClick={togglePage} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>{page.is_active === false ? '👁️ চালু করুন' : '🚫 বন্ধ করুন'}</button>
-                    <button onClick={() => { setShowAddSub(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>➕ সাব-পেজ যোগ</button>
+                    <button onClick={() => { setShowAddSub(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>¼ সাব-পেজ যোগ</button>
                     <button onClick={() => { setShowPasswordSet(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>🔑 Password সেট করুন</button>
                     <button onClick={() => { setShowPaymentSet(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>💳 Payment নম্বর সেট</button>
                     <button onClick={deletePage} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#dc2626' }}>🗑️ মুছুন</button>
@@ -351,11 +351,37 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
               )}
             </div>
 
+            {/* 👑 যোগাযোগ সেকশনে আপনার আসল ফেসবুক এবং ইউটিউব চ্যানেল লিংক হাই-কোয়ালিটি ব্র্যান্ডিং আইকনসহ যোগ করে দেওয়া হলো */}
             <div style={{ borderTop: '1px solid #e5e7eb', padding: '16px', background: '#ffffff', flexShrink: 0 }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: '0 0 8px 0' }}>📞 যোগাযোগ</p>
-              <a href="tel:01872149655" style={{ display: 'block', fontSize: '13px', color: '#555', margin: '4px 0', textDecoration: 'none' }}>📱 01872149655</a>
-              <a href="https://wa.me/8801872149655" target="_blank" rel="noreferrer" style={{ display: 'block', fontSize: '13px', color: '#25D366', fontWeight: 'bold', margin: '4px 0', textDecoration: 'none' }}>💬 WhatsApp: 01872149655</a>
-              <a href="https://sohelmart.com" target="_blank" rel="noreferrer" style={{ display: 'block', fontSize: '13px', color: '#2563eb', margin: '4px 0', textDecoration: 'none' }}>🌐 sohelmart.com</a>
+              
+              {/* ফোন নম্বর */}
+              <a href="tel:01872149655" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#555', margin: '6px 0', textDecoration: 'none' }}>
+                📱 <span>01872149655</span>
+              </a>
+              
+              {/* হোয়াটসঅ্যাপ */}
+              <a href="https://wa.me/8801872149655" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#25D366', fontWeight: 'bold', margin: '6px 0', textDecoration: 'none' }}>
+                <img src="https://cdn-icons-png.flaticon.com/128/3670/3670051.png" alt="WhatsApp" style={{ width: '16px', height: '16px' }} />
+                <span>WhatsApp: 01872149655</span>
+              </a>
+
+              {/* 🔵 ফেসবুক পেজ (আপনার দেওয়া আসল আইডি লিংকসহ) */}
+              <a href="https://www.facebook.com/profile.php?id=61583250601904" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#1877f2', fontWeight: 'bold', margin: '6px 0', textDecoration: 'none' }}>
+                <img src="https://cdn-icons-png.flaticon.com/128/5968/5968764.png" alt="Facebook" style={{ width: '16px', height: '16px' }} />
+                <span>Facebook Page</span>
+              </a>
+
+              {/* 🔴 ইউটিউব চ্যানেল (আপনার দেওয়া আসল হ্যান্ডেল লিংকসহ) */}
+              <a href="https://youtube.com/@mdsohel-o9q1l?si=H1NMcxfnjeJ6rFED" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#ff0000', fontWeight: 'bold', margin: '6px 0', textDecoration: 'none' }}>
+                <img src="https://cdn-icons-png.flaticon.com/128/1384/1384060.png" alt="YouTube" style={{ width: '16px', height: '16px' }} />
+                <span>YouTube Channel</span>
+              </a>
+
+              {/* ওয়েবসাইট ইউআরএল */}
+              <a href="https://sohelmart.com" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#2563eb', margin: '6px 0', textDecoration: 'none' }}>
+                🌐 <span>sohelmart.com</span>
+              </a>
             </div>
 
           </div>
