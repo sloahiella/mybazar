@@ -358,7 +358,7 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
   );
 }
 
-function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin }) {
+function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin, onNeedLogin }) {
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -619,7 +619,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
             </p>
           )}
           
-          <button onClick={() => { if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে আগে একটি সাইজ সিলেক্ট করুন!'); return; } onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, getActualQty() || 1); onClose(); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '15px', width: '100%', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(219,39,119,0.2)' }}>🛒 ঝুড়িতে রাখুন</button>
+          <button onClick={() => { const savedPhone = localStorage.getItem('customer_phone'); if (!savedPhone) { onNeedLogin(); return; } if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে আগে একটি সাইজ সিলেক্ট করুন!'); return; } onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, getActualQty() || 1); onClose(); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '15px', width: '100%', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(219,39,119,0.2)' }}>🛒 ঝুড়িতে রাখুন</button>
         </div>
       </div>
 
@@ -1315,13 +1315,14 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   return (
     <div className="pb-24">
       {selectedProduct && (
-        <ProductDetailModal 
-          product={selectedProduct} 
-          onClose={() => setSelectedProduct(null)} 
-          onAdd={addToCart} 
-          onSelectProduct={(p) => setSelectedProduct(p)} 
-          isAdmin={isAdmin} 
-        />
+       <ProductDetailModal 
+  product={selectedProduct} 
+  onClose={() => setSelectedProduct(null)} 
+  onAdd={addToCart} 
+  onSelectProduct={(p) => setSelectedProduct(p)} 
+  isAdmin={isAdmin}
+  onNeedLogin={() => { setSelectedProduct(null); setShowCart(true); }}
+/>
       )}
       {showOrders && <OrdersModal onClose={() => setShowOrders(false)} isAdmin={isAdmin || isEditor} />}
       {showCustomerOrders && <OrdersModal onClose={() => setShowCustomerOrders(false)} isAdmin={false} />}
