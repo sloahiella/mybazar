@@ -3,10 +3,10 @@ import { useState, useEffect } from 'react';
 
 export default function HeroBanner() {
   // 👑 আপনার দেওয়া নতুন নির্ভুল বানানের ফ্রেশ ব্যানার ইউআরএল এখানে বসিয়ে দেওয়া হলো
-  const banners = [
-    "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/hero-banner.jpg.jpg",
-    "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/banner2.jpg.jpg"
-  ];
+ const banners = [
+  "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/hero-banner.jpg.jpg?v=2",
+  "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/banner2.jpg.jpg?v=2"
+];
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
