@@ -9,10 +9,8 @@ import CustomerAuth from './components/CustomerAuth';
 import HeroBanner from './components/HeroBanner';
 import { requestNotificationPermission, messaging, onMessage } from './firebase';
 
-// 👑 নতুন ৩টি আকর্ষণীয় ফিচার মডিউল এখানে ইমপোর্ট করা হলো
+// 👑 নতুন ফিচার বারটি এখানে ইমপোর্ট করা হলো
 import FeatureBar from './components/FeatureBar';
-import CategoryCircles from './components/CategoryCircles';
-import FlashSale from './components/FlashSale';
 
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
@@ -62,7 +60,7 @@ function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => 
           <div style={{ display: 'flex', gap: '8px' }}>
             {isAdmin && <button onClick={handlePrint} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>🖨️ Print</button>}
             <button onClick={handleSave} style={{ background: PINK, color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}>💾 Save</button>
-            <button onClick={onClose} style={{ style: 'none', background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', cursor: 'pointer' }}>✕</button>
+            <button onClick={onClose} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', cursor: 'pointer' }}>✕</button>
           </div>
         </div>
         <div ref={printRef} style={{ padding: '24px', fontFamily: 'Arial, sans-serif' }}>
@@ -416,7 +414,7 @@ export default function Home() {
   const [orders, setOrders] = useState<any[]>([]);
   const [todaySales, setTodaySales] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
-  const [adminTab, setAdminTab] = useState('orders');
+  const [adminTab, setAdminTab] m = useState('orders');
   const [autoPrint, setAutoPrint] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -664,10 +662,8 @@ export default function Home() {
       {/* হেডারের ঠিক নিচে অটো-স্লাইডিং হিরো ব্যানার */}
       <HeroBanner />
 
-      {/* 👑 এই মাঝখানের ফাঁকা জায়গায় ৩টি আকর্ষণীয় নতুন মডিউল কানেক্ট করা হলো */}
+      {/* 👑 প্রফেশনাল ট্রাস্ট ও ডেলিভারি বারটি অন রাখা হলো */}
       <FeatureBar />
-      <CategoryCircles />
-      <FlashSale />
 
       <ProductList
         branch={selectedBranch}
@@ -703,7 +699,7 @@ export default function Home() {
             </div>
             <div style={{ padding: '16px' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', overflowX: 'auto' }}>
-                {[{ key: 'today', label: 'আজকে' }, { key: 'yesterday', label: 'গতকাল' }, { key: 'week', label: 'এই সপ্তাহ' }, { key: 'month', label: 'এই মাস' }].map(d => (<button key={d.key} onClick={() => { setDateFilter(d.key); setOrderSearch(''); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', border: '2px solid', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, borderColor: dateFilter === d.key ? PINK : '#e5e7eb', background: dateFilter === d.key ? PINK : 'white', color: dateFilter === d.key ? 'white' : '#374151' }}>{d.label}</button>))}
+                {[{ key: 'today', label: 'আজকে' }, { key: 'yesterday', label: 'গতকাল' }, { key: 'week', label: 'এই সপ্তাহ' }, { key: 'month', label: 'এই মাস' }].map(d => (<button key={d.key} onClick={() => { setDateFilter(d.key); setOrderSearch(''); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', font  Weight: '500', border: '2px solid', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, borderColor: dateFilter === d.key ? PINK : '#e5e7eb', background: dateFilter === d.key ? PINK : 'white', color: dateFilter === d.key ? 'white' : '#374151' }}>{d.label}</button>))}
               </div>
               <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)} placeholder="🔍 তারিখ, নাম, ফোন বা অর্ডার নম্বর..." style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '10px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: '#1f2937' }} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
