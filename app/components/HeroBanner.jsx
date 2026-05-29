@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 
 export default function HeroBanner() {
   const banners = [
-    "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/hero-banner.jpg%20(1).jpg",
-    "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/banner2.jpg.jpg"
-  ];
+     "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/hero-banner.jpg%20(1).jpg",
+  "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/banner2.jpg.jpg"
+];
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
