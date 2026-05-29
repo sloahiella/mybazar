@@ -27,6 +27,150 @@ interface Branch {
   is_active: boolean;
 }
 
+// 🎛️ এডমিন ব্যানার ম্যানেজমেন্ট এবং লাইভ কাটার (Cropper) কম্পোনেন্ট
+function BannerManagement() {
+  const [banners, setBanners] = useState<string[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  
+  // ক্রপিং বা কাটার স্টেট লজিক
+  const [cropTop, setCropTop] = useState(20); // শতাংশ (%)
+  const [cropBottom, setCropBottom] = useState(20); // শতাংশ (%)
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => { fetchBanners(); }, []);
+
+  async function fetchBanners() {
+    // সুপাবেস স্টোরেজ 'products' বালতি থেকে ব্যানার লিস্ট রিড
+    const { data, error } = await supabase.storage.from('products').list('', { search: 'hero-banner' });
+    if (data) {
+      const urls = data.map(file => supabase.storage.from('products').getPublicUrl(file.name).data.publicUrl);
+      setBanners(urls);
+    }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = () => setImageSrc(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // ✂️ ক্যানভাস ব্যবহার করে ইমেজ কাটার (Crop) এবং সুpabase-এ আপলোড করার কোর ফাংশন
+  async function handleCropAndUpload() {
+    if (!imageRef.current || !selectedFile) return;
+    setUploading(true);
+
+    const img = imageRef.current;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // অরিজিনাল সাইজ ক্যালকুলেশন
+    const sourceX = 0;
+    const sourceY = (img.naturalHeight * cropTop) / 100;
+    const sourceWidth = img.naturalHeight;
+    const sourceHeight = img.naturalHeight - (img.naturalHeight * (cropTop + cropBottom)) / 100;
+
+    canvas.width = sourceWidth;
+    canvas.height = sourceHeight;
+
+    ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, sourceWidth, sourceHeight);
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const fileName = `hero-banner-${Date.now()}.jpg`;
+      
+      const { data, error } = await supabase.storage.from('products').upload(fileName, blob, {
+        contentType: 'image/jpeg',
+        upsert: true
+      });
+
+      if (error) { alert('আপলোড ব্যর্থ: ' + error.message); } 
+      else {
+        alert('নতুন ব্যানার সফলভাবে কেটে আপলোড করা হয়েছে! 🎉');
+        setImageSrc(null); setSelectedFile(null);
+        fetchBanners();
+        window.location.reload(); // ব্যানার রিফ্রেশ সিঙ্ক
+      }
+      setUploading(false);
+    }, 'image/jpeg', 0.95);
+  }
+
+  async function deleteBanner(url: string) {
+    if (!confirm('এই ব্যানারটি কি নিশ্চিত মুছে ফেলতে চান?')) return;
+    const fileName = url.split('/').pop()?.split('?')[0];
+    if (fileName) {
+      await supabase.storage.from('products').remove([decodeURIComponent(fileName)]);
+      alert('ব্যানার মুছে ফেলা হয়েছে!');
+      fetchBanners();
+      window.location.reload();
+    }
+  }
+
+  return (
+    <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <p style={{ fontWeight: 'bold', fontSize: '14px', color: PINK, margin: 0 }}>🖼️ ব্যানার কন্ট্রোল প্যানেল</p>
+      
+      {/* ফাইল আপলোড ইনপুট */}
+      <div style={{ border: `2px dashed ${PINK_BORDER}`, padding: '16px', borderRadius: '12px', textAlign: 'center', background: '#fff' }}>
+        <input type="file" accept="image/*" onChange={handleFileChange} style={{ fontSize: '13px', color: '#374151' }} />
+        <p style={{ fontSize: '11px', color: '#9ca3af', margin: '4px 0 0 0' }}>পিসি বা মোবাইল থেকে যেকোনো সাইজের ব্যানার সিলেক্ট করুন</p>
+      </div>
+
+      {/* ✂️ ব্যানার কাটার ডিসপ্লে এরিয়া (Cutter/Cropper Box) */}
+      {imageSrc && (
+        <div style={{ background: '#000', padding: '12px', borderRadius: '12px', position: 'relative' }}>
+          <p style={{ color: '#fff', fontSize: '12px', marginBottom: '8px', textAlign: 'center' }}>↕️ নিচের কন্ট্রোলার দিয়ে উপর-নিচ কেটে সাইজ করুন</p>
+          
+          <div style={{ position: 'relative', overflow: 'hidden', display: 'inline-block', width: '100%' }}>
+            <img ref={imageRef} src={imageSrc} alt="Crop preview" style={{ width: '100%', height: 'auto', display: 'block' }} />
+            {/* উপর থেকে কাটার শ্যাডো */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: `${cropTop}%`, background: 'rgba(0,0,0,0.7)', pointerEvents: 'none', borderBottom: '2px dashed #ef4444' }} />
+            {/* নিচ থেকে কাটার শ্যাডো */}
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: `${cropBottom}%`, background: 'rgba(0,0,0,0.7)', pointerEvents: 'none', borderTop: '2px dashed #ef4444' }} />
+          </div>
+
+          {/* রেঞ্জ কন্ট্রোলার স্লাইডার */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', background: '#fff', padding: '10px', borderRadius: '8px' }}>
+            <label style={{ fontSize: '12px', color: '#374151', fontWeight: '500' }}>🔼 উপর থেকে কাটুন ({cropTop}%): 
+              <input type="range" min="0" max="40" value={cropTop} onChange={e => setCropTop(Number(e.target.value))} style={{ width: '100%' }} />
+            </label>
+            <label style={{ fontSize: '12px', color: '#374151', fontWeight: '500' }}>🔽 নিচ থেকে কাটুন ({cropBottom}%): 
+              <input type="range" min="0" max="40" value={cropBottom} onChange={e => setCropBottom(Number(e.target.value))} style={{ width: '100%' }} />
+            </label>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+            <button onClick={handleCropAndUpload} disabled={uploading} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '10px', flex: 1, fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>
+              {uploading ? 'কাটা ও আপলোড হচ্ছে...' : '✂️ ব্যানার কাটুন ও লাইভ করুন'}
+            </button>
+            <button onClick={() => { setImageSrc(null); setSelectedFile(null); }} style={{ background: '#ea580c', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 16px', fontSize: '13px', cursor: 'pointer' }}>বাতিল</button>
+          </div>
+        </div>
+      )}
+
+      {/* বর্তমান লাইভ ব্যানারের তালিকা */}
+      <p style={{ fontWeight: 'bold', fontSize: '13px', color: '#374151', marginTop: '8px', marginBottom: '4px' }}>🖼️ বর্তমানে সাইটে থাকা ব্যানারসমূহ:</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {banners.map((url, idx) => (
+          <div key={idx} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <img src={url} alt="" style={{ width: '100%', height: '60px', objectFit: 'cover', borderRadius: '6px' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '11px', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>ব্যানার-{idx+1}</span>
+              <button onClick={() => deleteBanner(url)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', padding: '4px 10px', fontSize: '12px', cursor: 'pointer', fontWeight: '500' }}>🗑️ ডিলিট</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => void; isAdmin: boolean }) {
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -174,10 +318,10 @@ function AdminSellerView({ seller, onBack }: { seller: any; onBack: () => void }
                 <div>
                   <p style={{ fontWeight: 'bold', color: '#111', margin: '0 0 2px 0', fontSize: '13px' }}>{item.products?.name}</p>
                   <p style={{ fontSize: '12px', color: '#16a34a', fontWeight: 'bold', margin: '0 0 2px 0' }}>৳{item.price * item.quantity}</p>
-                  <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>অर्डर #{item.order_id}</p>
+                  <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>অর্ডার #{item.order_id}</p>
                 </div>
               </div>
-             <div>
+              <div>
                 <select value={item.order?.status || 'pending'} onChange={async e => { e.stopPropagation(); await supabase.from('orders').update({ status: e.target.value }).eq('id', item.order_id); fetchOrders(); }} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer', width: '100%' }}>
                   <option value="pending">⏳ Pending</option>
                   <option value="confirmed">✔️ Confirmed</option>
@@ -437,7 +581,7 @@ export default function Home() {
         const user = session.user
         const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
         const phone = user.phone || user.user_metadata?.phone || user.email || '00000000000'
-       if (!localStorage.getItem('customer_phone')) {
+        if (!localStorage.getItem('customer_phone')) {
           const avatar = user.user_metadata?.avatar_url || ''
           localStorage.setItem('customer_name', name)
           localStorage.setItem('customer_phone', phone)
@@ -457,13 +601,12 @@ export default function Home() {
     if (savedPhone) setCustomer({ phone: savedPhone });
   }, []);
 
- // 👑 ব্রাঞ্চ না হারিয়ে ধাপে ধাপে ব্যাক আসার জন্য একদম নিখুঁত লিসেনার
+  // 👑 ব্রাঞ্চ না হারিয়ে ধাপে ধাপে ব্যাক আসার জন্য একদম নিখুঁত লিসেনার
   useEffect(() => {
     const handlePopState = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const urlPageId = urlParams.get('page');
       
-      // রিফ্রেশ ছাড়া শুধু লোকাল স্টেট এবং অর্ডারের ডাটা সিঙ্ক করবে
       if (urlPageId) {
         localStorage.setItem('current_page_id', urlPageId);
         if (role === 'admin') fetchOrders(urlPageId);
@@ -507,7 +650,7 @@ export default function Home() {
       const audioContext = new AudioContext();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-       oscillator.connect(gainNode); gainNode.connect(audioContext.destination);
+      oscillator.connect(gainNode); gainNode.connect(audioContext.destination);
       oscillator.frequency.value = 880;
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
@@ -578,14 +721,13 @@ export default function Home() {
     return (
       <div style={{ minHeight: '100vh', background: PINK_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-          {role && (<><span style={{ fontSize: '12px', background: PINK_LIGHT, color: PINK, padding: '4px 8px', borderRadius: '20px', fontWeight: '500', border: `1px solid ${PINK_BORDER}` }}>{role === 'admin' ? '👑 Admin' : `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'}`}</span><button onClick={handleLogout} style={{ fontSize: '12px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>লগআউট</button></>)}
+          {role && (<><span style={{ fontSize: '12px', background: PINK_LIGHT, color: PINK, padding: '4px 8px', borderRadius: '20px', fontWeight: '500', border: `1px solid ${PINK_BORDER}` }}>{role === 'admin' ? '👑 Admin' : `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'}`}</span><button onClick={handleLogout} style={{ fontSize: '12px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>لগআউট</button></>)}
         </div>
         <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)', padding: '32px', maxWidth: '400px', width: '100%', margin: '0 16px' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', marginBottom: '12px', cursor: 'pointer' }}
               onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: PINK, margin: '0 0 4px 0' }}>সোহেল মার্ট</h1>
-          
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {branches.map((branch) => (<button key={branch.id} onClick={() => setSelectedBranch(branch)} style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer' }}>{branch.name_bn || branch.name}</button>))}
@@ -656,7 +798,6 @@ export default function Home() {
         }}
       />
 
-      {/* হেডারের ঠিক নিচে অটো-স্লাইডিং হিরো ব্যানার */}
       <HeroBanner />
 
       <ProductList
@@ -673,7 +814,6 @@ export default function Home() {
           localStorage.setItem('current_page_id', pageId || '');
           if (role === 'admin') fetchOrders(pageId || undefined);
           
-          // ব্রাউজারের ব্যাক বাটন ট্র্যাকিংয়ের জন্য হিস্ট্রি কুয়েরি পুশ
           if (pageId) {
             window.history.pushState({ page: pageId }, '', `?page=${pageId}`);
           } else {
@@ -709,10 +849,22 @@ export default function Home() {
                 </div>
               </div>
             )}
+            
+            {/* 👑 এডমিন ড্রয়ার মেনু ট্যাব লিস্ট - এখানে নতুন Banners কন্ট্রোল অপশন ট্যাবটি যুক্ত করা হলো */}
             <div style={{ display: 'flex', gap: '8px', padding: '0 16px 12px', overflowX: 'auto' }}>
-              {[{ key: 'orders', label: '📋 Orders' }, ...(role === 'admin' ? [{ key: 'notifications', label: `🔔 ${unreadCount > 0 ? `(${unreadCount})` : ''}` }, { key: 'sellers', label: '🏪 Sellers' }, { key: 'withdrawals', label: '💰 Withdraw' }] : [])].map(t => (<button key={t.key} onClick={() => { setAdminTab(t.key); if (t.key === 'notifications') markAllRead(); }} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: adminTab === t.key ? PINK : '#f3f4f6', color: adminTab === t.key ? 'white' : '#374151' }}>{t.label}</button>))}
+              {[
+                { key: 'orders', label: '📋 Orders' }, 
+                ...(role === 'admin' ? [
+                  { key: 'banners', label: '🖼️ Banners' }, // 👈 নতুন কাটার প্যানেল ট্যাব
+                  { key: 'notifications', label: `🔔 ${unreadCount > 0 ? `(${unreadCount})` : ''}` }, 
+                  { key: 'sellers', label: '🏪 Sellers' }, 
+                  { key: 'withdrawals', label: '💰 Withdraw' }
+                ] : [])
+              ].map(t => (<button key={t.key} onClick={() => { setAdminTab(t.key); if (t.key === 'notifications') markAllRead(); }} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: adminTab === t.key ? PINK : '#f3f4f6', color: adminTab === t.key ? 'white' : '#374151' }}>{t.label}</button>))}
               <button onClick={handleLogout} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: '#fee2e2', color: '#dc2626' }}>Logout</button>
             </div>
+
+            {/* ট্যাব ওয়াইজ কন্টেন্ট রেন্ডারিং কন্ডিশন */}
             {adminTab === 'orders' && (
               <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {dateFilteredOrders.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার নেই</p>}
@@ -760,6 +912,9 @@ export default function Home() {
                 ))}
               </div>
             )}
+            
+            {/* 👑 ট্যাব বাইন্ডিং লজিক: Banners ক্লিক করলে ক্রপার ফাংশন চালু হবে */}
+            {adminTab === 'banners' && role === 'admin' && <BannerManagement />}
             {adminTab === 'sellers' && role === 'admin' && <SellerManagement />}
             {adminTab === 'withdrawals' && role === 'admin' && <WithdrawalManagement />}
             {adminTab === 'notifications' && role === 'admin' && (
