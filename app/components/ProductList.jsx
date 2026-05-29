@@ -476,15 +476,16 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
           
           {/* 👑 গোভ্যালির মতো হুবহু ফন্ট স্টাইল এবং গোলাপি/কালচে থিমে সাজানো স্লিক রেটিং লাইন */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '16px', borderBottom: '1px solid #f3f4f6', paddingBottom: '12px' }}>
-            <div style={{ display: 'flex', color: '#db2777', fontSize: '14px', letterSpacing: '2px' }}>
-              {'☆'.repeat(5)}
-            </div>
-            <span style={{ fontSize: '12px', color: '#4b5563', fontWeight: '500' }}>{reviews.length || 0} Reviews</span>
-            <span style={{ color: '#d1d5db' }}>|</span>
-            <span style={{ fontSize: '12px', color: stock > 0 ? '#4b5563' : '#ef4444', fontWeight: '500' }}>
-              {stock > 0 ? `Stock ${Math.round(stock)}` : 'Stock 0 ⚠️'}
-            </span>
-          </div>
+  {/* 👑 এখানে স্টারগুলোর সাইজ ২২ পিক্সেল বড়, মোটা এবং স্লিক গোলাপি/লালচে রঙে সাজানো হলো ভাই */}
+  <div style={{ display: 'flex', color: '#db2777', fontSize: '22px', fontWeight: 'bold', letterSpacing: '3px' }}>
+    {'☆'.repeat(5)}
+  </div>
+  <span style={{ fontSize: '13px', color: '#4b5563', fontWeight: '700', marginLeft: '4px' }}>{reviews.length || 0} Reviews</span>
+  <span style={{ color: '#d1d5db', margin: '0 4px' }}>|</span>
+  <span style={{ fontSize: '13px', color: stock > 0 ? '#4b5563' : '#ef4444', fontWeight: '700' }}>
+    {stock > 0 ? `Stock: ${Math.round(stock)} ${product.unit}` : 'Out of Stock ⚠️'}
+  </span>
+</div>
 
           {/* দামের সেকশন */}
           {product.discount_percent > 0 ? (
@@ -570,8 +571,29 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
 
           {/* পরিমাণ ইনপুট */}
           <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', maxWidth: '200px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', display: 'flex', alignItems: 'center', marginRight: '6px' }}>Quantity</span>
-            <input type="number" min="1" step={isPiece ? '1' : '0.001'} value={qty} onChange={e => setQty(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '14px', color: '#1f2937', outline: 'none', textAlign: 'center' }} placeholder="১" />
+  <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', display: 'flex', alignItems: 'center', marginRight: '6px' }}>Quantity</span>
+  {/* 👑 এখানে জোর করে ইংরেজি ফন্ট (Arial) দেওয়া হলো যাতে বাংলা না ওঠে, এবং ক্রোম/সাফারি ব্রাউজারের অ্যারো বাটনগুলো ভ্যানিশ করতে ক্লাসের সাথে স্টাইলিং ইনজেক্ট করা হলো ভাই */}
+  <input 
+    type="number" 
+    min="1" 
+    step={isPiece ? '1' : '0.001'} 
+    value={qty} 
+    onChange={e => setQty(e.target.value)} 
+    className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+    style={{ 
+      border: '1px solid #d1d5db', 
+      borderRadius: '8px', 
+      padding: '8px', 
+      width: '100%', 
+      fontSize: '14px', 
+      color: '#1f2937', 
+      outline: 'none', 
+      textAlign: 'center',
+      fontFamily: 'Arial, sans-serif', // 👑 ইংরেজি ফন্ট ফিক্সড
+      fontWeight: 'bold'
+    }} 
+    placeholder="1" 
+  />
             {isPiece ? (
               <span style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '0 10px', fontSize: '12px', color: '#6b7280', background: '#f9fafb', display: 'flex', alignItems: 'center' }}>pcs</span>
             ) : (
