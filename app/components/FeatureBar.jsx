@@ -1,4 +1,3 @@
-cat << 'EOF' > app/components/FeatureBar.jsx
 'use client';
 
 export default function FeatureBar() {
@@ -24,4 +23,3 @@ export default function FeatureBar() {
     </div>
   );
 }
-EOF
