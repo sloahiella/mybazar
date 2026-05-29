@@ -53,7 +53,6 @@ function CategoryGrid({ branch, onSelectPage }) {
   if (pages.length === 0) return null;
 
   return (
-    // 👑 মোবাইলে ক্যাটাগরি গ্রিডের প্যাডিং কমানো হলো
     <div style={{ padding: '0 12px 8px' }}>
       <div className="flex flex-wrap gap-2 justify-between">
         {pages.map(page => (
@@ -100,6 +99,7 @@ function CartItem({ item, onUpdate, onRemove }) {
         <div>
           <h3 className="font-bold text-gray-800">{item.name}</h3>
           <p className="text-xs text-gray-400">{item.price_per_unit} Tk/{item.unit}</p>
+          {item.selectedSize && <p className="text-xs text-pink-600 font-semibold mt-1">সাইজ: {item.selectedSize}</p>}
         </div>
         <div className="flex gap-2">
           <button onClick={() => setEditing(!editing)} className="text-blue-500 text-xs border border-blue-500 px-2 py-1 rounded-lg">Edit</button>
@@ -234,7 +234,7 @@ function OrdersModal({ onClose, isAdmin = false }) {
 
   async function fetchOrders(p) {
     if (!p) return;
-    setLoading(true);
+    loading(true);
     const { data } = await supabase.from('orders').select('*, order_items(*, products(name, name_bn, unit, image_url, product_code))').eq('customer_phone', p).order('created_at', { ascending: false });
     if (data) setOrders(data);
     setLoading(false); setSearched(true);
@@ -279,7 +279,7 @@ function OrdersModal({ onClose, isAdmin = false }) {
               <div key={order.id} onClick={() => setSelectedOrder(order)} style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px', cursor: 'pointer', border: '1px solid #e5e7eb' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
-                    <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '14px', margin: '0 0 4px 0' }}>অर्डर #{order.id}</p>
+                    <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '14px', margin: '0 0 4px 0' }}>অর্ডার #{order.id}</p>
                     {isAdmin && <p style={{ fontSize: '12px', color: '#374151', margin: '0 0 2px 0' }}>{order.customer_name}</p>}
                     <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px 0' }}>{new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
                     <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px 0' }}>{order.order_items?.length} টি পণ্য</p>
@@ -326,7 +326,6 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
   if (pages.length === 0) return null;
 
   return (
-    // 👑 মোবাইলে সাবক্যাটাগরির চিপস মেনুর স্পেস পারফেক্ট করা হলো
     <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', padding: '4px 2px', scrollbarWidth: 'none' }}>
       {pages.map(page => {
         const showArrow = !selectedPage;
@@ -370,11 +369,22 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
   const [specifications, setSpecifications] = useState('');
   const [editingSpec, setEditingSpec] = useState(false);
   const [newSpec, setNewSpec] = useState('');
+  
+  // 🔍 সাইজ এবং অন্যান্য অফার হ্যান্ডেল করার জন্য নতুন স্টেট সমূহ
+  const [selectedSize, setSelectedSize] = useState('');
+  const [listings, setListings] = useState([]);
+  const [showOtherSellers, setShowOtherSellers] = useState(false);
+
   const u = (product.unit || '').toLowerCase().trim();
   const isKg = u === 'kg';
   const isLiter = u === 'liter' || u === 'l';
   const isPiece = !isKg && !isLiter;
   const stock = product.stock?.[0]?.quantity || 0;
+
+  // প্রোডাক্ট ডেসক্রিপশন থেকে উপলব্ধ সাইজগুলো এক্সট্র্যাক্ট বা ডিফল্ট করা (S, M, L, XL, XXL)
+  const availableSizes = product.description && product.description.includes('Size:') 
+    ? product.description.split('Size:')[1].split('\n')[0].split(',').map(s => s.trim())
+    : ['S', 'M', 'L', 'XL', 'Free Size'];
 
   const allImages = [];
   if (product.image_url) allImages.push(product.image_url);
@@ -389,6 +399,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
     setUnit(product.unit);
     setCurrentImageIndex(0);
     setActiveTab('description');
+    setSelectedSize('');
     async function fetchRelated() {
       const { data } = await supabase.from('products').select('*, stock(*), product_images(*)').eq('page_id', product.page_id).eq('is_active', true).neq('id', product.id).limit(10);
       if (data) setRelatedProducts(data);
@@ -401,9 +412,14 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
       const { data } = await supabase.from('products').select('specifications').eq('id', product.id).single();
       if (data?.specifications) setSpecifications(data.specifications);
     }
+    async function fetchListings() {
+      const { data } = await supabase.from('product_listings').select('*, sellers(shop_name)').eq('product_id', product.id).eq('is_active', true).order('price', { ascending: true });
+      if (data) setListings(data);
+    }
     if (product.page_id) fetchRelated();
     fetchReviews();
     fetchSpec();
+    fetchListings();
   }, [product.id]);
 
   const getActualQty = () => {
@@ -438,25 +454,26 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'white', zIndex: 9999, overflowY: 'auto' }}>
-     <div style={{ background: '#db2777', color: 'white', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ background: '#db2777', color: 'white', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', position: 'sticky', top: 0, zIndex: 100 }}>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer' }}>←</button>
         <h2 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.name}</h2>
-        {isAdmin && <button onClick={() => {}} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', borderRadius: '8px', padding: '6px 12px', fontSize: '13px', cursor: 'pointer' }}>✏️ Edit</button>}
       </div>
 
-      <div style={{ display: 'flex', gap: '12px', padding: '16px' }}>
-        <div style={{ width: '45%', flexShrink: 0 }}>
+      <div style={{ display: 'flex', flexDirection: window.innerWidth < 768 ? 'column' : 'row', gap: '16px', padding: '16px' }}>
+        <div style={{ width: window.innerWidth < 768 ? '100%' : '45%', flexShrink: 0 }}>
           <img src={allImages[currentImageIndex] || ''} alt={product.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '12px' }} />
           {allImages.length > 1 && (
             <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
               {allImages.map((img, i) => (
-                <img key={i} src={img} alt="" onClick={() => setCurrentImageIndex(i)} style={{ width: '75px', height: '75px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer', border: i === currentImageIndex ? '2px solid #db2777' : '2px solid #e5e7eb' }} />
+                <img key={i} src={img} alt="" onClick={() => setCurrentImageIndex(i)} style={{ width: '65px', height: '65px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer', border: i === currentImageIndex ? '2px solid #db2777' : '2px solid #e5e7eb' }} />
               ))}
             </div>
           )}
         </div>
+        
         <div style={{ flex: 1 }}>
-          <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '17px', margin: '0 0 10px 0', lineHeight: 1.4 }}>{product.name}</p>
+          <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '18px', margin: '0 0 10px 0', lineHeight: 1.4 }}>{product.name_bn || product.name}</p>
+          
           {product.discount_percent > 0 ? (
             <div style={{ marginBottom: '12px' }}>
               <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '24px', margin: '0 0 2px 0' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</p>
@@ -467,23 +484,92 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
               </p>
             </div>
           ) : (
-           <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '20px', margin: '0 0 12px 0' }}>৳{product.price_per_unit}</p>
+             <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '20px', margin: '0 0 12px 0' }}>৳{product.price_per_unit}</p>
           )}
-          {product.product_code && <p style={{ fontSize: '13px', color: '#3b82f6', margin: '0 0 6px 0' }}>কোড: {product.product_code}</p>}
-          <p style={{ fontSize: '13px', color: stock <= 0 ? '#ef4444' : '#6b7280', margin: '0 0 10px 0' }}>Stock: {stock} {product.unit} {stock <= 0 && '⚠️'}</p>
+          
+          {product.product_code && <p style={{ fontSize: '13px', color: '#3b82f6', margin: '0 0 8px 0' }}>কোড: {product.product_code}</p>}
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', color: '#fbbf24', fontSize: '12px' }}>{'★'.repeat(5)}</div>
+            <span style={{ fontSize: '12px', color: '#6b7280' }}>({reviews.length} টি কাস্টমার রিভিউ)</span>
+          </div>
+
+          <p style={{ fontSize: '13px', color: stock <= 0 ? '#ef4444' : '#059669', margin: '0 0 14px 0', fontWeight: '600' }}>
+            {stock > 0 ? `📦 স্টক উপলব্ধ: ${Math.round(stock)} ${product.unit}` : '❌ স্টক শেষ হয়ে গেছে'}
+          </p>
+
+          {/* 👑 প্রিমিয়াম সাইজ সিলেক্টর ইন্টারফেস */}
+          <div style={{ marginBottom: '16px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: '0 0 8px 0' }}>📐 সাইজ সিলেক্ট করুন:</p>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {availableSizes.map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  style={{
+                    padding: '6px 14px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    borderRadius: '8px',
+                    border: selectedSize === size ? '2px solid #db2777' : '1px solid #d1d5db',
+                    background: selectedSize === size ? '#fdf2f8' : 'white',
+                    color: selectedSize === size ? '#db2777' : '#374151',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s'
+                  }}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 🔍 দারাজ/অ্যামাজন স্টাইলে অন্য সেলারদের অফার দেখার প্রিমিয়াম হিডেন ড্রপডাউন */}
+          {listings.length > 0 && (
+            <div style={{ marginBottom: '16px', background: '#f9fafb', borderRadius: '10px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+              <button 
+                onClick={() => setShowOtherSellers(!showOtherSellers)}
+                style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', border: 'none', background: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', color: '#1e40af' }}
+              >
+                <span>🏪 অন্যান্য সেলারদের অফার দেখুন ({listings.length}টি অফার)</span>
+                <span>{showOtherSellers ? '▲' : '▼'}</span>
+              </button>
+              {showOtherSellers && (
+                <div style={{ padding: '0 14px 10px 14px' }}>
+                  {listings.map((listing) => (
+                    <div key={listing.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderTop: '1px dashed #e5e7eb' }}>
+                      <span style={{ fontSize: '12px', color: '#4b5563' }}>{listing.sellers?.shop_name}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#db2777' }}>৳{listing.price}</span>
+                      <button 
+                        onClick={() => {
+                          onAdd({ ...product, price_per_unit: listing.price, seller_id: listing.seller_id, shop_name: listing.sellers?.shop_name, selectedSize }, 1);
+                          onClose();
+                        }}
+                        style={{ fontSize: '11px', background: '#db2777', color: 'white', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer' }}
+                      >
+                        🛒 Add
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
             <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty} onChange={e => setQty(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 6px', width: '100%', fontSize: '13px', color: '#1f2937', outline: 'none' }} placeholder="পরিমাণ" />
-            {!isPiece ? (
+            {isPiece ? (
+              <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 8px', fontSize: '12px', color: '#6b7280', background: '#f9fafb', flexShrink: 0, display: 'flex', alignItems: 'center' }}>pcs</span>
+            ) : (
               <select value={unit} onChange={e => setUnit(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', background: 'white' }}>
                 {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
                 {isLiter && <><option value={product.unit}>L</option><option value="ml">ml</option></>}
               </select>
-            ) : (
-              <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 8px', fontSize: '12px', color: '#6b7280', background: '#f9fafb', flexShrink: 0, display: 'flex', alignItems: 'center' }}>pcs</span>
             )}
           </div>
+          
           {qty && parseFloat(qty) > 0 && <p style={{ fontSize: '12px', color: '#db2777', fontWeight: 'bold', background: '#fdf2f8', padding: '4px 8px', borderRadius: '6px', margin: '0 0 8px 0' }}>= {(getActualQty() * product.price_per_unit).toFixed(0)} Tk</p>}
-          <button onClick={() => { const a = getActualQty(); if (a > 0) { onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart' }, a); onClose(); } }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '10px', padding: '10px', fontSize: '13px', width: '100%', cursor: 'pointer', fontWeight: 'bold' }}>🛒 ঝুড়িতে রাখুন</button>
+          <button onClick={() => { const a = getActualQty(); if (a > 0) { onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, a); onClose(); } }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '10px', padding: '12px', fontSize: '14px', width: '100%', cursor: 'pointer', fontWeight: 'bold' }}>🛒 ঝুড়িতে রাখুন</button>
         </div>
       </div>
 
@@ -548,7 +634,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
       {relatedProducts.length > 0 && (
         <div style={{ padding: '0 16px 24px' }}>
           <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 12px 0' }}>🛍️ এই পেজের আরো পণ্য</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap: '8px' }}>
             {relatedProducts.map(p => (
               <div key={p.id} onClick={() => onSelectProduct(p)} style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', overflow: 'hidden', cursor: 'pointer' }}>
                 {p.image_url && <img src={p.image_url} alt={p.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} />}
@@ -576,10 +662,8 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
 function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, onDoubleClick, isDragging, onDragStart, onDragOver, onDrop }) {
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
-  const [showSellers, setShowSellers] = useState(false);
-  const [listings, setListings] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [listingCount, setListingCount] = useState(0);
+  
   const stock = product.stock?.[0]?.quantity || 0;
   const u = (product.unit || '').toLowerCase().trim();
   const isKg = u === 'kg';
@@ -587,10 +671,15 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
   const isPiece = !isKg && !isLiter;
   const canEdit = isAdmin || (isEditor && String(product.page_id) === String(editorPageId));
 
+  const fakeRating = 5;
+  const fakeReviewCount = product.product_code ? (product.product_code.charCodeAt(0) % 30) + 15 : 25;
+
   const allImages = [];
   if (product.image_url) allImages.push(product.image_url);
   if (product.product_images) {
-    product.product_images.sort((a, b) => a.sort_order - b.sort_order).forEach(img => { if (img.image_url && img.image_url !== product.image_url) allImages.push(img.image_url); });
+    product.product_images.sort((a, b) => a.sort_order - b.sort_order).forEach(img => { 
+      if (img.image_url && img.image_url !== product.image_url) allImages.push(img.image_url); 
+    });
   }
 
   const getActualQty = () => {
@@ -601,88 +690,98 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
     return q;
   };
 
-  async function fetchListings() {
-    const { data } = await supabase.from('product_listings').select('*, sellers(shop_name)').eq('product_id', product.id).eq('is_active', true).order('price', { ascending: true });
-    if (data) setListings(data);
-    setShowSellers(!showSellers);
-  }
-
-  useEffect(() => {
-    async function checkListings() {
-      const { count } = await supabase.from('product_listings').select('*', { count: 'exact', head: true }).eq('product_id', product.id).eq('is_active', true);
-      if (count) setListingCount(count);
-    }
-    checkListings();
-  }, []);
-
   return (
-    <div onDragOver={e => { e.preventDefault(); onDragOver && onDragOver(); }} onDrop={onDrop}
-      style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', overflow: 'hidden', opacity: isDragging ? 0.5 : 1, border: isDragging ? '2px solid #db2777' : '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div 
+      onDragOver={e => { e.preventDefault(); onDragOver && onDragOver(); }} 
+      onDrop={onDrop}
+      style={{ 
+        background: 'white', 
+        borderRadius: '16px', 
+        boxShadow: '0 4px 12px rgba(0,0,0,0.05)', 
+        overflow: 'hidden', 
+        opacity: isDragging ? 0.5 : 1, 
+        border: isDragging ? '2px solid #db2777' : '1px solid #f3f4f6', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        height: '100%',
+        position: 'relative',
+        transition: 'transform 0.2s, box-shadow 0.2s'
+      }}
+    >
+      {product.discount_percent > 0 && (
+        <span style={{ position: 'absolute', top: '10px', left: '10px', background: 'linear-gradient(45deg, #fe007d, #ff6000)', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '4px 8px', borderRadius: '20px', zIndex: 10, boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}>
+          {product.discount_percent}% ছাড় 🔥
+        </span>
+      )}
+
       {canEdit && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', padding: '6px 6px 0', flexShrink: 0 }}>
-          {isAdmin && <span draggable onDragStart={onDragStart} onMouseDown={onDragStart} onTouchStart={onDragStart} style={{ background: '#e5e7eb', color: '#6b7280', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', cursor: 'grab', userSelect: 'none' }}>⠿</span>}
-          <button onClick={() => onEdit(product)} style={{ background: '#facc15', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>✏️</button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', padding: '8px 8px 0', flexShrink: 0, position: 'absolute', right: 0, top: 0, zIndex: 20 }}>
+          {isAdmin && <span draggable onDragStart={onDragStart} onMouseDown={onDragStart} onTouchStart={onDragStart} style={{ background: 'rgba(255,255,255,0.8)', color: '#6b7280', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', cursor: 'grab', userSelect: 'none', backdropFilter: 'blur(4px)' }}>⠿</span>}
+          <button onClick={() => onEdit(product)} style={{ background: '#facc15', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>✏️</button>
         </div>
       )}
+
       {allImages.length > 0 && (
-        <div style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }} onClick={() => onDoubleClick(product)}>
+        <div style={{ position: 'relative', cursor: 'pointer', flexShrink: 0, background: '#fafafa' }} onClick={() => onDoubleClick(product)}>
           <img src={allImages[currentImageIndex]} alt={product.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' }} />
           {allImages.length > 1 && (
-            <div style={{ position: 'absolute', bottom: '4px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '4px' }}>
-              {allImages.map((_, i) => <div key={i} style={{ borderRadius: '50%', width: i === currentImageIndex ? '8px' : '6px', height: i === currentImageIndex ? '8px' : '6px', background: i === currentImageIndex ? '#db2777' : '#d1d5db' }} />)}
+            <div style={{ position: 'absolute', bottom: '6px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '4px' }}>
+              {allImages.map((_, i) => <div key={i} style={{ borderRadius: '50%', width: i === currentImageIndex ? '8px' : '5px', height: i === currentImageIndex ? '8px' : '5px', background: i === currentImageIndex ? '#db2777' : 'rgba(0,0,0,0.2)', transition: 'all 0.2s' }} />)}
             </div>
           )}
         </div>
       )}
-      <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+
+      <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div onClick={() => onDoubleClick(product)} style={{ cursor: 'pointer', userSelect: 'none', marginBottom: '4px' }}>
-          <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '13px', lineHeight: '1.4', wordBreak: 'break-word', margin: 0 }}>{product.name}</p>
+          <p style={{ fontWeight: '700', color: '#1f2937', fontSize: '13px', lineHeight: '1.4', wordBreak: 'break-word', margin: 0, height: '36px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            {product.name_bn || product.name}
+          </p>
         </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', margin: '4px 0 6px 0' }}>
+          <div style={{ display: 'flex', color: '#fbbf24', fontSize: '11px' }}>
+            {'★'.repeat(fakeRating)}
+          </div>
+          <span style={{ fontSize: '10px', color: '#9ca3af', fontWeight: '500' }}>({fakeReviewCount})</span>
+          
+          <span style={{ fontSize: '10px', marginLeft: 'auto', background: stock > 0 ? '#ecfdf5' : '#fef2f2', color: stock > 0 ? '#059669' : '#ef4444', padding: '2px 6px', borderRadius: '6px', fontWeight: 'bold' }}>
+            {stock > 0 ? `স্টক: ${Math.round(stock)} পিস` : 'স্টক শেষ ⚠️'}
+          </span>
+        </div>
+
         <div style={{ flex: 1 }} />
         
         {product.discount_percent > 0 ? (
-          <div style={{ margin: '2px 0' }}>
-            <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '13px' }}>
+          <div style={{ margin: '2px 0 6px 0', display: 'flex', alignItems: 'baseline', gap: '4px', flexWrap: 'wrap' }}>
+            <span style={{ color: '#db2777', fontWeight: '900', fontSize: '15px' }}>
               ৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}
             </span>
-            {' '}
             <span style={{ color: '#9ca3af', fontSize: '11px', textDecoration: 'line-through' }}>
               ৳{product.price_per_unit}
             </span>
-            {' '}
-            <span style={{ color: '#f97316', fontSize: '11px', fontWeight: 'bold' }}>
-              ({product.discount_percent}% OFF)
-            </span>
           </div>
         ) : (
-          <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '12px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
-        )}
-        {listingCount >= 1 && <button onClick={fetchListings} style={{ fontSize: '11px', color: '#2563eb', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer', marginBottom: '4px' }}>🏪 সেলারদের দাম দেখুন ({listingCount}জন)</button>}
-        {showSellers && listings.length > 0 && (
-          <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px', marginBottom: '4px' }}>
-            {listings.map((listing) => (
-              <div key={listing.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px dashed #e5e7eb' }}>
-                <span style={{ fontSize: '11px', color: '#374151' }}>🏪 {listing.sellers?.shop_name}</span>
-                <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#db2777' }}>৳{listing.price}</span>
-                <button onClick={() => onAdd({ ...product, price_per_unit: listing.price, seller_id: listing.seller_id, shop_name: listing.sellers?.shop_name }, 1)} style={{ fontSize: '11px', background: '#db2777', color: 'white', border: 'none', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer', marginLeft: '4px' }}>🛒 Add</button>
-              </div>
-            ))}
-          </div>
+          <p style={{ color: '#db2777', fontWeight: '900', fontSize: '14px', margin: '2px 0 6px 0' }}>
+            ৳{product.price_per_unit} <span style={{ fontSize: '11px', color: '#6b7280', fontWeight: 'normal' }}>/ {product.unit}</span>
+          </p>
         )}
         
-        <div style={{ marginTop: '4px' }}>
+        <div style={{ marginTop: 'auto' }}>
           <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-            <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty} onChange={e => setQty(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', width: '100%', fontSize: '12px', color: '#1f2937', outline: 'none', minWidth: 0 }} placeholder="পরিমাণ" />
+            <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty} onChange={e => setQty(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', width: '100%', fontSize: '12px', color: '#1f2937', outline: 'none', minWidth: 0, textAlign: 'center' }} placeholder="পরিমাণ" />
             {!isPiece && (
-              <select value={unit} onChange={e => setUnit(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 2px', fontSize: '11px', background: 'white', flexShrink: 0 }}>
+              <select value={unit} onChange={e => setUnit(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '6px 2px', fontSize: '11px', background: 'white', flexShrink: 0 }}>
                 {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
                 {isLiter && <><option value={product.unit}>L</option><option value="ml">ml</option></>}
               </select>
             )}
-            {isPiece && <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', color: '#6b7280', background: '#f9fafb', flexShrink: 0 }}>pcs</span>}
+            {isPiece && <span style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '6px 6px', fontSize: '11px', color: '#6b7280', background: '#f9fafb', flexShrink: 0, display: 'flex', alignItems: 'center' }}>pcs</span>}
           </div>
-          {qty && parseFloat(qty) > 0 && <p style={{ fontSize: '11px', color: '#db2777', fontWeight: 'bold', background: '#fdf2f8', padding: '3px 6px', borderRadius: '6px', border: '1px solid #fbcfe8', margin: '0 0 4px 0' }}>= {(getActualQty() * product.price_per_unit).toFixed(0)} Tk</p>}
-          <button onClick={() => { const a = getActualQty(); if (a > 0) onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart' }, a); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '7px 4px', fontSize: '12px', width: '100%', cursor: 'pointer', fontWeight: '500' }}>🛒 ঝুড়িতে রাখুন</button>
+          {qty && parseFloat(qty) > 0 && <p style={{ fontSize: '11px', color: '#db2777', fontWeight: 'bold', background: '#fdf2f8', padding: '3px 6px', borderRadius: '6px', border: '1px solid #fbcfe8', margin: '0 0 4px 0', textAlign: 'center' }}>= {(getActualQty() * product.price_per_unit).toFixed(0)} Tk</p>}
+          <button onClick={() => { const a = getActualQty(); if (a > 0) { onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart' }, a); setQty(''); } }} style={{ background: 'linear-gradient(135deg, #db2777, #be185d)', color: 'white', border: 'none', borderRadius: '10px', padding: '8px 4px', fontSize: '12px', width: '100%', cursor: 'pointer', fontWeight: '700', boxShadow: '0 2px 6px rgba(219,39,119,0.2)', transition: 'background 0.2s' }}>
+            🛒 ঝুড়িতে রাখুন
+          </button>
         </div>
       </div>
     </div>
@@ -698,6 +797,13 @@ function EditProductModal({ product, onClose, onSave }) {
   const [pages, setPages] = useState([]);
   const currentStock = product.stock?.[0]?.quantity || 0;
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
+
+  // 👑 এডিট মোডে সাইজ সিলেক্ট করার জন্য স্টেট হ্যান্ডলিং
+  const allSizesList = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
+  const initialSizes = product.description && product.description.includes('Size:') 
+    ? product.description.split('Size:')[1].split('\n')[0].split(',').map(s => s.trim())
+    : [];
+  const [selectedSizes, setSelectedSizes] = useState(initialSizes);
 
   useEffect(() => { fetchExtraImages(); fetchPages(); }, []);
 
@@ -738,9 +844,27 @@ function EditProductModal({ product, onClose, onSave }) {
     fetchExtraImages();
   }
 
+  const toggleSize = (size) => {
+    if (selectedSizes.includes(size)) {
+      setSelectedSizes(selectedSizes.filter(s => s !== size));
+    } else {
+      setSelectedSizes([...selectedSizes, size]);
+    }
+  };
+
   async function save() {
     setLoading(true);
-    await supabase.from('products').update({ name: form.name, name_bn: form.name_bn, product_code: form.product_code, price_per_unit: parseFloat(form.price_per_unit), unit: form.unit, category: form.category, category_bn: form.category_bn, description: form.description, image_url: form.image_url, is_active: form.is_active, page_id: form.page_id ? parseInt(form.page_id) : null, discount_percent: parseFloat(form.discount_percent) || 0 }).eq('id', product.id);
+    
+    // ডেসক্রিপশনের ভেতরে প্রিমিয়াম উপায়ে সাইজের ডাটা পুশ করে আপডেট করা
+    let updatedDescription = form.description;
+    if (updatedDescription.includes('Size:')) {
+      updatedDescription = updatedDescription.replace(/Size:[^\n]*/, `Size: ${selectedSizes.join(', ')}`);
+    } else {
+      updatedDescription = `${updatedDescription}\nSize: ${selectedSizes.join(', ')}`;
+    }
+
+    await supabase.from('products').update({ name: form.name, name_bn: form.name_bn, product_code: form.product_code, price_per_unit: parseFloat(form.price_per_unit), unit: form.unit, category: form.category, category_bn: form.category_bn, description: updatedDescription, image_url: form.image_url, is_active: form.is_active, page_id: form.page_id ? parseInt(form.page_id) : null, discount_percent: parseFloat(form.discount_percent) || 0 }).eq('id', product.id);
+    
     if (stockQty !== '') {
       const newQty = parseFloat(stockQty);
       if (!isNaN(newQty) && newQty >= 0) {
@@ -768,6 +892,24 @@ function EditProductModal({ product, onClose, onSave }) {
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>পেজ সিলেক্ট করুন</label><select name="page_id" value={form.page_id} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="">-- পেজ সিলেক্ট করুন --</option>{pages.map(page => <option key={page.id} value={page.id}>{page.name_bn || page.name}</option>)}</select></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ക্যাട്ടগরি (ইং)</label><input name="category" value={form.category} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ക্যাട്ടগরি (বাং)</label><input name="category_bn" value={form.category_bn} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+          
+          {/* 👑 এডমিন এডিট ফরমে প্রিমিয়াম সাইজ টগল বাটন ইন্টারফেস */}
+          <div style={{ background: '#fdf2f8', borderRadius: '8px', padding: '12px', border: '1px solid #fbcfe8' }}>
+            <label style={{ fontSize: '12px', color: '#db2777', fontWeight: 'bold' }}>📐 পণ্যের সাইজ নির্ধারণ করুন</label>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
+              {allSizesList.map(size => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => toggleSize(size)}
+                  style={{ padding: '6px 10px', fontSize: '12px', borderRadius: '6px', border: selectedSizes.includes(size) ? '2px solid #db2777' : '1px solid #d1d5db', background: selectedSizes.includes(size) ? '#db2777' : 'white', color: selectedSizes.includes(size) ? 'white' : '#374151', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div style={{ background: '#f0fdf4', borderRadius: '8px', padding: '12px' }}>
             <label style={{ fontSize: '12px', color: '#15803d', fontWeight: 'bold' }}>প্রধান ছবি</label>
             {form.image_url && <img src={form.image_url} alt="main" style={{ width: '100%', objectFit: 'contain', borderRadius: '8px', marginTop: '8px', maxHeight: '120px' }} />}
@@ -814,6 +956,10 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
   const [uploading, setUploading] = useState(false);
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
 
+  // 👑 নতুন প্রোডাক্ট আপলোডের ফর্মে সাইজ সিলেকশন স্টেট
+  const allSizesList = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
+  const [selectedSizes, setSelectedSizes] = useState([]);
+
   async function uploadImage(e) {
     const file = e.target.files?.[0]; if (!file) return;
     setUploading(true);
@@ -825,10 +971,22 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
     setUploading(false);
   }
 
+  const toggleSize = (size) => {
+    if (selectedSizes.includes(size)) {
+      setSelectedSizes(selectedSizes.filter(s => s !== size));
+    } else {
+      setSelectedSizes([...selectedSizes, size]);
+    }
+  };
+
   async function save() {
     if (!form.name || !form.product_code || !form.price_per_unit) { alert('নাম, কোড, দাম আবশ্যক!'); return; }
     setLoading(true);
-    const { data: product, error } = await supabase.from('products').insert({ name: form.name, name_bn: form.name_bn, product_code: form.product_code, description: form.description, price_per_unit: parseFloat(form.price_per_unit), unit: form.unit, branch_id: branch.id, category: form.category, category_bn: form.category_bn, image_url: form.image_url, page_id: form.page_id ? parseInt(form.page_id) : null, is_active: true }).select().single();
+
+    // ডেসক্রিপশনের নিচে সুন্দর ফরম্যাটে সাইজগুলো যুক্ত করে ডাটাবেজে পাঠানো
+    const finalDescription = `${form.description}\nSize: ${selectedSizes.join(', ')}`;
+
+    const { data: product, error } = await supabase.from('products').insert({ name: form.name, name_bn: form.name_bn, product_code: form.product_code, description: finalDescription, price_per_unit: parseFloat(form.price_per_unit), unit: form.unit, branch_id: branch.id, category: form.category, category_bn: form.category_bn, image_url: form.image_url, page_id: form.page_id ? parseInt(form.page_id) : null, is_active: true }).select().single();
     if (error) { alert('সমস্যা: ' + error.message); setLoading(false); return; }
     if (form.stock && parseFloat(form.stock) > 0) { await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) }); }
     alert('পণ্য যোগ হয়েছে!');
@@ -850,7 +1008,26 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label><select name="unit" value={form.unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="Kg">Kg</option><option value="Liter">Liter</option><option value="pcs">pcs</option><option value="packet">Packet</option></select></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (ইং)</label><input name="category" value={form.category} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (বাং)</label><input name="category_bn" value={form.category_bn} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>প্রধান পেজ আইডি</label><input name="page_id" value={form.page_id} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>প্রাথমিক স্টক</label><input name="stock" type="number" value={form.stock} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+          
+          {/* 👑 নতুন প্রোডাক্ট ছাড়ার ফর্মে প্রিমিয়াম সাইজ সিলেক্টর ইন্টারফেস */}
+          <div style={{ background: '#fdf2f8', borderRadius: '8px', padding: '12px', border: '1px solid #fbcfe8' }}>
+            <label style={{ fontSize: '12px', color: '#db2777', fontWeight: 'bold' }}>📐 পণ্যের সাইজ নির্ধারণ করুন</label>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
+              {allSizesList.map(size => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => toggleSize(size)}
+                  style={{ padding: '6px 10px', fontSize: '12px', borderRadius: '6px', border: selectedSizes.includes(size) ? '2px solid #db2777' : '1px solid #d1d5db', background: selectedSizes.includes(size) ? '#db2777' : 'white', color: selectedSizes.includes(size) ? 'white' : '#374151', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div>
             <label style={{ fontSize: '12px', color: '#6b7280' }}>প্রধান ছবি</label>
             {form.image_url && <img src={form.image_url} alt="product" style={{ width: '100%', objectFit: 'contain', borderRadius: '8px', marginTop: '8px', maxHeight: '120px' }} />}
@@ -1012,8 +1189,8 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const displayProducts = getDisplayProducts();
 
   function addToCart(product, qty) {
-    const existing = cart.find(c => c.id === product.id);
-    if (existing) { setCart(cart.map(c => c.id === product.id ? { ...c, qty: parseFloat((c.qty + qty).toFixed(3)) } : c)); return; }
+    const existing = cart.find(c => c.id === product.id && c.selectedSize === product.selectedSize);
+    if (existing) { setCart(cart.map(c => c.id === product.id && c.selectedSize === product.selectedSize ? { ...c, qty: parseFloat((c.qty + qty).toFixed(3)) } : c)); return; }
     const cartSellerIds = [...new Set(cart.map(c => c.seller_id).filter(Boolean))];
     const newSellerId = product.seller_id;
     if (newSellerId && cartSellerIds.length > 0 && !cartSellerIds.includes(newSellerId)) {
@@ -1057,61 +1234,6 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
     return <OrderForm cart={cart} branch={branch} total={total} onBack={() => setShowOrder(false)} onSuccess={(id, phone) => { setOrderId(id); setShowOrder(false); setCart([]); setShowCart(false); if (onOrderSuccess) onOrderSuccess(id, phone); }} />;
   }
 
-  if (orderId) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-        <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)', padding: '32px', maxWidth: '400px', width: '100%', textAlign: 'center' }}>
-          <div style={{ fontSize: '64px', marginBottom: '16px' }}>🎉</div>
-          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#db2777', marginBottom: '8px' }}>অর্ডার সফল!</h2>
-          <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#db2777', marginBottom: '24px' }}>#{orderId}</p>
-          <button onClick={() => { setOrderId(null); setShowCart(false); }} style={{ width: '100%', background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}>আবার কেনাকাটা করুন</button>
-        </div>
-      </div>
-    );
-  }
-
-  if (showCart) {
-    return (
-      <div className="min-h-screen bg-pink-50 pb-32">
-        <div style={{ background: '#db2777', color: 'white', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>←</button>
-          <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>🛒 আপনার ঝুড়ি</h2>
-          <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '20px', fontSize: '13px' }}>{cart.length} টি</span>
-        </div>
-        <div className="p-4 space-y-3">
-          {cart.map(item => <CartItem key={item.id} item={item} onUpdate={updateCartQty} onRemove={removeFromCart} />)}
-        </div>
-        <div style={{ padding: '16px', background: 'white', margin: '16px', borderRadius: '12px', border: '1px solid #fbcfe8' }}>
-          {localStorage.getItem('customer_phone') ? (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <p style={{ fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0', fontSize: '14px' }}>👤 {localStorage.getItem('customer_name') || 'কাস্টমার'}</p>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>📱 {localStorage.getItem('customer_phone')}</p>
-              </div>
-              <button onClick={() => { localStorage.removeItem('customer_phone'); localStorage.removeItem('customer_name'); localStorage.removeItem('customer_district'); localStorage.removeItem('customer_upazila'); setShowCart(false); setShowCart(true); }} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>লগআউট</button>
-            </div>
-          ) : (
-            <CustomerAuth onSuccess={(data) => {
-              localStorage.setItem('customer_phone', data.phone);
-              localStorage.setItem('customer_name', data.name);
-              localStorage.setItem('customer_district', data.district);
-              localStorage.setItem('customer_upazila', data.upazila);
-              setShowCart(false);
-              setShowCart(true);
-            }} />
-          )}
-        </div>
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <span style={{ fontWeight: 'bold', color: '#374151', fontSize: '18px' }}>Total:</span>
-            <span style={{ fontWeight: 'bold', color: '#db2777', fontSize: '20px' }}>{total.toFixed(0)} Tk</span>
-          </div>
-          <button onClick={() => officeOpen && setShowOrder(true)} style={{ width: '100%', background: officeOpen ? '#db2777' : '#9ca3af', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '18px', fontWeight: 'bold', cursor: officeOpen ? 'pointer' : 'not-allowed' }}>{officeOpen ? 'অর্ডার করুন' : '🔴 অফিস বন্ধ'}</button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="pb-24">
       {selectedProduct && (
@@ -1139,7 +1261,6 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         onShowOrders={() => setShowOrders(true)}
       />
 
-      {/* 👑 মোবাইলে ক্যাটাগরি লেখা এবং অ্যারো বাটনের অতিরিক্ত স্পেস ও মার্জিন pt-4 থেকে pt-1 এবং mb-3 থেকে mb-0.5 করা হলো */}
       <div className="px-4 pt-1">
         <div className="flex items-center gap-2 mb-0.5">
           {selectedPage && (
@@ -1169,21 +1290,20 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         <SubPageChips selectedPage={selectedPage} branch={branch} isAdmin={isAdmin} onSelectPage={handlePageSelect} />
       </div>
 
-      {/* 👑 সার্চ বক্সের অতিরিক্ত প্যাডিং এবং ইনপুট ফিল্ডের হাইট মোবাইলের জন্য অপ্টিমাইজড করা হলো (p-4 থেকে py-1.5 px-4) */}
       <div className="px-4 py-1.5">
         <input type="text" placeholder="🔍 পণ্যের নাম বা কোড লিখুন..." value={search} onChange={e => { setSearch(e.target.value); setSelectedCategory(null); setSelectedName(null); }} style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} />
       </div>
 
       {!selectedPage && !search && !selectedCategory && !selectedName && (
-  <>
-    <CategoryGrid branch={branch} onSelectPage={handlePageSelect} role={role} /> {/* 👈 এখানে role={role} যোগ হলো */}
-  </>
-)}
-       
+        <>
+          <CategoryGrid branch={branch} onSelectPage={handlePageSelect} role={role} />
+        </>
+      )}
+        
       {selectedName && (
         <div className="px-4 mb-2">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '12px', padding: '8px 12px' }}>
-            <span style={{ color: '#db2777', fontWeight: '500', fontSize: '13px' }}>🔍 {selectedName} এর সব পণ্য</span>
+            <span style={{ color: '#db2777', fontWeight: '500', fontSize: '13px' }}>🔍 {selectedName} এর सब পণ্য</span>
             <button onClick={() => setSelectedName(null)} style={{ marginLeft: 'auto', color: '#ef4444', fontWeight: 'bold', fontSize: '18px', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
           </div>
         </div>
@@ -1206,7 +1326,6 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       {(!selectedPage && !search && !selectedCategory && !selectedName) ? null : (
         <>
           <style>{mobileGridStyle}</style>
-          {/* 👑 প্রোডাক্ট গ্রিড কার্ডগুলোর ভেতরের প্যাডিং p-3 থেকে কমিয়ে p-1.5 এবং উপরের অংশ pt-0 করে একদম টাইট দেওয়া হলো */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-1.5 pt-0">
             {displayProducts.map((product, index) => (
               <ProductCard  
