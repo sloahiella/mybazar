@@ -1288,7 +1288,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
                 <p style={{ fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0', fontSize: '14px' }}>👤 {localStorage.getItem('customer_name') || 'কাস্টমার'}</p>
                 <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>📱 {localStorage.getItem('customer_phone')}</p>
               </div>
-              <button onClick={() => { localStorage.removeItem('customer_phone'); localStorage.removeItem('customer_name'); localStorage.removeItem('customer_district'); localStorage.removeItem('customer_upazila'); setShowCart(false); setShowCart(true); }} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>লগআউট</button>
+             <button onClick={() => { localStorage.removeItem('customer_phone'); localStorage.removeItem('customer_name'); localStorage.removeItem('customer_district'); localStorage.removeItem('customer_upazila'); setShowCart(false); setTimeout(() => setShowCart(true), 50); }} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>লগআউট</button>
             </div>
           ) : (
             <CustomerAuth onSuccess={(data) => {
