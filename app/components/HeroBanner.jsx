@@ -2,10 +2,11 @@
 import { useState, useEffect } from 'react';
 
 export default function HeroBanner() {
+  // 👑 আপনার দেওয়া নতুন নির্ভুল বানানের ফ্রেশ ব্যানার ইউআরএল এখানে বসিয়ে দেওয়া হলো
   const banners = [
-     "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/hero-banner.jpg%20(1).jpg",
-  "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/banner2.jpg.jpg"
-];
+    "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/hero-banner.jpg.jpg",
+    "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/banner2.jpg.jpg"
+  ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -19,7 +20,7 @@ export default function HeroBanner() {
 
   return (
     <div className="w-full bg-white overflow-hidden box-border">
-      {/* 👑 মোবাইল ও পিসি দুই জায়গাতেই ব্যানার না কেটে পারফেক্টলি ফিট করার জন্য aspect ratio ও object-fill সেট করা হলো */}
+      {/* 👑 মোবাইল ও পিসি দুই জায়গাতেই ব্যানার না কেটে পারফেক্টলি ফিট করার জন্য aspect ratio ও object-fill সেট করা হলো */}
       <div className="w-full aspect-[21/9] md:aspect-[25/8] overflow-hidden bg-gray-100 relative group">
         
         <img 
@@ -28,7 +29,8 @@ export default function HeroBanner() {
           className="w-full h-full object-fill md:object-cover transition-opacity duration-700 ease-in-out"
           key={currentIndex}
           onError={(e) => {
-            e.currentTarget.src = "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/hero-banner.jpg%20(1).jpg";
+            // এরর হ্যান্ডলারেও নতুন লিংকের ব্যাকআপ সেট করা হলো
+            e.currentTarget.src = "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/hero-banner.jpg.jpg";
           }}
         />
 
