@@ -370,7 +370,6 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
   const [editingSpec, setEditingSpec] = useState(false);
   const [newSpec, setNewSpec] = useState('');
   
-  // 👑 চারকোনা সাইজ বাটন এবং ড্রপডাউন অফারের জন্য স্টেট
   const [selectedSize, setSelectedSize] = useState('');
   const [listings, setListings] = useState([]);
   const [showOtherSellers, setShowOtherSellers] = useState(false);
@@ -381,7 +380,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
   const isPiece = !isKg && !isLiter;
   const stock = product.stock?.[0]?.quantity || 0;
 
-  // 👑 ডেসক্রিপশন ডাটা ফিল্টার করে শুধু এডমিনের সেট করা সাইজগুলো এক্সট্র্যাক্ট করা
+  // ডেসক্রিপশন থেকে সাইজ ফিল্টার করা
   const availableSizes = product.description && product.description.includes('Size:') 
     ? product.description.split('Size:')[1].split('\n')[0].split(',').map(s => s.trim()).filter(Boolean)
     : [];
@@ -424,7 +423,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
 
   const getActualQty = () => {
     const q = parseFloat(qty);
-    if (!q || q <= 0) return 0;
+    if (!q || q <= 0) return 1;
     if (isKg && unit === 'gm') return q / 1000;
     if (isLiter && unit === 'ml') return q / 1000;
     return q;
@@ -472,18 +471,18 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
         </div>
         
         <div style={{ flex: 1 }}>
-          {/* 👑 এখানে বিকল্প (বাংলা) নাম হাইড করে শুধু মেইন ফ্রেশ নাম রাখা হলো ভাই */}
+          {/* 👑 ভুল শুধরে এখানে বিকল্প নাম পুরোপুরি হাইড করে মেইন ইংরেজি নাম (product.name) দেওয়া হলো ভাই */}
           <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '20px', margin: '0 0 10px 0', lineHeight: 1.4 }}>{product.name}</p>
           
-          {/* 👑 হুবহু গোভ্যালির মতো প্রফেশনাল রেটিং লাইন (৫টি খালি স্টার, রিভিউ কাউন্ট এবং রিয়েল স্টক) */}
+          {/* 👑 গোভ্যালির মতো হুবহু ফন্ট স্টাইল এবং গোলাপি/কালচে থিমে সাজানো স্লিক রেটিং লাইন */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '16px', borderBottom: '1px solid #f3f4f6', paddingBottom: '12px' }}>
-            <div style={{ display: 'flex', color: '#e5e7eb', fontSize: '15px', letterSpacing: '2px' }}>
+            <div style={{ display: 'flex', color: '#db2777', fontSize: '14px', letterSpacing: '2px' }}>
               {'☆'.repeat(5)}
             </div>
-            <span style={{ fontSize: '12px', color: '#4b5563', fontWeight: '600' }}>{reviews.length || 0} Reviews</span>
-            <span style={{ color: '#e5e7eb' }}>|</span>
-            <span style={{ fontSize: '12px', color: stock > 0 ? '#4b5563' : '#ef4444', fontWeight: '600' }}>
-              {stock > 0 ? `Stock: ${Math.round(stock)} ${product.unit}` : 'Out of Stock ⚠️'}
+            <span style={{ fontSize: '12px', color: '#4b5563', fontWeight: '500' }}>{reviews.length || 0} Reviews</span>
+            <span style={{ color: '#d1d5db' }}>|</span>
+            <span style={{ fontSize: '12px', color: stock > 0 ? '#4b5563' : '#ef4444', fontWeight: '500' }}>
+              {stock > 0 ? `Stock ${Math.round(stock)}` : 'Stock 0 ⚠️'}
             </span>
           </div>
 
@@ -502,7 +501,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
           
           {product.product_code && <p style={{ fontSize: '13px', color: '#3b82f6', margin: '0 0 16px 0', fontWeight: '500' }}>পণ্য কোড: {product.product_code}</p>}
 
-          {/* 👑 গোভ্যালি স্টাইলের চারকোনা "Select Size" ইন্টারফেস (এডমিন সাইজ দিলেই কেবল আসবে) */}
+          {/* সাইজ সিলেক্টর বাটন */}
           {availableSizes.length > 0 && (
             <div style={{ marginBottom: '18px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: '0 0 8px 0' }}>Select Size</p>
@@ -536,7 +535,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
             </div>
           )}
 
-          {/* অন্য সেলারদের অফার */}
+          {/* সেলার লিস্টিং */}
           {listings.length > 0 && (
             <div style={{ marginBottom: '16px', background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
               <button 
@@ -584,7 +583,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
           </div>
           
           {qty && parseFloat(qty) > 0 && <p style={{ fontSize: '13px', color: '#db2777', fontWeight: 'bold', background: '#fdf2f8', padding: '6px 12px', borderRadius: '8px', border: '1px solid #fbcfe8', margin: '0 0 4px 0', inlineSize: 'max-content' }}>মোট দাম = {(getActualQty() * product.price_per_unit).toFixed(0)} Tk</p>}
-          <button onClick={() => { if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে আগে একটি সাইজ সিলেক্ট করুন!'); return; } onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, getActualQty() || 1); onClose(); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '15px', width: '100%', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(219,39,119,0.2)' }}>🛒 ঝুড়িতে রাখুন</button>
+          <button onClick={() => { if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে আগে একটি সাইজ সিলেক্ট করুন!'); return; } onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, getActualQty()); onClose(); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '15px', width: '100%', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(219,39,119,0.2)' }}>🛒 ঝুড়িতে রাখুন</button>
         </div>
       </div>
 
@@ -632,7 +631,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
             {reviews.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '20px 0' }}>কোনো রিভিউ নেই</p>}
             {reviews.map(r => (
               <div key={r.id} style={{ background: '#f9fafb', borderRadius: '10px', padding: '12px', marginBottom: '8px', border: '1px solid #e5e7eb' }}>
-                <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '13px', margin: '0 0 4px 0' }}>👤 {r.customer_name}</p>
                     <p style={{ fontSize: '13px', color: '#4b5563', margin: '0 0 4px 0' }}>{r.review}</p>
@@ -673,7 +672,6 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin 
     </div>
   );
 }
-
 function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, onDoubleClick, isDragging, onDragStart, onDragOver, onDrop }) {
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
