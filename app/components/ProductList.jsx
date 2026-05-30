@@ -380,9 +380,10 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
   const isPiece = !isKg && !isLiter;
   const stock = product.stock?.[0]?.quantity || 0;
 
-  // ডেসক্রিপশন থেকে সাইজ ফিল্টার করা
+  // 👑 এডমিনের সেট করা আসল সাইজগুলো ছাড়া অন্য কোনো ফালতু টেক্সট ফিল্টার করার লজিক
+  const allValidSizes = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
   const availableSizes = product.description && product.description.includes('Size:') 
-    ? product.description.split('Size:')[1].split('\n')[0].split(',').map(s => s.trim()).filter(Boolean)
+    ? product.description.split('Size:')[1].split('\n')[0].split(',').map(s => s.trim()).filter(size => allValidSizes.includes(size))
     : [];
 
   const allImages = [];
