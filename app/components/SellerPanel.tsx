@@ -129,7 +129,7 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
         </div>
       )}
 
-      {/* 👑 ১00% ফিক্সড এডিট মডাল যা ফাংশনের সঠিক রিটার্ন ব্লকের ভেতরে সেট করা হয়েছে ভাই */}
+      {/* 👑 ১00% ফিক্সড এডিট মডাল যা ফাংশনের সঠিক রিটার্ন ব্লকের ভেতরে সেট করা হয়েছে ভাই */}
       {editingProduct && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 99999, padding: '16px', paddingTop: '70px', overflowY: 'auto' }}>
           <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '440px', maxHeight: '90vh', overflowY: 'auto' }}>
@@ -149,7 +149,15 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
               <div><label style={{ fontSize: '12px', color: '#6b7280' }}>বৈশিষ্ট্য</label><textarea defaultValue={editingProduct.description} onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} rows={3} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'vertical', color: '#1f2937' }} /></div>
             </div>
             <div style={{ display: 'flex', gap: '8px', padding: '16px', borderTop: '1px solid #e5e7eb' }}>
-              <button onClick={async () => { await supabase.from('products').update({ name: editingProduct.name, price_per_unit: editingProduct.price_per_unit, unit: editingProduct.unit, description: editingProduct.description, image_url: editingProduct.image_url }).eq('id', editingProduct.id); setEditingProduct(null); fetchProducts(); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', flex: 1, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>সেভ করুন</button>
+              <button onClick={async () => { 
+                await supabase.from('products').update({ name: editingProduct.name, price_per_unit: editingProduct.price_per_unit, unit: editingProduct.unit, description: editingProduct.description, image_url: editingProduct.image_url }).eq('id', editingProduct.id); 
+                setEditingProduct(null); 
+                if (typeof fetchProducts === 'function') {
+                  fetchProducts();
+                } else {
+                  window.location.reload();
+                }
+              }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', flex: 1, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>সেভ করুন</button>
               <button onClick={() => setEditingProduct(null)} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '12px', padding: '12px 20px', fontSize: '16px', cursor: 'pointer' }}>বাতিল</button>
             </div>
           </div>
@@ -316,18 +324,9 @@ function SellerProductsTab({ seller, onSelectPage }: { seller: any; onSelectPage
               <div><label style={{ fontSize: '12px', color: '#6b7280' }}>Stock (Optional)</label><input value={productForm.stock} type="number" onChange={e => setProductForm({...productForm, stock: e.target.value})} placeholder="0" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
               <div><label style={{ fontSize: '12px', color: '#6b7280' }}>Description</label><textarea value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} rows={3} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'vertical', color: '#1f2937' }} /></div>
             </div>
-           <div style={{ display: 'flex', gap: '8px', padding: '16px', borderTop: '1px solid #e5e7eb' }}>
-              <button onClick={async () => { 
-                await supabase.from('products').update({ name: editingProduct.name, price_per_unit: editingProduct.price_per_unit, unit: editingProduct.unit, description: editingProduct.description, image_url: editingProduct.image_url }).eq('id', editingProduct.id); 
-                setEditingProduct(null); 
-                // 👑 ক্লডের ভুল ফিক্স: fetchProducts নাম না পেলে ব্রাউজার ক্র্যাশ এড়াতে সেফটি গার্ড দেওয়া হলো ভাই
-                if (typeof fetchProducts === 'function') {
-                  fetchProducts();
-                } else {
-                  window.location.reload();
-                }
-              }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', flex: 1, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>সেভ করুন</button>
-              <button onClick={() => setEditingProduct(null)} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '12px', padding: '12px 20px', fontSize: '16px', cursor: 'pointer' }}>বাতিল</button>
+            <div style={{ display: 'flex', gap: '8px', padding: '16px', borderTop: '1px solid #e5e7eb' }}>
+              <button onClick={() => addProduct(addProductPageId)} disabled={uploading} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '12px', flex: 1, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>+ Add Product</button>
+              <button onClick={() => setAddProductPageId(null)} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '12px 20px', fontSize: '16px', cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -510,7 +509,7 @@ export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any;
                   <div>
                     <p style={{ fontWeight: 'bold', color: '#111', margin: '0 0 2px 0', fontSize: '13px' }}>{item.products?.name}</p>
                     <p style={{ fontSize: '12px', color: '#16a34a', fontWeight: 'bold', margin: '0 0 2px 0' }}>৳{item.price * item.quantity}</p>
-                    <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>অর্ডার #{item.order_id}</p>
+                    <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>অर्डर #{item.order_id}</p>
                   </div>
                 </div>
                 <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '20px', fontWeight: 'bold',
