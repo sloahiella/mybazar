@@ -380,7 +380,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
   const isPiece = !isKg && !isLiter;
   const stock = product.stock?.[0]?.quantity || 0;
 
-  // 👑 এডমিনের সেট করা আসল সাইজগুলো ছাড়া অন্য কোনো ফালতু টেক্সট ফিল্টার করার লজিক
+  // 👑 এডমিনের সেট করা আসল সাইজগুলো ছাড়া অন্য কোনো ফালতু টেক্সট ফিল্টার করার লজিক
   const allValidSizes = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
   const availableSizes = product.description && product.description.includes('Size:') 
     ? product.description.split('Size:')[1].split('\n')[0].split(',').map(s => s.trim()).filter(size => allValidSizes.includes(size))
@@ -475,7 +475,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
           {/* বিকল্প নাম হাইড করে শুধু মেইন ফ্রেশ নাম রাখা হলো ভাই */}
           <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '20px', margin: '0 0 10px 0', lineHeight: 1.4 }}>{product.name}</p>
           
-          {/* 👑 ১ নম্বর ফিক্সড: ৫টি বড় আউটলাইন স্টার এবং স্লিক রেটিং লাইন */}
+          {/* 👑 ১ নম্বর ফিক্সড: ৫টি বড় আউটলাইন স্টার এবং স্লিক রেটিং লাইন */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '16px', borderBottom: '1px solid #f3f4f6', paddingBottom: '12px' }}>
             <div style={{ display: 'flex', color: '#db2777', fontSize: '22px', fontWeight: 'bold', letterSpacing: '3px' }}>
               {'☆'.repeat(5)}
@@ -569,7 +569,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
             </div>
           )}
 
-          {/* 👑 ২ নম্বর ফিক্সড: পরিমাণ বক্সে "পরিমাণ লিখুন" টেক্সট ফিরিয়ে আনা এবং ফন্ট ইংরেজি করা */}
+          {/* 👑 ২ নম্বর ফিক্সড: পরিমাণ বক্সে "পরিমাণ লিখুন" টেক্সট ফিরিয়ে আনা এবং ফন্ট ইংরেজি করা */}
           <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', maxWidth: '200px' }}>
             <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', display: 'flex', alignItems: 'center', marginRight: '6px' }}>Quantity</span>
             <input 
@@ -603,7 +603,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
             )}
           </div>
           
-          {/* 👑 ৩ নম্বর ফিক্সড: মোট দাম এবং ঝুড়িতে রাখুন বাটনের মাঝখানের ফাঁকা গ্যাপ ১৪ পিক্সেল নিশ্চিত করা */}
+          {/* 👑 ৩ নম্বর ফিক্সড: মোট দাম এবং ঝুড়িতে রাখুন বাটনের মাঝখানের ফাঁকা গ্যাপ ১৪ পিক্সেল নিশ্চিত করা */}
           {qty && parseFloat(qty) > 0 && (
             <p style={{ 
               fontSize: '13px', 
@@ -760,7 +760,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
         </span>
       )}
       {canEdit && (
-        <div style={{ display: 'flex', justifycontent: 'flex-end', gap: '4px', padding: '6px 6px 0', flexShrink: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', padding: '6px 6px 0', flexShrink: 0 }}>
           {isAdmin && <span draggable onDragStart={onDragStart} onMouseDown={onDragStart} onTouchStart={onDragStart} style={{ background: '#e5e7eb', color: '#6b7280', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', cursor: 'grab', userSelect: 'none' }}>⠿</span>}
           <button onClick={() => onEdit(product)} style={{ background: '#facc15', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>✏️</button>
         </div>
@@ -769,7 +769,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
         <div style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }} onClick={() => onDoubleClick(product)}>
           <img src={allImages[currentImageIndex]} alt={product.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' }} />
           {allImages.length > 1 && (
-            <div style={{ position: 'absolute', bottom: '4px', left: 0, right: 0, display: 'flex', justifycontent: 'center', gap: '4px' }}>
+            <div style={{ position: 'absolute', bottom: '4px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '4px' }}>
               {allImages.map((_, i) => <div key={i} style={{ borderRadius: '50%', width: i === currentImageIndex ? '8px' : '6px', height: i === currentImageIndex ? '8px' : '6px', background: i === currentImageIndex ? '#db2777' : '#d1d5db' }} />)}
             </div>
           )}
@@ -1030,7 +1030,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>পণ্য কোড *</label><input name="product_code" value={form.product_code} onChange={handle} placeholder="P001" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>দাম *</label><input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label><select name="unit" value={form.unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="Kg">Kg</option><option value="Liter">Liter</option><option value="pcs">pcs</option><option value="packet">Packet</option></select></div>
-          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (ইং)</label><input name="category" value={form.category} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>क্যাটাগরি (ইং)</label><input name="category" value={form.category} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (বাং)</label><input name="category_bn" value={form.category_bn} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>প্রধান পেজ আইডি</label><input name="page_id" value={form.page_id} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>প্রাথমিক স্টক</label><input name="stock" type="number" value={form.stock} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
@@ -1091,7 +1091,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const [subPageIds, setSubPageIds] = useState([]);
   const [showCustomerOrders, setShowCustomerOrders] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
- const [sellerSearch, setSellerSearch] = useState(null);
+  const [sellerSearch, setSellerSearch] = useState(null); // 👑 নতুন সেলার সার্চ ডাটা ট্র্যাক স্টেট
 
   useEffect(() => {
     function handleShowOrders() { setShowCustomerOrders(true); }
@@ -1107,14 +1107,14 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   
   useEffect(() => {
     if (openCart) {
-  const savedPhone = localStorage.getItem('customer_phone');
-  if (savedPhone) {
-    setShowCart(true);
-  } else {
-    setShowCart(true);
-  }
-  if (onCartClose) onCartClose();
-}
+      const savedPhone = localStorage.getItem('customer_phone');
+      if (savedPhone) {
+        setShowCart(true);
+      } else {
+        setShowCart(true);
+      }
+      if (onCartClose) onCartClose();
+    }
   }, [openCart]);
 
   async function fetchSubPageIds(pageId) {
@@ -1189,27 +1189,40 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
     for (let i = 0; i < items.length; i++) { await supabase.from('products').update({ sort_order: i }).eq('id', items[i].id); }
   }
 
-  const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
+  // 👑 সেলার সার্চ একটিভ থাকলে ক্যাটাগরি ফিল্টারিং ডাইনামিক করার ফর্মুলা
+  const getFilteredProductsForMenu = () => {
+    if (sellerSearch && sellerSearch.page_id) {
+      return products.filter(p => String(p.page_id) === String(sellerSearch.page_id));
+    }
+    return products;
+  };
+
+  const categories = [...new Set(getFilteredProductsForMenu().map(p => p.category))].filter(Boolean);
 
   const getDisplayProducts = () => {
-    if (sellerSearch) {
-      return products.filter(p => p.seller_id === sellerSearch.id);
-    }
     let baseProducts = products;
-    if (sellerSearch) {
-  return products.filter(p => p.seller_id === sellerSearch.id || (p.page_id && products.some(pp => pp.seller_id === sellerSearch.id && pp.page_id === p.page_id)));
-}
-    if (selectedPage) {
+
+    // 👑 সেলার এর page_id ম্যাচিং এর মাধ্যমে প্রোডাক্ট ডিসপ্লে লজিক
+    if (sellerSearch && sellerSearch.page_id) {
+      baseProducts = products.filter(p => String(p.page_id) === String(sellerSearch.page_id));
+    } else if (selectedPage) {
       baseProducts = products.filter(p => String(p.page_id) === String(selectedPage.id) || subPageIds.map(String).includes(String(p.page_id)));
     }
+
     if (!isAdmin && !isEditor) { baseProducts = baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0 || p.seller_id); }
-    if (search !== '' || selectedName) {
-      let allBase = (isAdmin || isEditor) ? products : products.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
-      let filtered = allBase.filter(p => search === '' || p.name.toLowerCase().includes(search.toLowerCase()) || (p.name_bn && p.name_bn.toLowerCase().includes(search.toLowerCase())) || (p.product_code && p.product_code.toLowerCase().includes(search.toLowerCase())) || (p.category && p.category.toLowerCase().includes(search.toLowerCase())) || (p.category_bn && p.category_bn.includes(search)));
-      if (selectedName) return filtered.filter(p => p.name === selectedName);
+    
+    if (search !== '' && !sellerSearch) {
+      let allBase = (isAdmin || isEditor) ? baseProducts : baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
+      let filtered = allBase.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || (p.name_bn && p.name_bn.toLowerCase().includes(search.toLowerCase())) || (p.product_code && p.product_code.toLowerCase().includes(search.toLowerCase())) || (p.category && p.category.toLowerCase().includes(search.toLowerCase())) || (p.category_bn && p.category_bn.includes(search)));
       return filtered;
     }
+
+    if (selectedName) {
+      return baseProducts.filter(p => p.name === selectedName);
+    }
+    
     if (selectedCategory) baseProducts = baseProducts.filter(p => p.category === selectedCategory);
+    
     if (!isAdmin && !isEditor) {
       const seen = new Set();
       return baseProducts.filter(p => { if (seen.has(p.name)) return false; seen.add(p.name); return true; });
@@ -1296,7 +1309,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
                 <p style={{ fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0', fontSize: '14px' }}>👤 {localStorage.getItem('customer_name') || 'কাস্টমার'}</p>
                 <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>📱 {localStorage.getItem('customer_phone')}</p>
               </div>
-             <button onClick={() => { localStorage.removeItem('customer_phone'); localStorage.removeItem('customer_name'); localStorage.removeItem('customer_district'); localStorage.removeItem('customer_upazila'); setShowCart(false); setTimeout(() => setShowCart(true), 50); }} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>লগআউট</button>
+              <button onClick={() => { localStorage.removeItem('customer_phone'); localStorage.removeItem('customer_name'); localStorage.removeItem('customer_district'); localStorage.removeItem('customer_upazila'); setShowCart(false); setTimeout(() => setShowCart(true), 50); }} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>লগআউট</button>
             </div>
           ) : (
             <CustomerAuth onSuccess={(data) => {
@@ -1323,14 +1336,14 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   return (
     <div className="pb-24">
       {selectedProduct && (
-       <ProductDetailModal 
-  product={selectedProduct} 
-  onClose={() => setSelectedProduct(null)} 
-  onAdd={addToCart} 
-  onSelectProduct={(p) => setSelectedProduct(p)} 
-  isAdmin={isAdmin}
-  onNeedLogin={() => { setSelectedProduct(null); setShowCart(true); }}
-/>
+        <ProductDetailModal 
+          product={selectedProduct} 
+          onClose={() => setSelectedProduct(null)} 
+          onAdd={addToCart} 
+          onSelectProduct={(p) => setSelectedProduct(p)} 
+          isAdmin={isAdmin}
+          onNeedLogin={() => { setSelectedProduct(null); setShowCart(true); }}
+        />
       )}
       {showOrders && <OrdersModal onClose={() => setShowOrders(false)} isAdmin={isAdmin || isEditor} />}
       {showCustomerOrders && <OrdersModal onClose={() => setShowCustomerOrders(false)} isAdmin={false} />}
@@ -1378,7 +1391,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       </div>
 
       <div className="px-4 py-1.5">
-       <input type="text" placeholder="🔍 পণ্যের নাম, কোড বা দোকানের নাম লিখুন..." value={search} onChange={async e => { const val = e.target.value; setSearch(val); setSelectedCategory(null); setSelectedName(null); if (val.length >= 2) { const { data } = await supabase.from('sellers').select('id, shop_name').ilike('shop_name', `%${val}%`).limit(5); if (data && data.length > 0) { setSellerSearch(data[0]); } else { setSellerSearch(null); } } else { setSellerSearch(null); } }} style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} />
+        <input type="text" placeholder="🔍 পণ্যের নাম, কোড বা দোকানের নাম লিখুন..." value={search} onChange={async e => { const val = e.target.value; setSearch(val); setSelectedCategory(null); setSelectedName(null); if (val.length >= 2) { const { data } = await supabase.from('sellers').select('id, shop_name, page_id').ilike('shop_name', `%${val}%`).limit(5); if (data && data.length > 0) { setSellerSearch(data[0]); } else { setSellerSearch(null); } } else { setSellerSearch(null); } }} style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} />
       </div>
 
       {!selectedPage && !search && !selectedCategory && !selectedName && (
@@ -1388,11 +1401,12 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       )}
         
       {sellerSearch && (
-  <div style={{ margin: '0 16px 8px', background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '14px' }}>🏪 {sellerSearch.shop_name}</span>
-    <button onClick={() => { setSellerSearch(null); setSearch(''); }} style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '18px', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
-  </div>
-)}
+        <div style={{ margin: '0 16px 8px', background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '14px' }}>🏪 {sellerSearch.shop_name} এর দোকান</span>
+          <button onClick={() => { setSellerSearch(null); setSearch(''); }} style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '18px', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+        </div>
+      )}
+
       {selectedName && (
         <div className="px-4 mb-2">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '12px', padding: '8px 12px' }}>
@@ -1402,7 +1416,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         </div>
       )}
 
-      {(selectedPage || search || selectedCategory || selectedName) && (
+      {(selectedPage || search || selectedCategory || selectedName || sellerSearch) && (
         <div className="px-4 flex gap-2 overflow-x-auto pb-1.5">
           <button onClick={() => { setSelectedCategory(null); setSelectedName(null); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: '2px solid #db2777', cursor: 'pointer', background: !selectedCategory && !selectedName ? '#db2777' : 'white', color: !selectedCategory && !selectedName ? 'white' : '#db2777' }}>সব পণ্য</button>
           {categories.map(cat => {
@@ -1416,16 +1430,16 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       {isAdmin && <p style={{ fontSize: '12px', textAlign: 'center', color: '#f59e0b', marginBottom: '4px' }}>⠿ আইকন ধরে Drag করে পণ্য সাজান</p>}
       {loading && <p style={{ textAlign: 'center', color: '#9ca3af', marginTop: '40px' }}>লোড হচ্ছে...</p>}
 
-      {(!selectedPage && !search && !selectedCategory && !selectedName) ? null : (
+      {(!selectedPage && !search && !selectedCategory && !selectedName && !sellerSearch) ? null : (
         <>
           <style>{mobileGridStyle}</style>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-1.5 pt-0">
             {displayProducts.map((product, index) => (
-             <ProductCard  
-  key={product.id} 
-  product={product} 
-  onAdd={addToCart}
-  onNeedLogin={() => setShowCart(true)}
+              <ProductCard  
+                key={product.id} 
+                product={product} 
+                onAdd={addToCart}
+                onNeedLogin={() => setShowCart(true)}
                 isAdmin={isAdmin} 
                 isEditor={isEditor} 
                 editorPageId={editorPageId} 
@@ -1449,7 +1463,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         </>
       )}
 
-      {/* 👑 আপনার একদম প্রথম অরিজিনাল কোডের ফ্লোটিং ঝুড়ি বার ডাইনামিক লাইভ কাউন্টারসহ সচল করা হলো */}
+      {/* 👑 আপনার একদম প্রথম অরিজিনাল কোডের ফ্লোটিং ঝুড়ি বার ডাইনামিক লাইভ কাউন্টারসহ সচল করা হলো */}
       {cart && cart.length > 0 && (() => {
         const totalItems = cart.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0);
         const totalPrice = cart.reduce((sum, item) => {
