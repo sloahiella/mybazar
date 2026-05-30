@@ -1092,6 +1092,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const [showCustomerOrders, setShowCustomerOrders] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [sellerSearch, setSellerSearch] = useState(null); // 👑 নতুন সেলার সার্চ ডাটা ট্র্যাক স্টেট
+const [sellerProductIds, setSellerProductIds] = useState([]);
 
   useEffect(() => {
     function handleShowOrders() { setShowCustomerOrders(true); }
@@ -1191,20 +1192,19 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
 
   // 👑 সেলার সার্চ একটিভ থাকলে ক্যাটাগরি ফিল্টারিং ডাইনামিক করার ফর্মুলা
   const getFilteredProductsForMenu = () => {
-    if (sellerSearch && sellerSearch.page_id) {
-      return products.filter(p => String(p.page_id) === String(sellerSearch.page_id));
+    if (sellerSearch) {
+      return products.filter(p => sellerProductIds.includes(p.id));
     }
     return products;
   };
-
   const categories = [...new Set(getFilteredProductsForMenu().map(p => p.category))].filter(Boolean);
 
   const getDisplayProducts = () => {
     let baseProducts = products;
 
     // 👑 সেলার এর page_id ম্যাচিং এর মাধ্যমে প্রোডাক্ট ডিসপ্লে লজিক
-    if (sellerSearch && sellerSearch.page_id) {
-      baseProducts = products.filter(p => String(p.page_id) === String(sellerSearch.page_id));
+   if (sellerSearch) {
+      baseProducts = products.filter(p => sellerProductIds.includes(p.id));
     } else if (selectedPage) {
       baseProducts = products.filter(p => String(p.page_id) === String(selectedPage.id) || subPageIds.map(String).includes(String(p.page_id)));
     }
@@ -1391,7 +1391,38 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       </div>
 
       <div className="px-4 py-1.5">
-        <input type="text" placeholder="🔍 পণ্যের নাম, কোড বা দোকানের নাম লিখুন..." value={search} onChange={async e => { const val = e.target.value; setSearch(val); setSelectedCategory(null); setSelectedName(null); if (val.length >= 2) { const { data } = await supabase.from('sellers').select('id, shop_name, page_id').ilike('shop_name', `%${val}%`).limit(5); if (data && data.length > 0) { setSellerSearch(data[0]); } else { setSellerSearch(null); } } else { setSellerSearch(null); } }} style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} />
+        <input 
+          type="text" 
+          placeholder="🔍 পণ্যের নাম, কোড বা দোকানের নাম লিখুন..." 
+          value={search} 
+          onChange={async e => { 
+            const val = e.target.value; 
+            setSearch(val); 
+            setSelectedCategory(null); 
+            setSelectedName(null); 
+            
+            if (val.trim().length >= 2) { 
+              // 👑 ilike কোয়েরির মাধ্যমে ছোট বা বড় হাতের অক্ষরের অমিল সম্পূর্ণ ফিক্স করা হলো ভাই
+              const { data } = await supabase
+                .from('sellers')
+                .select('id, shop_name, page_id')
+                .ilike('shop_name', `%${val.trim()}%`)
+                .limit(1); 
+                
+              if (data && data.length > 0) { 
+  setSellerSearch(data[0]); 
+  const { data: listings } = await supabase.from('product_listings').select('product_id').eq('seller_id', data[0].id).eq('is_active', true);
+  if (listings) setSellerProductIds(listings.map(l => l.product_id));
+} else { 
+  setSellerSearch(null); 
+  setSellerProductIds([]);
+}
+            } else { 
+              setSellerSearch(null); 
+            } 
+          }} 
+          style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} 
+        />
       </div>
 
       {!selectedPage && !search && !selectedCategory && !selectedName && (
