@@ -202,12 +202,12 @@ function SellerProductsTab({ seller, onSelectPage }: { seller: any; onSelectPage
     const { data } = await supabase.from('pages').select('id, name, name_bn').order('name_bn')
     if (data) setAllPages(data)
   }
-
-  async function requestNewPage() {
+ async function requestNewPage() {
     if (!newPageName.trim()) return
     await supabase.from('seller_pages').insert({ seller_id: seller.id, page_name: newPageName, status: 'pending' })
     setMsg('✅ নতুন পেজ request পাঠানো হয়েছে! Admin approve করলে দেখাবে।')
-    newPageName('')
+    // 👑 ভুল ফিক্স: এখানে সরাসরি ভেরিয়েবল কল না করে সঠিক স্টেট ফাংশন setNewPageName ব্যবহার করা হলো ভাই
+    setNewPageName('')
     fetchMyPages()
   }
 
