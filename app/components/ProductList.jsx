@@ -1091,7 +1091,8 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const [subPageIds, setSubPageIds] = useState([]);
   const [showCustomerOrders, setShowCustomerOrders] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
- 
+ const [sellerSearch, setSellerSearch] = useState(null);
+
   useEffect(() => {
     function handleShowOrders() { setShowCustomerOrders(true); }
     window.addEventListener('showCustomerOrders', handleShowOrders);
@@ -1191,7 +1192,13 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
 
   const getDisplayProducts = () => {
+    if (sellerSearch) {
+      return products.filter(p => p.seller_id === sellerSearch.id);
+    }
     let baseProducts = products;
+    if (sellerSearch) {
+  return products.filter(p => p.seller_id === sellerSearch.id || (p.page_id && products.some(pp => pp.seller_id === sellerSearch.id && pp.page_id === p.page_id)));
+}
     if (selectedPage) {
       baseProducts = products.filter(p => String(p.page_id) === String(selectedPage.id) || subPageIds.map(String).includes(String(p.page_id)));
     }
@@ -1371,7 +1378,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       </div>
 
       <div className="px-4 py-1.5">
-        <input type="text" placeholder="🔍 পণ্যের নাম বা কোড লিখুন..." value={search} onChange={e => { setSearch(e.target.value); setSelectedCategory(null); setSelectedName(null); }} style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} />
+       <input type="text" placeholder="🔍 পণ্যের নাম, কোড বা দোকানের নাম লিখুন..." value={search} onChange={async e => { const val = e.target.value; setSearch(val); setSelectedCategory(null); setSelectedName(null); if (val.length >= 2) { const { data } = await supabase.from('sellers').select('id, shop_name').ilike('shop_name', `%${val}%`).limit(5); if (data && data.length > 0) { setSellerSearch(data[0]); } else { setSellerSearch(null); } } else { setSellerSearch(null); } }}
       </div>
 
       {!selectedPage && !search && !selectedCategory && !selectedName && (
@@ -1380,6 +1387,12 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         </>
       )}
         
+      {sellerSearch && (
+  <div style={{ margin: '0 16px 8px', background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '14px' }}>🏪 {sellerSearch.shop_name}</span>
+    <button onClick={() => { setSellerSearch(null); setSearch(''); }} style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '18px', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+  </div>
+)}
       {selectedName && (
         <div className="px-4 mb-2">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '12px', padding: '8px 12px' }}>
