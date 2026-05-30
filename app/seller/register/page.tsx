@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 
 export default function SellerRegister() {
   const router = useRouter()
-  const [form, setForm] = useState({ email: '', password: '', full_name: '', phone: '', shop_name: '', shop_description: '', bkash_number: '' })
+  const [form, setForm] = useState({ email: '', password: '', full_name: '', phone: '', shop_name: '', shop_description: '', bkash_number: '', branch_id: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -38,6 +38,7 @@ export default function SellerRegister() {
       shop_name: form.shop_name,
       shop_description: form.shop_description,
       bkash_number: form.bkash_number,
+      branch_id: parseInt(form.branch_id),
       is_approved: false
     })
 
@@ -74,6 +75,14 @@ export default function SellerRegister() {
 
           <div><label style={{ fontSize: '13px', fontWeight: 'bold', color: '#555' }}>বিকাশ নম্বর *</label>
             <input name="bkash_number" value={form.bkash_number} onChange={handle} placeholder="01XXXXXXXXX" required style={inp} /></div>
+
+          <div><label style={{ fontSize: '13px', fontWeight: 'bold', color: '#555' }}>শাখা সিলেক্ট করুন *</label>
+            <select name="branch_id" value={form.branch_id} onChange={handle} required style={inp}>
+              <option value="">-- শাখা সিলেক্ট করুন --</option>
+              <option value="1">ঢাকা</option>
+              <option value="5">লালমোহন</option>
+            </select>
+          </div>
 
           {error && <p style={{ color: '#ef4444', fontSize: '13px' }}>{error}</p>}
 
