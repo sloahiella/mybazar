@@ -1378,7 +1378,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       </div>
 
       <div className="px-4 py-1.5">
-       <input type="text" placeholder="🔍 পণ্যের নাম, কোড বা দোকানের নাম লিখুন..." value={search} onChange={async e => { const val = e.target.value; setSearch(val); setSelectedCategory(null); setSelectedName(null); if (val.length >= 2) { const { data } = await supabase.from('sellers').select('id, shop_name').ilike('shop_name', `%${val}%`).limit(5); if (data && data.length > 0) { setSellerSearch(data[0]); } else { setSellerSearch(null); } } else { setSellerSearch(null); } }}
+       <input type="text" placeholder="🔍 পণ্যের নাম, কোড বা দোকানের নাম লিখুন..." value={search} onChange={async e => { const val = e.target.value; setSearch(val); setSelectedCategory(null); setSelectedName(null); if (val.length >= 2) { const { data } = await supabase.from('sellers').select('id, shop_name').ilike('shop_name', `%${val}%`).limit(5); if (data && data.length > 0) { setSellerSearch(data[0]); } else { setSellerSearch(null); } } else { setSellerSearch(null); } }} style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} />
       </div>
 
       {!selectedPage && !search && !selectedCategory && !selectedName && (
