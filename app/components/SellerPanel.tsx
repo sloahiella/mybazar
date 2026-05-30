@@ -44,7 +44,9 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
 
   async function addProduct() {
     if (!productForm.name || !productForm.price) { alert('Name and price required!'); return; }
-    const { data: branchData } = await supabase.from('pages').select('branch_id').eq('id', pageId).single()
+    // 👑 ফিক্স: পেজের branch_id বাদ দিয়ে সরাসরি লগইন করা সেলারের নিজস্ব branch_id নেওয়া হলো ভাই
+    const currentBranchId = seller.branch_id || null;
+    
     const { data: inserted } = await supabase.from('products').insert({
       name: productForm.name,
       price_per_unit: parseFloat(productForm.price),
@@ -52,7 +54,7 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
       description: productForm.description,
       image_url: productImage,
       page_id: pageId,
-      branch_id: branchData?.branch_id,
+      branch_id: currentBranchId,
       seller_id: seller.id,
       is_active: true,
       product_code: `${Date.now()}`,
@@ -202,11 +204,10 @@ function SellerProductsTab({ seller, onSelectPage }: { seller: any; onSelectPage
     const { data } = await supabase.from('pages').select('id, name, name_bn').order('name_bn')
     if (data) setAllPages(data)
   }
- async function requestNewPage() {
+  async function requestNewPage() {
     if (!newPageName.trim()) return
     await supabase.from('seller_pages').insert({ seller_id: seller.id, page_name: newPageName, status: 'pending' })
     setMsg('✅ নতুন পেজ request পাঠানো হয়েছে! Admin approve করলে দেখাবে।')
-    // 👑 ভুল ফিক্স: এখানে সরাসরি ভেরিয়েবল কল না করে সঠিক স্টেট ফাংশন setNewPageName ব্যবহার করা হলো ভাই
     setNewPageName('')
     fetchMyPages()
   }
@@ -224,7 +225,9 @@ function SellerProductsTab({ seller, onSelectPage }: { seller: any; onSelectPage
 
   async function addProduct(pageId: number) {
     if (!productForm.name || !productForm.price) { alert('Name and price required!'); return; }
-    const { data: branchData } = await supabase.from('pages').select('branch_id').eq('id', pageId).single()
+    // 👑 ফিক্স: এখানেও পেজের branch_id বাদ দিয়ে সরাসরি লগইন করা সেলারের নিজস্ব branch_id নেওয়া হলো ভাই
+    const currentBranchId = seller.branch_id || null;
+    
     const { data: inserted } = await supabase.from('products').insert({
       name: productForm.name,
       price_per_unit: parseFloat(productForm.price),
@@ -232,7 +235,7 @@ function SellerProductsTab({ seller, onSelectPage }: { seller: any; onSelectPage
       description: productForm.description,
       image_url: productImage,
       page_id: pageId,
-      branch_id: branchData?.branch_id,
+      branch_id: currentBranchId,
       seller_id: seller.id,
       is_active: true,
       product_code: `${Date.now()}`,
@@ -509,7 +512,7 @@ export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any;
                   <div>
                     <p style={{ fontWeight: 'bold', color: '#111', margin: '0 0 2px 0', fontSize: '13px' }}>{item.products?.name}</p>
                     <p style={{ fontSize: '12px', color: '#16a34a', fontWeight: 'bold', margin: '0 0 2px 0' }}>৳{item.price * item.quantity}</p>
-                    <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>অर्डर #{item.order_id}</p>
+                    <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>অর্ডার #{item.order_id}</p>
                   </div>
                 </div>
                 <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '20px', fontWeight: 'bold',
