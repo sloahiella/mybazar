@@ -1190,6 +1190,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   };
   const categories = [...new Set(getFilteredProductsForMenu().map(p => p.category))].filter(Boolean);
 
+  // ✅ ফিক্সড ডিসপ্লে লজিক: হোম পেজের ক্যাটাগরি গ্রিডকে অক্ষত রেখে ভেতরের প্রোডাক্ট ভিউ সচল করা হলো ভাই
   const getDisplayProducts = () => {
     let baseProducts = products;
 
@@ -1197,8 +1198,15 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       baseProducts = products.filter(p => sellerProductIds.includes(p.id));
     } else if (selectedPage) {
       baseProducts = products.filter(p => String(p.page_id) === String(selectedPage.id) || subPageIds.map(String).includes(String(p.page_id)));
+    } else {
+      // 👑 সেফটি লক: কাস্টমার মেইন হোম পেজে থাকলে শুধু ক্যাটাগরি গ্রিড দেখাবে, কোনো প্রোডাক্ট মিক্সড হবে না
+      baseProducts = [];
     }
 
+    // 👑 লালমোহন শাখার জন্য কাস্টমার ভিউ ফিল্টার ১০০% সচল করা হলো ভাই
+    if (!isAdmin && !isEditor) { 
+      baseProducts = baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0 || p.seller_id); 
+    }
     if (!isAdmin && !isEditor) { baseProducts = baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0 || p.seller_id); }
     
     if (search !== '' && !sellerSearch) {
