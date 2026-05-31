@@ -1480,7 +1480,8 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       {(!selectedPage && !search && !selectedCategory && !selectedName && !sellerSearch) ? null : (
         <>
           <style>{mobileGridStyle}</style>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-1.5 pt-0">
+          {/* 👑 ফিক্সড লজিক: w-full এবং justify-start দিয়ে প্রোডাক্ট দুটোকে পাশাপাশি আনা হলো ভাই */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-1.5 pt-0 w-full justify-start">
             {displayProducts.map((product, index) => (
               <ProductCard  
                 key={product.id} 
