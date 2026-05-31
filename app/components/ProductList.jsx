@@ -1480,9 +1480,8 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       {(!selectedPage && !search && !selectedCategory && !selectedName && !sellerSearch) ? null : (
         <>
           <style>{mobileGridStyle}</style>
-          {/* 👑 ফিক্সড লজিক: w-full এবং justify-start দিয়ে প্রোডাক্ট দুটোকে পাশাপাশি আনা হলো ভাই */}
-          {/* 👑 ১০০% ফিক্সড পাশাপাশি লেআউট: ফ্লেক্স এবং র্যাপ লজিক দিয়ে প্রোডাক্ট দুটোকে পাশাপাশি আনা হলো ভাই */}
-          <div className="flex flex-wrap gap-2 p-1.5 pt-0 w-full justify-start items-stretch">
+          {/* 👑 আল্টিমেট পারফেক্ট ফিক্স: w-max এবং max-w-full দিয়ে জোরাজুরি ছাড়াই কার্ড দুটোকে পাশাপাশি আনা হলো ভাই */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-1.5 pt-0 w-max max-w-full justify-start">
             {displayProducts.map((product, index) => (
               <ProductCard  
                 key={product.id} 
