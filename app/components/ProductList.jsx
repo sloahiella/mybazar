@@ -44,9 +44,14 @@ function CategoryGrid({ branch, onSelectPage }) {
     }
   }
 
+  // ✅ ফিক্সড ডাইনামিক ক্যাটাগরি কভার লজিক: মেইন পেজের কভার ছবিও এখন কারেন্ট শাখা (branch.id) মেনে কাজ করবে ভাই
   async function fetchFirstProduct(pageId) {
     const { data } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
-      .eq('page_id', pageId).eq('is_active', true).limit(1).single();
+      .eq('page_id', pageId)
+      .eq('branch_id', branch.id) // 👑 ঢাকা শাখায় শুধু ঢাকার আর লালমোহনে শুধু লালমোহনের প্রোডাক্টের ছবি কভার হবে ভাই!
+      .eq('is_active', true)
+      .limit(1)
+      .single();
     if (data) setPageProducts(prev => ({ ...prev, [pageId]: data }));
   }
 
@@ -758,9 +763,17 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
           <button onClick={() => onEdit(product)} style={{ background: '#facc15', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>✏️</button>
         </div>
       )}
-      {allImages.length > 0 && (
+     {allImages.length > 0 && (
         <div style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }} onClick={() => onDoubleClick(product)}>
-          <img src={allImages[currentImageIndex]} alt={product.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' }} />
+          <img src={allImages[currentImageIndex]} alt={product.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block', opacity: (product.stock?.[0]?.quantity || 0) <= 0 ? 0.4 : 1 }} />
+          
+          {/* 👑 আপনার শর্ত অনুযায়ী ভিজ্যুয়াল ব্যানার: এডমিন/সেলারের স্ক্রিনে স্টক আউট হলে ইমেজের ওপর বড় লাল লেখা ভেসে উঠবে ভাই */}
+          {(product.stock?.[0]?.quantity || 0) <= 0 && (
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifycontent: 'center' }}>
+              <span style={{ background: '#ef4444', color: 'white', fontSize: '12px', fontWeight: '900', padding: '4px 10px', borderRadius: '6px', boxShadow: '0 2px 8px rgba(239,68,68,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🔴 স্টক আউট</span>
+            </div>
+          )}
+
           {allImages.length > 1 && (
             <div style={{ position: 'absolute', bottom: '4px', left: 0, right: 0, display: 'flex', justifycontent: 'center', gap: '4px' }}>
               {allImages.map((_, i) => <div key={i} style={{ borderRadius: '50%', width: i === currentImageIndex ? '8px' : '6px', height: i === currentImageIndex ? '8px' : '6px', background: i === currentImageIndex ? '#db2777' : '#d1d5db' }} />)}
@@ -1190,7 +1203,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   };
   const categories = [...new Set(getFilteredProductsForMenu().map(p => p.category))].filter(Boolean);
 
-  // ✅ ফিক্সড ডিসপ্লে লজিক: হোম পেজের ক্যাটাগরি গ্রিডকে অক্ষত রেখে ভেতরের প্রোডাক্ট ভিউ সচল করা হলো ভাই
+  // ✅ ফিক্সড ডিসপ্লে ও আপনার শর্ত অনুযায়ী স্টক ফিল্টার লজিক ভাই
   const getDisplayProducts = () => {
     let baseProducts = products;
 
@@ -1199,15 +1212,18 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
     } else if (selectedPage) {
       baseProducts = products.filter(p => String(p.page_id) === String(selectedPage.id) || subPageIds.map(String).includes(String(p.page_id)));
     } else {
-      // 👑 সেফটি লক: কাস্টমার মেইন হোম পেজে থাকলে শুধু ক্যাটাগরি গ্রিড দেখাবে, কোনো প্রোডাক্ট মিক্সড হবে না
-      baseProducts = [];
+      // 👑 সেফটি লক: হোম পেজে ক্যাটাগরি গ্রিডকে ডিস্টার্ব না করে শুধু সার্চবক্স ব্যবহার করলে প্রোডাক্ট আনার রাস্তা খোলা রাখা হলো ভাই
+      baseProducts = search ? products : [];
     }
 
-    // 👑 লালমোহন শাখার জন্য কাস্টমার ভিউ ফিল্টার ১০০% সচল করা হলো ভাই
+    // 👑 আপনার মেইন শর্ত: সাধারণ কাস্টমার হলে স্টক ০ হলে হাইড হবে, কিন্তু এডমিন/সেলার হলে হাইড হবে না—সব দেখবে ভাই!
+    // 👑 ১00% সেফ ফিল্টার: ডাটাবেজ অবজেক্ট নাল (Null) থাকলেও সাইট ক্র্যাশ করবে না ভাই
     if (!isAdmin && !isEditor) { 
-      baseProducts = baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0 || p.seller_id); 
+      baseProducts = baseProducts.filter(p => {
+        const productStock = p.stock && p.stock[0] ? parseFloat(p.stock[0].quantity) : 0;
+        return productStock > 0;
+      }); 
     }
-    if (!isAdmin && !isEditor) { baseProducts = baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0 || p.seller_id); }
     
     if (search !== '' && !sellerSearch) {
       let allBase = (isAdmin || isEditor) ? baseProducts : baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
