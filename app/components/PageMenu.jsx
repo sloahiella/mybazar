@@ -7,7 +7,7 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
 
-function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth = 0, closeMenu, onDragStart, onDragOver, onDrop, isDragging }) {
+function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth = 0, closeMenu, onDragStart, onDragOver, onDrop, isDragging, branch }) {
   const [showDotMenu, setShowDotMenu] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showAddSub, setShowAddSub] = useState(false);
@@ -57,7 +57,15 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
   async function addSubPage() {
     if (!subName) return;
     setLoading(true);
-    await supabase.from('pages').insert({ name: subName, name_bn: subNameBn || subName, parent_id: page.id, branch_id: page.branch_id, sort_order: subPages.length, is_active: true });
+    // 👑 ফিক্সড: সাব-ক্যাটাগরি তৈরি করার সময় কারেন্ট ব্রাঞ্চের আইডি (branch.id) নিখুঁতভাবে লক করা হলো ভাই
+    await supabase.from('pages').insert({ 
+      name: subName, 
+      name_bn: subNameBn || subName, 
+      parent_id: page.id, 
+      branch_id: branch.id, 
+      sort_order: subPages.length, 
+      is_active: true 
+    });
     setSubName(''); setSubNameBn(''); setShowAddSub(false);
     fetchSubPages(); setLoading(false);
     setIsExpanded(true);
@@ -223,6 +231,7 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
               onDragOver={() => handleSubDragOver(sIndex)}
               onDrop={handleSubDrop}
               isDragging={subDragIndex === sIndex}
+              branch={branch}
             />
           ))}
         </div>
@@ -262,7 +271,14 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
   async function addPage() {
     if (!newPageName) return;
     setLoading(true);
-    await supabase.from('pages').insert({ branch_id: branch.id, name: newPageName, name_bn: newPageNameBn || newPageName, sort_order: pages.length, is_active: true });
+    // 👑 ফিক্সড: মেইন ক্যাটাগরি তৈরি করার সময় কারেন্ট ব্রাঞ্চের আইডি (branch.id) নিখুঁতভাবে লক করা হলো ভাই
+    await supabase.from('pages').insert({ 
+      branch_id: branch.id, 
+      name: newPageName, 
+      name_bn: newPageNameBn || newPageName, 
+      sort_order: pages.length, 
+      is_active: true 
+    });
     setNewPageName(''); setNewPageNameBn(''); setShowAddPage(false);
     fetchPages(); setLoading(false);
   }
@@ -321,6 +337,7 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
                   onDragOver={() => handleMenuDragOver(index)}
                   onDrop={handleMenuDrop}
                   isDragging={menuDragIndex === index}
+                  branch={branch}
                 />
               ))}
               
@@ -351,34 +368,28 @@ export default function PageMenu({ branch, selectedPage, onSelectPage, isAdmin, 
               )}
             </div>
 
-            {/* 👑 যোগাযোগ সেকশনে আপনার আসল ফেসবুক এবং ইউটিউব চ্যানেল লিংক হাই-কোয়ালিটি ব্র্যান্ডিং আইকনসহ যোগ করে দেওয়া হলো */}
             <div style={{ borderTop: '1px solid #e5e7eb', padding: '16px', background: '#ffffff', flexShrink: 0 }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: '0 0 8px 0' }}>📞 যোগাযোগ</p>
               
-              {/* ফোন নম্বর */}
               <a href="tel:01872149655" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#555', margin: '6px 0', textDecoration: 'none' }}>
                 📱 <span>01872149655</span>
               </a>
               
-              {/* হোয়াটসঅ্যাপ */}
               <a href="https://wa.me/8801872149655" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#25D366', fontWeight: 'bold', margin: '6px 0', textDecoration: 'none' }}>
                 <img src="https://cdn-icons-png.flaticon.com/128/3670/3670051.png" alt="WhatsApp" style={{ width: '16px', height: '16px' }} />
                 <span>WhatsApp: 01872149655</span>
               </a>
 
-              {/* 🔵 ফেসবুক পেজ (আপনার দেওয়া আসল আইডি লিংকসহ) */}
               <a href="https://www.facebook.com/profile.php?id=61583250601904" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#1877f2', fontWeight: 'bold', margin: '6px 0', textDecoration: 'none' }}>
                 <img src="https://cdn-icons-png.flaticon.com/128/5968/5968764.png" alt="Facebook" style={{ width: '16px', height: '16px' }} />
                 <span>Facebook Page</span>
               </a>
 
-              {/* 🔴 ইউটিউব চ্যানেল (আপনার দেওয়া আসল হ্যান্ডেল লিংকসহ) */}
               <a href="https://youtube.com/@mdsohel-o9q1l?si=H1NMcxfnjeJ6rFED" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#ff0000', fontWeight: 'bold', margin: '6px 0', textDecoration: 'none' }}>
                 <img src="https://cdn-icons-png.flaticon.com/128/1384/1384060.png" alt="YouTube" style={{ width: '16px', height: '16px' }} />
                 <span>YouTube Channel</span>
               </a>
 
-              {/* ওয়েবসাইট ইউআরএল */}
               <a href="https://sohelmart.com" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#2563eb', margin: '6px 0', textDecoration: 'none' }}>
                 🌐 <span>sohelmart.com</span>
               </a>
