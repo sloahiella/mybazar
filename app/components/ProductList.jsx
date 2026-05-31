@@ -1364,7 +1364,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       {editingProduct && <EditProductModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={fetchProducts} />}
       {showAddModal && <AddProductModal branch={branch} defaultPage={addModalPage} onClose={() => setShowAddModal(false)} onSave={fetchProducts} />}
 
-      <PageMenu
+     <PageMenu
         branch={branch}
         selectedPage={selectedPage}
         isOpenFromParent={openMenu}
@@ -1373,6 +1373,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         isAdmin={isAdmin}
         onAddProduct={(page) => { setAddModalPage(page); setShowAddModal(true); }}
         onShowOrders={() => setShowOrders(true)}
+        role={role} // 👑 এই ১টি লাইন নতুন যোগ হলো ভাই, যাতে চাইল্ড পেজগুলোও কারেন্ট ব্রাঞ্চ ডাটা পায়
       />
 
       <div className="px-4 pt-1">
