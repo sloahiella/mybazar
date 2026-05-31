@@ -265,28 +265,9 @@ function SellerProductsTab({ seller, onSelectPage }: { seller: any; onSelectPage
 
   return (
     <div style={{ padding: '16px' }}>
-      <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#111', margin: '0 0 12px 0' }}>📋 আমার পেজ লিস্ট</p>
+      {/* 👑 ১০০% ফিক্সড: সেলারের হোম পেজ থেকে সরাসরি কদর্য প্রোডাক্ট ভিউ সরিয়ে দিয়ে ড্যাশবোর্ড ক্লিন করা হলো ভাই */}
+      <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#111', margin: '0 0 12px 0' }}>📋 আমার পেজ লিস্ট (পণ্যের পেজে ক্লিক করুন)</p>
       {myPages.length === 0 && <p style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '16px' }}>কোনো পেজ নেই</p>}
-      {myProducts.length > 0 && (
-        <div style={{ marginBottom: '16px' }}>
-          <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '0 0 8px 0' }}>📦 আমার প্রোডাক্ট ({myProducts.length})</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            {myProducts.map(prod => (
-              <div key={prod.id} style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', overflow: 'hidden', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', padding: '6px 6px 0' }}>
-                  <button onClick={async () => { if (!confirm('Delete this product?')) return; await supabase.from('stock').delete().eq('product_id', prod.id); await supabase.from('products').delete().eq('id', prod.id); fetchMyProducts(); }} style={{ background: '#fee2e2', color: '#dc2626', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>🗑️</button>
-                </div>
-                {prod.image_url && <img src={prod.image_url} alt={prod.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' }} />}
-                <div style={{ padding: '8px', flex: 1 }}>
-                  <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '13px', margin: '0 0 4px 0', lineHeight: 1.4 }}>{prod.name}</p>
-                  <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '12px', margin: '0 0 4px 0' }}>৳{prod.price_per_unit}/{prod.unit}</p>
-                  <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>Stock: {prod.stock?.[0]?.quantity || 0}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
       {myPages.map(p => (
         <div key={p.id} style={{ background: '#f9fafb', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e5e7eb' }}>
           <p onClick={() => onSelectPage(p.page_id || p.id)} style={{ margin: 0, fontSize: '14px', fontWeight: '500', color: '#111', flex: 1, cursor: 'pointer' }}>{p.pages?.name_bn || p.pages?.name || p.page_name || 'Unknown'}</p>
