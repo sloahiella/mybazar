@@ -3,26 +3,31 @@ import { useState } from 'react'
 
 export default function SellerPanel({ seller, onClose }: { seller: any; onClose: () => void }) {
   const [tab, setTab] = useState('orders')
+  const [dateFilter, setDateFilter] = useState('আজকে')
 
   return (
     <div style={{ 
-      position: 'fixed', right: 0, top: 0, height: '100%', width: '380px', // একটু বড় করা হলো
+      position: 'fixed', right: 0, top: 0, height: '100%', width: '380px', 
       background: '#fff', zIndex: 99999, boxShadow: '-5px 0 15px rgba(0,0,0,0.2)', padding: '20px', overflowY: 'auto' 
     }}>
-      {/* হেডার */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, color: '#333' }}>{seller.shop_name}</h2>
-        <button onClick={onClose} style={{ border: 'none', background: '#eee', padding: '8px 12px', borderRadius: '5px', cursor: 'pointer' }}>✕</button>
+      {/* হেডার - পিঙ্ক কালার দেয়া হলো */}
+      <div style={{ background: '#db2777', padding: '15px', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderRadius: '8px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>{seller.shop_name}</h2>
+        <button onClick={onClose} style={{ border: 'none', background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>✕</button>
       </div>
 
-      {/* ফিল্টার বাটন */}
+      {/* ফিল্টার বাটন - টেক্সট কালো করা হলো */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
         {['আজকে', 'গতকাল', 'এই সপ্তাহ', 'এই মাস'].map(d => (
-          <button key={d} style={{ padding: '8px 12px', fontSize: '13px', borderRadius: '20px', border: '1px solid #ddd', background: '#fff' }}>{d}</button>
+          <button key={d} onClick={() => setDateFilter(d)} style={{ 
+            padding: '8px 12px', fontSize: '13px', borderRadius: '20px', border: '1px solid #ddd', 
+            background: dateFilter === d ? '#db2777' : '#fff', 
+            color: dateFilter === d ? '#fff' : '#333', cursor: 'pointer' 
+          }}>{d}</button>
         ))}
       </div>
 
-      {/* সেলস ও অর্ডার বক্স (বড় সাইজ) */}
+      {/* সেলস ও অর্ডার বক্স */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
         <div style={{ padding: '20px', border: '1px solid #fbcfe8', borderRadius: '10px', textAlign: 'center', background: '#fff5f7' }}>
           <p style={{ fontSize: '13px', color: '#db2777', margin: '0 0 5px 0' }}>Sales</p>
@@ -34,7 +39,7 @@ export default function SellerPanel({ seller, onClose }: { seller: any; onClose:
         </div>
       </div>
 
-      {/* ট্যাব বাটন (বড় ও স্পষ্ট) */}
+      {/* ট্যাব বাটন */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
         {['Orders', 'Sellers', 'Withdraw'].map(t => (
           <button key={t} onClick={() => setTab(t.toLowerCase())} style={{ 
