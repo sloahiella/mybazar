@@ -220,9 +220,9 @@ export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any;
   const totalEarning = filteredOrders.reduce((a: number, o: any) => a + (o.price * o.quantity), 0)
   const totalOrders = new Set(filteredOrders.map((o: any) => o.order_id)).size
 
-  if (tab === 'sellerpage' && selectedSellerPage) {
+ if (tab === 'sellerpage' && selectedSellerPage) {
     return (
-      <div style={{ position: 'fixed', right: 0, top: 0, height: '100%', width: '400px', background: '#ffffff', zIndex: 99999, boxShadow: '-5px 0 15px rgba(0,0,0,0.2)', overflowY: 'auto' }}>
+      <div style={{ position: 'fixed', inset: 0, background: '#ffffff', zIndex: 99999, overflowY: 'auto' }}>
         <SellerPageProducts seller={seller} pageId={selectedSellerPage} onBack={() => setTab('products')} />
       </div>
     )
