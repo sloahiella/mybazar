@@ -148,104 +148,39 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
 
 function SellerProductsTab({ seller, onSelectPage }: { seller: any; onSelectPage: (pageId: number) => void }) {
   const [myPages, setMyPages] = useState<any[]>([])
-  const [allPages, setAllPages] = useState<any[]>([])
-  const [searchPage, setSearchPage] = useState('')
   const [msg, setMsg] = useState('')
   const [newPageName, setNewPageName] = useState('')
-  const [openMenuId, setOpenMenuId] = useState<any>(null)
-  const [myProducts, setMyProducts] = useState<any[]>([])
 
-  useEffect(() => { fetchMyProducts(); fetchMyPages(); fetchAllPages(); }, [])
-
-  async function fetchMyProducts() {
-    const { data } = await supabase.from('products').select('*, stock(*)').eq('seller_id', seller.id).eq('is_active', true).order('created_at', { ascending: false })
-    if (data) setMyProducts(data)
-  }
+  useEffect(() => { fetchMyPages(); }, [])
 
   async function fetchMyPages() {
-    const { data } = await supabase.from('seller_pages').select('*, pages(name, name_bn)').eq('seller_id', seller.id)
+    const { data } = await supabase.from('seller_pages').select('*, pages(name, name_bn)').eq('seller_id', seller.id).eq('status', 'approved')
     if (data) setMyPages(data)
-  }
-
-  async function fetchAllPages() {
-    const { data } = await supabase.from('pages').select('id, name, name_bn').order('name_bn')
-    if (data) setAllPages(data)
   }
 
   async function requestNewPage() {
     if (!newPageName.trim()) return
     await supabase.from('seller_pages').insert({ seller_id: seller.id, page_name: newPageName, status: 'pending' })
-    setMsg('✅ নতুন পেজ request পাঠানো হয়েছে!')
+    setMsg('✅ নতুন পেজ request পাঠানো হয়েছে! Admin approve করলে দেখাবে।')
     setNewPageName(''); fetchMyPages()
   }
 
-  async function requestPage(pageId: number) {
-    const already = myPages.find(p => String(p.page_id) === String(pageId))
-    if (already) { setMsg('এই পেজে আগেই যোগ করা হয়েছে!'); return; }
-    await supabase.from('seller_pages').insert({ seller_id: seller.id, page_id: pageId, status: 'approved' })
-    setMsg('✅ পেজ যোগ হয়েছে!'); fetchMyPages()
-  }
-
-  const filteredPages = allPages.filter(p => (p.name_bn || p.name).toLowerCase().includes(searchPage.toLowerCase()))
-
   return (
     <div style={{ padding: '16px' }}>
-      {myProducts.length > 0 && (
-        <div style={{ marginBottom: '16px' }}>
-          <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '0 0 8px 0' }}>📦 আমার প্রোডাক্ট ({myProducts.length})</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            {myProducts.map(prod => (
-              <div key={prod.id} style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '4px 4px 0' }}>
-                  <button onClick={async () => { if (!confirm('পণ্য মুছে দেবেন?')) return; await supabase.from('stock').delete().eq('product_id', prod.id); await supabase.from('products').delete().eq('id', prod.id); fetchMyProducts(); }} style={{ background: '#fee2e2', color: '#dc2626', fontSize: '11px', padding: '2px 6px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>🗑️</button>
-                </div>
-                {prod.image_url && <img src={prod.image_url} alt={prod.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'contain', display: 'block', background: '#f9fafb' }} />}
-                <div style={{ padding: '8px' }}>
-                  <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '12px', margin: '0 0 2px 0' }}>{prod.name}</p>
-                  <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '11px', margin: 0 }}>৳{prod.price_per_unit}/{prod.unit}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '0 0 8px 0' }}>📋 আমার পেজ লিস্ট</p>
       {myPages.length === 0 && <p style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '12px' }}>কোনো পেজ নেই</p>}
       {myPages.map(p => (
-        <div key={p.id} style={{ background: '#f9fafb', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e5e7eb' }}>
-          <p onClick={() => onSelectPage(p.page_id || p.id)} style={{ margin: 0, fontSize: '14px', fontWeight: '500', color: '#111', flex: 1, cursor: 'pointer' }}>{p.pages?.name_bn || p.pages?.name || p.page_name || 'Unknown'}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '20px', background: p.status === 'approved' ? '#dcfce7' : '#fef9c3', color: p.status === 'approved' ? '#15803d' : '#854d0e' }}>
-              {p.status === 'approved' ? '✅ Approved' : '⏳ Pending'}
-            </span>
-            <div style={{ position: 'relative' }}>
-              <button onClick={() => setOpenMenuId(openMenuId === p.id ? null : p.id)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#6b7280' }}>⋯</button>
-              {openMenuId === p.id && (
-                <div style={{ position: 'absolute', right: 0, top: '28px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 10, minWidth: '140px' }}>
-                  <button onClick={async () => { setOpenMenuId(null); if (!confirm('পেজ মুছে দেবেন?')) return; await supabase.from('seller_pages').delete().eq('id', p.id); fetchMyPages(); }} style={{ width: '100%', padding: '10px 14px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', fontSize: '13px', color: '#dc2626' }}>🗑️ Delete</button>
-                </div>
-              )}
-            </div>
-          </div>
+        <div key={p.id} onClick={() => onSelectPage(p.page_id || p.id)}
+          style={{ background: 'white', borderRadius: '10px', padding: '14px 16px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e5e7eb', cursor: 'pointer' }}>
+          <p style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: '#111' }}>📄 {p.pages?.name_bn || p.pages?.name || p.page_name || 'Unknown'}</p>
+          <span style={{ fontSize: '20px', color: '#9ca3af' }}>›</span>
         </div>
       ))}
-
       <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '12px', marginTop: '16px' }}>
         <p style={{ fontWeight: 'bold', fontSize: '13px', color: '#15803d', margin: '0 0 8px 0' }}>➕ নতুন পেজ request করুন</p>
         <input value={newPageName} onChange={e => setNewPageName(e.target.value)} placeholder="নতুন পেজের নাম লিখুন..." style={{ border: '2px solid #bbf7d0', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '8px', boxSizing: 'border-box', color: '#1f2937' }} />
         <button onClick={requestNewPage} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer', width: '100%' }}>Request পাঠান</button>
       </div>
-
-      <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '16px 0 8px 0' }}>🔍 পেজ খুঁজুন ও যোগ করুন</p>
-      <input value={searchPage} onChange={e => setSearchPage(e.target.value)} placeholder="পেজের নাম লিখুন..." style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '8px', boxSizing: 'border-box', color: '#1f2937' }} />
-      {msg && <p style={{ fontSize: '13px', color: '#16a34a', marginBottom: '8px' }}>{msg}</p>}
-      {filteredPages.map(p => (
-        <div key={p.id} style={{ background: 'white', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e5e7eb' }}>
-          <p style={{ margin: 0, fontSize: '14px', color: '#111' }}>{p.name_bn || p.name}</p>
-          <button onClick={() => requestPage(p.id)} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>+ Request</button>
-        </div>
-      ))}
+      {msg && <p style={{ fontSize: '13px', color: '#16a34a', marginTop: '8px' }}>{msg}</p>}
     </div>
   )
 }
@@ -313,16 +248,16 @@ export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any;
       <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 তারিখ, নাম, ফোন বা অর্ডার নম্বর..." style={{ width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid #cccccc', borderRadius: '8px', color: '#000000', backgroundColor: '#ffffff', boxSizing: 'border-box', outline: 'none' }} />
 
       {/* সেলস ও অর্ডার বক্স */}
-     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-  <div style={{ padding: '15px', border: '1px solid #fbcfe8', borderRadius: '10px', textAlign: 'center', background: '#fff5f7' }}>
-    <p style={{ fontSize: '14px', color: '#db2777', margin: 0, fontWeight: 'bold' }}>💰 Sales</p>
-    <p style={{ fontSize: '22px', fontWeight: 'bold', color: '#000000', margin: 0 }}>৳{totalEarning}</p>
-  </div>
-  <div style={{ padding: '15px', border: '1px solid #bfdbfe', borderRadius: '10px', textAlign: 'center', background: '#eff6ff' }}>
-    <p style={{ fontSize: '14px', color: '#2563eb', margin: 0, fontWeight: 'bold' }}>📦 Orders</p>
-    <p style={{ fontSize: '22px', fontWeight: 'bold', color: '#000000', margin: 0 }}>{totalOrders} টি</p>
-  </div>
-</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+        <div style={{ padding: '15px', border: '1px solid #fbcfe8', borderRadius: '10px', textAlign: 'center', background: '#fff5f7' }}>
+          <p style={{ fontSize: '14px', color: '#db2777', margin: 0, fontWeight: 'bold' }}>💰 Sales</p>
+          <p style={{ fontSize: '22px', fontWeight: 'bold', color: '#000000', margin: 0 }}>৳{totalEarning}</p>
+        </div>
+        <div style={{ padding: '15px', border: '1px solid #bfdbfe', borderRadius: '10px', textAlign: 'center', background: '#eff6ff' }}>
+          <p style={{ fontSize: '14px', color: '#2563eb', margin: 0, fontWeight: 'bold' }}>📦 Orders</p>
+          <p style={{ fontSize: '22px', fontWeight: 'bold', color: '#000000', margin: 0 }}>{totalOrders} টি</p>
+        </div>
+      </div>
 
       {/* অটো প্রিন্ট */}
       <div style={{ padding: '15px', background: '#f9fafb', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #dddddd' }}>
