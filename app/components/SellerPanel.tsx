@@ -63,7 +63,6 @@ export default function SellerPanel({ seller, onClose }: { seller: any; onClose:
     })
   }, [])
 
-  // এখানে মেনু লজিক এবং ট্যাব সুইচিং ঠিক করা হলো
   if (tab === 'sellerpage' && selectedSellerPage) {
     return <SellerPageProducts seller={seller} pageId={selectedSellerPage} onBack={() => setTab('products')} />
   }
@@ -75,11 +74,13 @@ export default function SellerPanel({ seller, onClose }: { seller: any; onClose:
             <button onClick={onClose} style={{ border: 'none', background: '#eee', padding: '8px 15px', borderRadius: '8px' }}>বন্ধ করুন</button>
         </div>
         
-        {/* মেনু অপশনস */}
-        <div onClick={() => alert('অর্ডার অপশন কাজ করছে')} style={{ padding: '15px', background: '#f0fdf4', marginBottom: '10px', borderRadius: '10px', cursor: 'pointer', border: '1px solid #bbf7d0' }}>🛒 অর্ডার সমূহ</div>
-        <div onClick={() => setTab('products')} style={{ padding: '15px', background: '#eff6ff', marginBottom: '20px', borderRadius: '10px', cursor: 'pointer', border: '1px solid #bfdbfe' }}>📦 আমার পেজ ও প্রোডাক্ট</div>
+        {/* মেনু বাটনগুলো যা আগে ছিল */}
+        <div onClick={() => setTab('orders')} style={{ padding: '15px', background: '#f0fdf4', marginBottom: '10px', borderRadius: '10px', cursor: 'pointer', border: '1px solid #bbf7d0' }}>🛒 অর্ডার সমূহ</div>
+        <div onClick={() => setTab('products')} style={{ padding: '15px', background: '#eff6ff', marginBottom: '10px', borderRadius: '10px', cursor: 'pointer', border: '1px solid #bfdbfe' }}>📦 আমার প্রোডাক্ট</div>
+        <a href="/seller/wallet" style={{ display: 'block', padding: '15px', background: '#fffbeb', marginBottom: '10px', borderRadius: '10px', cursor: 'pointer', border: '1px solid #fde68a', textDecoration: 'none', color: '#000' }}>💰 ওয়ালেট</a>
+        <a href="/seller/withdraw" style={{ display: 'block', padding: '15px', background: '#fef2f2', marginBottom: '10px', borderRadius: '10px', cursor: 'pointer', border: '1px solid #fecaca', textDecoration: 'none', color: '#000' }}>🏦 উত্তোলন</a>
         
-        <h3 style={{ fontSize: '16px', color: '#000', marginBottom: '15px' }}>📋 আমার পেজ সমূহ</h3>
+        <h3 style={{ fontSize: '16px', color: '#000', marginTop: '20px', marginBottom: '10px' }}>📋 আমার পেজ সমূহ</h3>
         {myPages.map(p => (
             <div key={p.id} 
                  onClick={() => { setSelectedSellerPage(p.page_id); setTab('sellerpage'); }} 
