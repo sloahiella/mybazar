@@ -1,57 +1,49 @@
 ﻿'use client'
-import { useEffect, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { useState } from 'react'
 
-const supabase = createClient(
-  'https://jthdtmqrapnfmmmeuqsw.supabase.co',
-  'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
-)
-
-export default function SellerPanel({ seller, onClose }: { seller: any; onClose: () => void }) {
-  const [tab, setTab] = useState('orders')
-  const [dateFilter, setDateFilter] = useState('আজকে')
+export default function SellerPanel({ seller }: { seller: any }) {
+  const [activeTab, setActiveTab] = useState('orders')
 
   return (
-    <div style={{ background: '#fff', padding: '10px' }}>
-        {/* কমপ্যাক্ট হেডার */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <h2 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0 }}>🏪 {seller.shop_name}</h2>
-            <button onClick={onClose} style={{ border: 'none', background: '#eee', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>বন্ধ করুন</button>
-        </div>
+    <div style={{ padding: '10px', background: '#fff', fontSize: '12px' }}>
+      {/* ফিল্টার সেকশন */}
+      <div style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
+        {['আজকে', 'গতকাল', 'এই সপ্তাহ', 'এই মাস'].map(label => (
+          <button key={label} style={{ padding: '5px 10px', borderRadius: '15px', border: '1px solid #ddd', background: label === 'আজকে' ? '#db2777' : '#fff', color: label === 'আজকে' ? '#fff' : '#000' }}>
+            {label}
+          </button>
+        ))}
+      </div>
 
-        {/* ছোট ফিল্টার বাটন */}
-        <div style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
-            {['আজকে', 'গতকাল', 'এই সপ্তাহ', 'এই মাস'].map(d => (
-                <button key={d} onClick={() => setDateFilter(d)} style={{ padding: '4px 10px', borderRadius: '15px', border: '1px solid #ddd', background: dateFilter === d ? '#db2777' : '#fff', color: dateFilter === d ? '#fff' : '#333', fontSize: '11px' }}>
-                    {d}
-                </button>
-            ))}
-        </div>
+      {/* সার্চবার */}
+      <input type="text" placeholder="তারিখ, নাম, ফোন বা অর্ডার নম্বর..." style={{ width: '100%', padding: '8px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '8px' }} />
 
-        {/* ছোট সামারি বক্স */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
-            <div style={{ padding: '10px', background: '#fdf2f8', borderRadius: '8px', border: '1px solid #fbcfe8', textAlign: 'center' }}>
-                <p style={{ fontSize: '10px', color: '#db2777', margin: 0 }}>Sales</p>
-                <p style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>0 Tk</p>
-            </div>
-            <div style={{ padding: '10px', background: '#eff6ff', borderRadius: '8px', border: '1px solid #bfdbfe', textAlign: 'center' }}>
-                <p style={{ fontSize: '10px', color: '#2563eb', margin: 0 }}>Orders</p>
-                <p style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>0 টি</p>
-            </div>
+      {/* সেলস ও অর্ডার বক্স */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+        <div style={{ padding: '15px', border: '1px solid #fbcfe8', borderRadius: '8px', textAlign: 'center' }}>
+          <p style={{ color: '#db2777', margin: 0 }}>Sales</p>
+          <p style={{ fontSize: '18px', fontWeight: 'bold' }}>0 Tk</p>
         </div>
+        <div style={{ padding: '15px', border: '1px solid #bfdbfe', borderRadius: '8px', textAlign: 'center' }}>
+          <p style={{ color: '#2563eb', margin: 0 }}>Orders</p>
+          <p style={{ fontSize: '18px', fontWeight: 'bold' }}>0 টি</p>
+        </div>
+      </div>
 
-        {/* ছোট ট্যাব বাটন */}
-        <div style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
-            {['Orders', 'Products', 'Withdraw'].map((item) => (
-                <button key={item} onClick={() => setTab(item.toLowerCase())} style={{ flex: 1, padding: '6px', borderRadius: '6px', border: 'none', background: tab === item.toLowerCase() ? '#db2777' : '#eee', color: tab === item.toLowerCase() ? '#fff' : '#000', fontSize: '12px' }}>
-                    {item}
-                </button>
-            ))}
-        </div>
-        
-        <div style={{ textAlign: 'center', fontSize: '12px', color: '#999', marginTop: '20px' }}>
-            কোনো নতুন অর্ডার নেই
-        </div>
+      {/* ট্যাব ও বাটন */}
+      <div style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
+        {['Orders', 'Sellers', 'Withdraw'].map((tab) => (
+          <button key={tab} onClick={() => setActiveTab(tab.toLowerCase())} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: activeTab === tab.toLowerCase() ? '#db2777' : '#f3f4f6' }}>
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* নোটিফিকেশন লিস্ট */}
+      <div style={{ border: '1px solid #eee', borderRadius: '8px', padding: '10px' }}>
+        <p style={{ fontSize: '11px', color: '#666' }}>🔔 নতুন অর্ডার #58 - Md Sohel</p>
+        <p style={{ fontSize: '11px', color: '#999' }}>২৯/৬/২০২৬, ৬:১৮:৫৬ PM</p>
+      </div>
     </div>
   )
 }
