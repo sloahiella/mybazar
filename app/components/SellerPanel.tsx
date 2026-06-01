@@ -7,87 +7,53 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 )
 
-// ১. প্রোডাক্ট ডিটেইলস মডাল
-function ProductDetailModal({ product, onClose }: { product: any; onClose: () => void }) {
-  return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={onClose}>
-      <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '400px', padding: '20px' }} onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} style={{ float: 'right', border: 'none', background: '#eee', padding: '5px 10px', borderRadius: '50%', cursor: 'pointer' }}>✕</button>
-        {product.image_url && <img src={product.image_url} style={{ width: '100%', borderRadius: '12px' }} />}
-        <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginTop: '15px' }}>{product.name}</h2>
-        <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px' }}>৳{product.price_per_unit}</p>
-        <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>{product.description}</p>
-      </div>
-    </div>
-  )
-}
-
-function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: number; onBack: () => void }) {
-  const [products, setProducts] = useState<any[]>([])
-  const [selectedProduct, setSelectedProduct] = useState<any>(null)
-  const [pageName, setPageName] = useState('')
-
-  useEffect(() => { 
-    supabase.from('products').select('*, stock(*)').eq('page_id', pageId).eq('seller_id', seller.id).eq('is_active', true).then(({ data }) => { if(data) setProducts(data) })
-    supabase.from('pages').select('name_bn, name').eq('id', pageId).single().then(({ data }) => { if(data) setPageName(data.name_bn || data.name) })
-  }, [pageId])
-
-  return (
-    <div style={{ background: '#fff', minHeight: '100vh' }}>
-      <div style={{ background: '#db2777', color: 'white', padding: '16px', display: 'flex', alignItems: 'center' }}>
-        <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer' }}>←</button>
-        <h2 style={{ fontSize: '18px', margin: '0 0 0 15px' }}>{pageName}</h2>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
-        {products.map(prod => (
-          <div key={prod.id} onClick={() => setSelectedProduct(prod)} style={{ background: 'white', borderRadius: '12px', border: '1px solid #eee', cursor: 'pointer', padding: '10px' }}>
-            <img src={prod.image_url} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '8px' }} />
-            <p style={{ fontWeight: 'bold', fontSize: '14px', margin: '10px 0 5px' }}>{prod.name}</p>
-            <p style={{ color: '#db2777', fontWeight: 'bold' }}>৳{prod.price_per_unit}</p>
-          </div>
-        ))}
-      </div>
-      {selectedProduct && <ProductDetailModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />}
-    </div>
-  )
-}
-
 export default function SellerPanel({ seller, onClose }: { seller: any; onClose: () => void }) {
-  const [tab, setTab] = useState('menu')
-  const [selectedSellerPage, setSelectedSellerPage] = useState<any>(null)
-  const [myPages, setMyPages] = useState<any[]>([])
+  const [tab, setTab] = useState('orders') // ডিফল্ট ট্যাব অর্ডার
+  const [dateFilter, setDateFilter] = useState('today')
+  const [orders, setOrders] = useState<any[]>([])
 
-  useEffect(() => {
-    supabase.from('seller_pages').select('*, pages(name, name_bn)').eq('seller_id', seller.id).then(({ data }) => {
-      if (data) setMyPages(data)
-    })
-  }, [])
-
-  if (tab === 'sellerpage' && selectedSellerPage) {
-    return <SellerPageProducts seller={seller} pageId={selectedSellerPage} onBack={() => setTab('products')} />
-  }
-
+  // অ্যাডমিনের মতো লেআউট ও লজিক
   return (
-    <div style={{ padding: '20px', background: '#fff', minHeight: '100vh' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '18px', color: '#000' }}>🏪 {seller.shop_name}</h3>
-            <button onClick={onClose} style={{ border: 'none', background: '#eee', padding: '8px 15px', borderRadius: '8px' }}>বন্ধ করুন</button>
+    <div style={{ background: '#fff', minHeight: '100vh', padding: '16px' }}>
+        {/* টপ হেডার */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold' }}>🏪 {seller.shop_name}</h2>
+            <button onClick={onClose} style={{ border: 'none', background: '#eee', padding: '8px 12px', borderRadius: '8px' }}>✕</button>
         </div>
-        
-        {/* মেনু বাটনগুলো যা আগে ছিল */}
-        <div onClick={() => setTab('orders')} style={{ padding: '15px', background: '#f0fdf4', marginBottom: '10px', borderRadius: '10px', cursor: 'pointer', border: '1px solid #bbf7d0' }}>🛒 অর্ডার সমূহ</div>
-        <div onClick={() => setTab('products')} style={{ padding: '15px', background: '#eff6ff', marginBottom: '10px', borderRadius: '10px', cursor: 'pointer', border: '1px solid #bfdbfe' }}>📦 আমার প্রোডাক্ট</div>
-        <a href="/seller/wallet" style={{ display: 'block', padding: '15px', background: '#fffbeb', marginBottom: '10px', borderRadius: '10px', cursor: 'pointer', border: '1px solid #fde68a', textDecoration: 'none', color: '#000' }}>💰 ওয়ালেট</a>
-        <a href="/seller/withdraw" style={{ display: 'block', padding: '15px', background: '#fef2f2', marginBottom: '10px', borderRadius: '10px', cursor: 'pointer', border: '1px solid #fecaca', textDecoration: 'none', color: '#000' }}>🏦 উত্তোলন</a>
-        
-        <h3 style={{ fontSize: '16px', color: '#000', marginTop: '20px', marginBottom: '10px' }}>📋 আমার পেজ সমূহ</h3>
-        {myPages.map(p => (
-            <div key={p.id} 
-                 onClick={() => { setSelectedSellerPage(p.page_id); setTab('sellerpage'); }} 
-                 style={{ padding: '15px', background: '#f9fafb', marginBottom: '10px', borderRadius: '10px', cursor: 'pointer', color: '#333', border: '1px solid #e5e7eb' }}>
-                {p.pages?.name_bn || p.pages?.name}
+
+        {/* ফিল্টার বাটনসমূহ (অ্যাডমিনের স্টাইল) */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto' }}>
+            {['আজকে', 'গতকাল', 'এই সপ্তাহ', 'এই মাস'].map(d => (
+                <button key={d} style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid #ddd', background: dateFilter === d ? '#db2777' : '#fff', color: dateFilter === d ? '#fff' : '#333' }}>
+                    {d}
+                </button>
+            ))}
+        </div>
+
+        {/* সেলস ও অর্ডার সামারি বক্স */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ padding: '16px', background: '#fdf2f8', borderRadius: '12px', border: '1px solid #fbcfe8', textAlign: 'center' }}>
+                <p style={{ fontSize: '12px', color: '#db2777' }}>Sales</p>
+                <p style={{ fontSize: '20px', fontWeight: 'bold' }}>0 Tk</p>
             </div>
-        ))}
+            <div style={{ padding: '16px', background: '#eff6ff', borderRadius: '12px', border: '1px solid #bfdbfe', textAlign: 'center' }}>
+                <p style={{ fontSize: '12px', color: '#2563eb' }}>Orders</p>
+                <p style={{ fontSize: '20px', fontWeight: 'bold' }}>0 টি</p>
+            </div>
+        </div>
+
+        {/* সেকশন ট্যাবসমূহ */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+            <button onClick={() => setTab('orders')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: tab === 'orders' ? '#db2777' : '#eee', color: tab === 'orders' ? '#fff' : '#000' }}>Orders</button>
+            <button onClick={() => setTab('products')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: tab === 'products' ? '#db2777' : '#eee', color: tab === 'products' ? '#fff' : '#000' }}>Products</button>
+            <button onClick={() => setTab('withdraw')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: tab === 'withdraw' ? '#db2777' : '#eee', color: tab === 'withdraw' ? '#fff' : '#000' }}>Withdraw</button>
+        </div>
+
+        {/* কন্টেন্ট এরিয়া */}
+        <div style={{ marginTop: '10px' }}>
+            {tab === 'orders' && <p style={{ textAlign: 'center', color: '#999' }}>কোনো নতুন অর্ডার নেই</p>}
+            {tab === 'products' && <p style={{ textAlign: 'center', color: '#999' }}>আপনার প্রোডাক্ট লিস্ট এখানে আসবে</p>}
+        </div>
     </div>
   )
 }
