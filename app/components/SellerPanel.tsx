@@ -7,15 +7,16 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 )
 
-// ১. প্রোডাক্ট ডিটেইলস মডাল (ক্লিক করলে আসবে)
+// ১. প্রোডাক্ট ডিটেইলস মডাল
 function ProductDetailModal({ product, onClose }: { product: any; onClose: () => void }) {
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={onClose}>
-      <div style={{ background: 'white', borderRadius: '15px', width: '90%', maxWidth: '400px', padding: '20px' }} onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} style={{ float: 'right', border: 'none', background: '#eee', padding: '5px 10px', borderRadius: '50%' }}>✕</button>
-        {product.image_url && <img src={product.image_url} style={{ width: '100%', borderRadius: '10px' }} />}
-        <h2 style={{ fontSize: '18px', marginTop: '15px' }}>{product.name}</h2>
-        <p style={{ color: '#db2777', fontWeight: 'bold' }}>৳{product.price_per_unit}</p>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={onClose}>
+      <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '400px', padding: '20px' }} onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} style={{ float: 'right', border: 'none', background: '#eee', padding: '5px 10px', borderRadius: '50%', cursor: 'pointer' }}>✕</button>
+        {product.image_url && <img src={product.image_url} style={{ width: '100%', borderRadius: '12px' }} />}
+        <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginTop: '15px' }}>{product.name}</h2>
+        <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px' }}>৳{product.price_per_unit}</p>
+        <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>{product.description}</p>
       </div>
     </div>
   )
@@ -24,23 +25,25 @@ function ProductDetailModal({ product, onClose }: { product: any; onClose: () =>
 function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: number; onBack: () => void }) {
   const [products, setProducts] = useState<any[]>([])
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  const [pageName, setPageName] = useState('')
 
   useEffect(() => { 
-    supabase.from('products').select('*, stock(*)').eq('page_id', pageId).eq('seller_id', seller.id).then(({ data }) => {
-      if (data) setProducts(data)
-    })
+    supabase.from('products').select('*, stock(*)').eq('page_id', pageId).eq('seller_id', seller.id).then(({ data }) => { if(data) setProducts(data) })
+    supabase.from('pages').select('name_bn, name').eq('id', pageId).single().then(({ data }) => { if(data) setPageName(data.name_bn || data.name) })
   }, [pageId])
 
   return (
-    <div style={{ background: '#fff' }}>
-      <button onClick={onBack} style={{ margin: '10px', padding: '10px', background: '#db2777', color: '#fff', border: 'none', borderRadius: '5px' }}>← ফিরে যান</button>
-      <div className="grid grid-cols-2 gap-3 p-4">
+    <div>
+      <div style={{ background: '#db2777', color: 'white', padding: '16px', display: 'flex', alignItems: 'center' }}>
+        <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer' }}>←</button>
+        <h2 style={{ fontSize: '18px', margin: '0 0 0 15px' }}>{pageName}</h2>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
         {products.map(prod => (
-          <div key={prod.id} 
-               onClick={() => setSelectedProduct(prod)} // এখানে ক্লিক করলেই মডাল আসবে
-               style={{ border: '1px solid #ddd', borderRadius: '10px', padding: '10px', cursor: 'pointer' }}>
-            <img src={prod.image_url} style={{ width: '100%', borderRadius: '5px' }} />
+          <div key={prod.id} onClick={() => setSelectedProduct(prod)} style={{ background: 'white', borderRadius: '12px', border: '1px solid #eee', cursor: 'pointer', padding: '10px' }}>
+            <img src={prod.image_url} style={{ width: '100%', borderRadius: '8px' }} />
             <p style={{ fontWeight: 'bold', fontSize: '14px' }}>{prod.name}</p>
+            <p style={{ color: '#db2777', fontWeight: 'bold' }}>৳{prod.price_per_unit}</p>
           </div>
         ))}
       </div>
@@ -49,7 +52,7 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
   )
 }
 
-export default function SellerPanel({ seller }: { seller: any }) {
+export default function SellerPanel({ seller, onClose }: { seller: any; onClose: () => void }) {
   const [tab, setTab] = useState('menu')
   const [selectedSellerPage, setSelectedSellerPage] = useState<any>(null)
   const [myPages, setMyPages] = useState<any[]>([])
@@ -60,14 +63,18 @@ export default function SellerPanel({ seller }: { seller: any }) {
     })
   }, [])
 
-  if (tab === 'sellerpage' && selectedSellerPage) {
-    return <SellerPageProducts seller={seller} pageId={selectedSellerPage} onBack={() => setTab('menu')} />
-  }
-
-  return (
+  // সেলার প্যানেলের মূল মেনু
+  const renderMenu = (
     <div style={{ padding: '20px' }}>
-        {/* লেখা কালো করা হয়েছে যাতে স্পষ্ট দেখা যায় */}
-        <h3 style={{ fontSize: '18px', marginBottom: '15px', color: '#000' }}>📋 আমার পেজ সমূহ</h3>
+        <h3 style={{ fontSize: '18px', color: '#000', marginBottom: '20px' }}>🏪 {seller.shop_name}</h3>
+        
+        {/* মেনু বাটনগুলো */}
+        <div onClick={() => setTab('orders')} style={{ padding: '15px', background: '#e5e7eb', marginBottom: '10px', borderRadius: '10px', cursor: 'pointer' }}>🛒 অর্ডার দেখুন</div>
+        <div onClick={() => setTab('products')} style={{ padding: '15px', background: '#e5e7eb', marginBottom: '10px', borderRadius: '10px', cursor: 'pointer' }}>📦 আমার পেজ ও প্রোডাক্ট</div>
+        
+        <hr style={{ margin: '20px 0' }} />
+        
+        <h3 style={{ fontSize: '16px', color: '#000', marginBottom: '10px' }}>📋 আমার পেজ সমূহ</h3>
         {myPages.map(p => (
             <div key={p.id} 
                  onClick={() => { setSelectedSellerPage(p.page_id); setTab('sellerpage'); }} 
@@ -75,6 +82,16 @@ export default function SellerPanel({ seller }: { seller: any }) {
                 {p.pages?.name_bn || p.pages?.name}
             </div>
         ))}
+    </div>
+  )
+
+  if (tab === 'sellerpage' && selectedSellerPage) {
+    return <SellerPageProducts seller={seller} pageId={selectedSellerPage} onBack={() => setTab('products')} />
+  }
+
+  return (
+    <div style={{ background: '#fff', minHeight: '100vh' }}>
+        {renderMenu}
     </div>
   )
 }
