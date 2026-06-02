@@ -25,7 +25,7 @@ function useIsMobile() {
 function isOfficeOpen() {
   const now = new Date();
   const totalMinutes = now.getHours() * 60 + now.getMinutes();
-  return totalMinutes >= 570 && totalMinutes <= 1290;
+ return totalMinutes >= 300 && totalMinutes <= 1440;
 }
 
 function CategoryGrid({ branch, onSelectPage }) {
