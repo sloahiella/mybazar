@@ -43,20 +43,23 @@ body {
   inherits: false;
 }
 
+@keyframes rotate {
+  to { --angle: 360deg; }
+}
+
 .rotating-border {
   position: relative;
   border-radius: 20px;
-  padding: 3px;
+  padding: 4px;
   background: conic-gradient(
-    from var(--angle), 
-    #ff0055, #00d2ff, #ff0055, #00d2ff
+    from var(--angle),
+    #ff0055 0deg, #ff0055 40deg, transparent 40deg, transparent 90deg,
+    #00d2ff 90deg, #00d2ff 130deg, transparent 130deg, transparent 180deg,
+    #facc15 180deg, #facc15 220deg, transparent 220deg, transparent 270deg,
+    #16a34a 270deg, #16a34a 310deg, transparent 310deg, transparent 360deg
   );
   animation: rotate 3s linear infinite;
-  display: inline-block; /* কার্ডের সাথে সামঞ্জস্য রাখতে */
-}
-
-@keyframes rotate {
-  to { --angle: 360deg; }
+  display: block;
 }
 
 .inner-content {
