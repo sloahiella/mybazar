@@ -1317,7 +1317,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
           {cart.map(item => <CartItem key={`${item.id}-${item.selectedSize}`} item={item} onUpdate={updateCartQty} onRemove={removeFromCart} />)}
         </div>
        
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
+       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', padding: '16px', paddingBottom: '80px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
           <div style={{ display: 'flex', justifycontent: 'space-between', marginBottom: '12px' }}>
             <span style={{ fontWeight: 'bold', color: '#374151', fontSize: '18px' }}>Total:</span>
             <span style={{ fontWeight: 'bold', color: '#db2777', fontSize: '20px' }}>{total.toFixed(0)} Tk</span>
