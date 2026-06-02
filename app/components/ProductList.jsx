@@ -1308,13 +1308,45 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   if (showCart) {
     return (
       <div className="min-h-screen bg-pink-50 pb-32">
-       {localStorage.getItem('customer_phone') && (
-  <div style={{ background: 'white', margin: '12px 16px', borderRadius: '12px', padding: '12px 16px', border: '1px solid #fbcfe8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <div>
-      <p style={{ fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0', fontSize: '14px' }}>👤 {localStorage.getItem('customer_name') || 'কাস্টমার'}</p>
-      <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>📱 {localStorage.getItem('customer_phone')}</p>
+      {localStorage.getItem('customer_phone') ? (
+  <div style={{ background: 'white', margin: '12px 16px', borderRadius: '12px', border: '1px solid #fbcfe8', overflow: 'hidden' }}>
+    <div style={{ background: '#be185d', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#fbbf24', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: 'bold', color: '#111' }}>
+        {localStorage.getItem('customer_name')?.[0]?.toUpperCase() || '👤'}
+      </div>
+      <div>
+        <p style={{ fontWeight: 'bold', color: 'white', margin: 0, fontSize: '15px' }}>{localStorage.getItem('customer_name')}</p>
+        <p style={{ color: 'rgba(255,255,255,0.8)', margin: '2px 0 0 0', fontSize: '12px' }}>{localStorage.getItem('customer_phone')}</p>
+      </div>
     </div>
-    <button onClick={() => { setShowCart(false); window.location.href = '/?orders=true'; }} style={{ background: '#fdf2f8', color: '#db2777', border: '1px solid #fbcfe8', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}>📋 অর্ডার</button>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {[
+        { icon: '📋', label: 'অর্ডার লিস্ট', onClick: () => { setShowCustomerOrders(true); setShowCart(false); } },
+        { icon: '❤️', label: 'আমার Wishlist', onClick: () => {} },
+        { icon: '📍', label: 'আমার ঠিকানা', onClick: () => {} },
+        { icon: '👤', label: 'Account তথ্য', onClick: () => {} },
+      ].map((item, i) => (
+        <button key={i} onClick={item.onClick} style={{ width: '100%', padding: '12px 16px', background: 'none', border: 'none', borderBottom: '1px solid #f3f4f6', textAlign: 'left', cursor: 'pointer', fontSize: '14px', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '18px' }}>{item.icon}</span>
+          {item.label}
+        </button>
+      ))}
+      <button onClick={() => { localStorage.removeItem('customer_phone'); localStorage.removeItem('customer_name'); localStorage.removeItem('customer_district'); localStorage.removeItem('customer_upazila'); setShowCart(false); window.location.reload(); }} style={{ width: '100%', padding: '12px 16px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', fontSize: '14px', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <span style={{ fontSize: '18px' }}>🚪</span>
+        লগআউট
+      </button>
+    </div>
+  </div>
+) : (
+  <div style={{ padding: '16px', background: 'white', margin: '16px', borderRadius: '12px', border: '1px solid #fbcfe8' }}>
+    <CustomerAuth onSuccess={(data) => {
+      localStorage.setItem('customer_phone', data.phone);
+      localStorage.setItem('customer_name', data.name);
+      localStorage.setItem('customer_district', data.district);
+      localStorage.setItem('customer_upazila', data.upazila);
+      setShowCart(false);
+      setShowCart(true);
+    }} />
   </div>
 )}
         <div className="p-4 space-y-3">
