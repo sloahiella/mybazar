@@ -1316,26 +1316,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         <div className="p-4 space-y-3">
           {cart.map(item => <CartItem key={`${item.id}-${item.selectedSize}`} item={item} onUpdate={updateCartQty} onRemove={removeFromCart} />)}
         </div>
-        <div style={{ padding: '16px', background: 'white', margin: '16px', borderRadius: '12px', border: '1px solid #fbcfe8' }}>
-          {localStorage.getItem('customer_phone') ? (
-            <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <p style={{ fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0', fontSize: '14px' }}>👤 {localStorage.getItem('customer_name') || 'কাস্টমার'}</p>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>📱 {localStorage.getItem('customer_phone')}</p>
-              </div>
-              <button onClick={() => { localStorage.removeItem('customer_phone'); localStorage.removeItem('customer_name'); localStorage.removeItem('customer_district'); localStorage.removeItem('customer_upazila'); setShowCart(false); setTimeout(() => setShowCart(true), 50); }} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>লগআউট</button>
-            </div>
-          ) : (
-            <CustomerAuth onSuccess={(data) => {
-              localStorage.setItem('customer_phone', data.phone);
-              localStorage.setItem('customer_name', data.name);
-              localStorage.setItem('customer_district', data.district);
-              localStorage.setItem('customer_upazila', data.upazila);
-              setShowCart(false);
-              setShowCart(true);
-            }} />
-          )}
-        </div>
+       
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
           <div style={{ display: 'flex', justifycontent: 'space-between', marginBottom: '12px' }}>
             <span style={{ fontWeight: 'bold', color: '#374151', fontSize: '18px' }}>Total:</span>
