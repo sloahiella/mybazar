@@ -597,7 +597,7 @@ export default function Home() {
         </div>
 
         <div className="rotating-border" style={{ maxWidth: '400px', width: '100%', margin: '0 16px' }}>
-          <div className="inner-content" style={{ padding: '32px', borderRadius: '17px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)' }}>
+        <div style={{ background: 'white', padding: '32px', borderRadius: '21px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)' }}>
             <div style={{ textAlign: 'center', marginBottom: '24px' }}>
               <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', marginBottom: '12px', cursor: 'pointer', display: 'block', margin: '0 auto 12px' }}
                 onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
