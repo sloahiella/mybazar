@@ -1520,7 +1520,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
               boxShadow: '0 -4px 12px rgba(0,0,0,0.1)'
             }}
           >
-            <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center' }}>
+<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>🛒 {Math.round(totalItems)} টি পণ্য</span>
               <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{Math.round(totalPrice).toFixed(0)} Tk</span>
               <span>ঝুড়ি দেখুন →</span>
