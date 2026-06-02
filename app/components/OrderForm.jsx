@@ -236,7 +236,7 @@ const items = cart.map(item => ({
         )}
       </div>
 
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
+     <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', padding: '16px', paddingBottom: '80px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
         <button onClick={submitOrder} disabled={loading}
           style={{
             width: '100%', background: loading ? '#9ca3af' : PINK, color: 'white',
