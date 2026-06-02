@@ -47,12 +47,33 @@ body {
 
 .rotating-border {
   border-radius: 24px;
-  padding: 4px;
+ padding: 5px;
   background: conic-gradient(
     from var(--angle),
     transparent 0deg,
-    transparent 40deg,
-    rgba(255, 0, 85, 0.1) 40deg,
+    transparent 30deg,
+    rgba(255, 0, 85, 0.1) 30deg,
+    rgba(255, 0, 85, 0.3) 50deg,
+    rgba(255, 0, 85, 0.6) 65deg,
+    #ff0055 72deg, #ff0055 100deg,
+    transparent 100deg,
+    transparent 120deg,
+    rgba(0, 210, 255, 0.1) 120deg,
+    rgba(0, 210, 255, 0.3) 140deg,
+    rgba(0, 210, 255, 0.6) 155deg,
+    #00d2ff 162deg, #00d2ff 190deg,
+    transparent 190deg,
+    transparent 210deg,
+    rgba(250, 204, 21, 0.1) 210deg,
+    rgba(250, 204, 21, 0.3) 230deg,
+    rgba(250, 204, 21, 0.6) 245deg,
+    #facc15 252deg, #facc15 280deg,
+    transparent 280deg,
+    transparent 300deg,
+    rgba(22, 163, 74, 0.1) 300deg,
+    rgba(22, 163, 74, 0.3) 320deg,
+    rgba(22, 163, 74, 0.6) 335deg,
+    #16a34a 342deg, #16a34a 370deg
     rgba(255, 0, 85, 0.3) 55deg,
     rgba(255, 0, 85, 0.6) 65deg,
     #ff0055 70deg, #ff0055 90deg,
