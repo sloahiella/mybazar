@@ -1308,11 +1308,15 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   if (showCart) {
     return (
       <div className="min-h-screen bg-pink-50 pb-32">
-        <div style={{ background: '#db2777', color: 'white', padding: '16px', display: 'flex', alignItems: 'center', justifycontent: 'space-between' }}>
-          <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>←</button>
-          <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>🛒 আপনার ঝুড়ি</h2>
-          <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '20px', fontSize: '13px' }}>{cart.length} টি</span>
-        </div>
+       {localStorage.getItem('customer_phone') && (
+  <div style={{ background: 'white', margin: '12px 16px', borderRadius: '12px', padding: '12px 16px', border: '1px solid #fbcfe8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div>
+      <p style={{ fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0', fontSize: '14px' }}>👤 {localStorage.getItem('customer_name') || 'কাস্টমার'}</p>
+      <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>📱 {localStorage.getItem('customer_phone')}</p>
+    </div>
+    <button onClick={() => { setShowCart(false); window.location.href = '/?orders=true'; }} style={{ background: '#fdf2f8', color: '#db2777', border: '1px solid #fbcfe8', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}>📋 অর্ডার</button>
+  </div>
+)}
         <div className="p-4 space-y-3">
           {cart.map(item => <CartItem key={`${item.id}-${item.selectedSize}`} item={item} onUpdate={updateCartQty} onRemove={removeFromCart} />)}
         </div>
