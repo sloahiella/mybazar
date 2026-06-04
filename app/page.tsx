@@ -635,7 +635,7 @@ export default function Home() {
     <div style={{ minHeight: '100vh', background: '#fdf2f8', overflowX: 'hidden' }}>
       {selectedOrder && <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={role === 'admin'} />}
       {showCustomerAuth && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, overflowY: 'auto', background: '#fdf2f8' }}>
           <CustomerAuth onSuccess={(data: any) => {
             localStorage.setItem('customer_phone', data.phone);
             localStorage.setItem('customer_name', data.name);
