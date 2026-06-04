@@ -636,13 +636,12 @@ export default function Home() {
       {selectedOrder && <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={role === 'admin'} />}
       {showCustomerAuth && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, overflowY: 'auto', background: '#fdf2f8' }}>
-          <CustomerAuth onSuccess={(data: any) => {
+        <CustomerAuth onSuccess={(data: any) => {
             localStorage.setItem('customer_phone', data.phone);
             localStorage.setItem('customer_name', data.name);
             localStorage.setItem('customer_district', data.district);
             localStorage.setItem('customer_upazila', data.upazila);
             setShowCustomerAuth(false);
-            setOpenCart(true);
           }} />
         </div>
       )}
