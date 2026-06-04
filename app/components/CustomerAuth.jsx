@@ -185,22 +185,53 @@ export default function CustomerAuth({ onSuccess }) {
 
           {!isLogin && (
             <>
-              <div>
+             <div style={{ position: 'relative' }}>
                 <label style={{ fontSize: '12px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>জেলা *</label>
-                <select value={district} onChange={e => { setDistrict(e.target.value); setUpazila(''); }}
-                  style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#1f2937', background: 'white' }}>
-                  <option value="">জেলা সিলেক্ট করুন</option>
-                  {Object.keys(districtUpazilas).map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
+                <input
+                  value={district}
+                  onChange={e => { setDistrict(e.target.value); setUpazila(''); }}
+                  placeholder="জেলা লিখুন বা সিলেক্ট করুন..."
+                  style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#1f2937' }}
+                />
+                {district && !districtUpazilas[district] && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '2px solid #fbcfe8', borderRadius: '10px', maxHeight: '200px', overflowY: 'auto', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                    {Object.keys(districtUpazilas).filter(d => d.includes(district)).map(d => (
+                      <div key={d} onClick={() => { setDistrict(d); setUpazila(''); }} style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '14px', color: '#1f2937', borderBottom: '1px solid #f3f4f6' }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#fdf2f8'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'white'}>
+                        {d}
+                      </div>
+                    ))}
+                    {Object.keys(districtUpazilas).filter(d => d.includes(district)).length === 0 && (
+                      <div style={{ padding: '10px 14px', fontSize: '13px', color: '#9ca3af' }}>কোনো জেলা পাওয়া যায়নি</div>
+                    )}
+                  </div>
+                )}
               </div>
-              <div>
+
+              <div style={{ position: 'relative' }}>
                 <label style={{ fontSize: '12px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>উপজেলা *</label>
-                <select value={upazila} onChange={e => setUpazila(e.target.value)}
-                  disabled={!district}
-                  style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#1f2937', background: 'white', opacity: !district ? 0.5 : 1 }}>
-                  <option value="">উপজেলা সিলেক্ট করুন</option>
-                  {upazilas.map(u => <option key={u} value={u}>{u}</option>)}
-                </select>
+                <input
+                  value={upazila}
+                  onChange={e => setUpazila(e.target.value)}
+                  disabled={!districtUpazilas[district]}
+                  placeholder={districtUpazilas[district] ? 'উপজেলা লিখুন বা সিলেক্ট করুন...' : 'আগে জেলা সিলেক্ট করুন'}
+                  style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#1f2937', opacity: !districtUpazilas[district] ? 0.5 : 1 }}
+                />
+                {districtUpazilas[district] && upazila && !districtUpazilas[district]?.includes(upazila) && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '2px solid #fbcfe8', borderRadius: '10px', maxHeight: '200px', overflowY: 'auto', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                    {(districtUpazilas[district] || []).filter(u => u.includes(upazila)).map(u => (
+                      <div key={u} onClick={() => setUpazila(u)} style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '14px', color: '#1f2937', borderBottom: '1px solid #f3f4f6' }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#fdf2f8'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'white'}>
+                        {u}
+                      </div>
+                    ))}
+                    {(districtUpazilas[district] || []).filter(u => u.includes(upazila)).length === 0 && (
+                      <div style={{ padding: '10px 14px', fontSize: '13px', color: '#9ca3af' }}>কোনো উপজেলা পাওয়া যায়নি</div>
+                    )}
+                  </div>
+                )}
               </div>
             </>
           )}
