@@ -75,8 +75,9 @@ const districtUpazilas = {
 };
 
 export default function CustomerAuth({ onSuccess }) {
-  const [isLogin, setIsLogin] = useState(true);
+ const [isLogin, setIsLogin] = useState(true);
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [district, setDistrict] = useState('');
   const [upazila, setUpazila] = useState('');
@@ -116,17 +117,18 @@ export default function CustomerAuth({ onSuccess }) {
   }
 
   async function handleRegister() {
-    if (!name || !phone || !district || !upazila) { alert('সব তথ্য দিন!'); return; }
+   if (!name || !phone || !email || !district || !upazila) { alert('সব তথ্য দিন!'); return; }
     if (phone.length < 11) { alert('সঠিক ফোন নম্বর দিন!'); return; }
     setLoading(true);
     const { data: existing } = await supabase.from('customers').select('*').eq('phone', phone).single();
     if (existing) { alert('এই নম্বরে আগেই অ্যাকাউন্ট আছে! লগিন করুন।'); setLoading(false); setIsLogin(true); return; }
-    const { data, error } = await supabase.from('customers').insert({ name, phone, district, upazila }).select().single();
+   const { data, error } = await supabase.from('customers').insert({ name, phone, email, district, upazila }).select().single();
     if (error) { alert('সমস্যা হয়েছে: ' + error.message); setLoading(false); return; }
     localStorage.setItem('customer_phone', data.phone);
     localStorage.setItem('customer_name', data.name);
     localStorage.setItem('customer_district', data.district);
     localStorage.setItem('customer_upazila', data.upazila);
+    localStorage.setItem('customer_email', data.email || '');
     onSuccess(data);
     setLoading(false);
   }
@@ -172,6 +174,14 @@ export default function CustomerAuth({ onSuccess }) {
             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="01XXXXXXXXX"
               style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#1f2937' }} />
           </div>
+
+          {!isLogin && (
+            <div>
+              <label style={{ fontSize: '12px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>ইমেইল *</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="example@gmail.com"
+                style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#1f2937' }} />
+            </div>
+          )}
 
           {!isLogin && (
             <>
