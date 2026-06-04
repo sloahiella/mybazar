@@ -115,7 +115,7 @@ const items = cart.map(item => ({
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: PINK_LIGHT, paddingBottom: '100px' }}>
+   <div style={{ minHeight: '100vh', background: PINK_LIGHT, paddingBottom: '160px' }}>
       <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>←</button>
         <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>অর্ডার ফর্ম</h2>
