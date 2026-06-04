@@ -632,7 +632,7 @@ export default function Home() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fdf2f8' }}>
+    <div style={{ minHeight: '100vh', background: '#fdf2f8', overflowX: 'hidden' }}>
       {selectedOrder && <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={role === 'admin'} />}
       {showCustomerAuth && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
