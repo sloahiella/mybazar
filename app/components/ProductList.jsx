@@ -67,7 +67,7 @@ function CategoryGrid({ branch, onSelectPage }) {
                 {pageProducts[page.id] ? (
                   <img src={pageProducts[page.id].image_url} alt={page.name_bn || page.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifycontent: 'center', fontSize: '24px' }}>🛍️</div>
+                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛍️</div>
                 )}
               </div>
             </div>
