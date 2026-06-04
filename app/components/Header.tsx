@@ -115,7 +115,8 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
               <div style={{ background: 'white', width: '280px', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
                 {customerPhone ? (
                   <>
-                    <div style={{ background: PINK, padding: '24px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                   <div style={{ background: PINK, padding: '24px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <button onClick={() => setShowProfile(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer', marginRight: '4px' }}>←</button>
                       <div style={{ width: '56px', height: '56px', borderRadius: '50%', overflow: 'hidden', background: '#fbbf24', flexShrink: 0 }}>
                         {customerAvatar ? <img src={customerAvatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 'bold', color: '#111' }}>{customerName?.[0]?.toUpperCase()}</div>}
                       </div>
