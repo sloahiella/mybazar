@@ -176,7 +176,16 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
           </div>
         </div>
         <div ref={printRef} style={{ padding: '24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2px 1fr', border: '2px solid #db2777', borderRadius: '8px', overflow: 'hidden', marginBottom: '16px' }}>
+         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2px 1fr', border: '2px solid #db2777', borderRadius: '8px', overflow: 'hidden', marginBottom: '16px' }}>
+            <div style={{ padding: '14px' }}>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1d4ed8', margin: '0 0 6px 0' }}>👤 কাস্টমার তথ্য</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>নাম: <strong>{order.customer_name}</strong></p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ফোন: {order.customer_phone}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>জেলা: {order.district}, {order.upazila}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ঠিকানা: {order.address}</p>
+              <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 2px 0', fontWeight: 'bold' }}>অর্ডার #: {order.id}</p>
+            </div>
+            <div style={{ background: '#db2777' }} />
             <div style={{ padding: '14px', background: '#fdf2f8' }}>
               <h1 style={{ fontSize: '16px', fontWeight: 'bold', color: '#db2777', margin: '0 0 6px 0' }}>🛒 সোহেল মার্ট</h1>
               <p style={{ fontSize: '11px', color: '#4b5563', margin: '2px 0' }}>🌐 sohelmart.com</p>
@@ -194,7 +203,7 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
               <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 2px 0', fontWeight: 'bold' }}>অর্ডার #: {order.id}</p>
             </div>
           </div>
-          <div style={{ display: 'flex', justifycontent: 'space-between', padding: '6px 4px', marginBottom: '4px', borderBottom: '2px solid #374151' }}>
+         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 4px', marginBottom: '4px', borderBottom: '2px solid #374151' }}>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
           </div>
