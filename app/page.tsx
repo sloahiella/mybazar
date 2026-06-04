@@ -636,7 +636,11 @@ export default function Home() {
       {selectedOrder && <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={role === 'admin'} />}
       {showCustomerAuth && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, overflowY: 'auto', background: '#fdf2f8' }}>
-        <CustomerAuth onSuccess={(data: any) => {
+          <div style={{ background: '#be185d', color: 'white', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px', position: 'sticky', top: 0, zIndex: 100 }}>
+            <button onClick={() => setShowCustomerAuth(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer' }}>←</button>
+            <h2 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>লগইন / রেজিস্ট্রেশন</h2>
+          </div>
+          <CustomerAuth onSuccess={(data: any) => {
             localStorage.setItem('customer_phone', data.phone);
             localStorage.setItem('customer_name', data.name);
             localStorage.setItem('customer_district', data.district);
