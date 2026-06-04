@@ -1305,54 +1305,24 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
     );
   }
 
-  if (showCart) {
+ if (showCart) {
     return (
       <div className="min-h-screen bg-pink-50 pb-32">
-      {localStorage.getItem('customer_phone') ? (
-  <div style={{ background: 'white', margin: '12px 16px', borderRadius: '12px', border: '1px solid #fbcfe8', overflow: 'hidden' }}>
-    <div style={{ background: '#be185d', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#fbbf24', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: 'bold', color: '#111' }}>
-        {localStorage.getItem('customer_name')?.[0]?.toUpperCase() || '👤'}
-      </div>
-      <div>
-        <p style={{ fontWeight: 'bold', color: 'white', margin: 0, fontSize: '15px' }}>{localStorage.getItem('customer_name')}</p>
-        <p style={{ color: 'rgba(255,255,255,0.8)', margin: '2px 0 0 0', fontSize: '12px' }}>{localStorage.getItem('customer_phone')}</p>
-      </div>
-    </div>
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {[
-        { icon: '📋', label: 'অর্ডার লিস্ট', onClick: () => { setShowCustomerOrders(true); setShowCart(false); } },
-        { icon: '❤️', label: 'আমার Wishlist', onClick: () => {} },
-        { icon: '📍', label: 'আমার ঠিকানা', onClick: () => {} },
-        { icon: '👤', label: 'Account তথ্য', onClick: () => {} },
-      ].map((item, i) => (
-        <button key={i} onClick={item.onClick} style={{ width: '100%', padding: '12px 16px', background: 'none', border: 'none', borderBottom: '1px solid #f3f4f6', textAlign: 'left', cursor: 'pointer', fontSize: '14px', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '18px' }}>{item.icon}</span>
-          {item.label}
-        </button>
-      ))}
-      <button onClick={() => { localStorage.removeItem('customer_phone'); localStorage.removeItem('customer_name'); localStorage.removeItem('customer_district'); localStorage.removeItem('customer_upazila'); setShowCart(false); window.location.reload(); }} style={{ width: '100%', padding: '12px 16px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', fontSize: '14px', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <span style={{ fontSize: '18px' }}>🚪</span>
-        লগআউট
-      </button>
-    </div>
-  </div>
-) : (
-  <div style={{ padding: '16px', background: 'white', margin: '16px', borderRadius: '12px', border: '1px solid #fbcfe8' }}>
-    <CustomerAuth onSuccess={(data) => {
-      localStorage.setItem('customer_phone', data.phone);
-      localStorage.setItem('customer_name', data.name);
-      localStorage.setItem('customer_district', data.district);
-      localStorage.setItem('customer_upazila', data.upazila);
-      setShowCart(false);
-      setShowCart(true);
-    }} />
-  </div>
-)}
+        <div style={{ background: '#db2777', color: 'white', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>←</button>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>🛒 আপনার ঝুড়ি</h2>
+          <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '20px', fontSize: '13px' }}>{cart.length} টি</span>
+        </div>
         <div className="p-4 space-y-3">
           {cart.map(item => <CartItem key={`${item.id}-${item.selectedSize}`} item={item} onUpdate={updateCartQty} onRemove={removeFromCart} />)}
         </div>
-       
+        <div style={{ position: 'fixed', bottom: isMobile ? '60px' : '0', left: 0, right: 0, background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <span style={{ fontWeight: 'bold', color: '#374151', fontSize: '18px' }}>Total:</span>
+            <span style={{ fontWeight: 'bold', color: '#db2777', fontSize: '20px' }}>{total.toFixed(0)} Tk</span>
+          </div>
+          <button onClick={() => officeOpen && setShowOrder(true)} style={{ width: '100%', background: officeOpen ? '#db2777' : '#9ca3af', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '18px', fontWeight: 'bold', cursor: officeOpen ? 'pointer' : 'not-allowed' }}>{officeOpen ? 'অর্ডার করুন' : '🔴 অফিস বন্ধ'}</button>
+        </div>
       </div>
     );
   }
