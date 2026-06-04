@@ -1538,7 +1538,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
             }} 
             style={{ 
               position: 'fixed', 
-              bottom: 0, 
+              bottom: isMobile ? '60px' : '0', 
               left: 0, 
               right: 0, 
               background: '#db2777', 
