@@ -180,7 +180,11 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
             <div style={{ padding: '14px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1d4ed8', margin: '0 0 6px 0' }}>👤 কাস্টমার তথ্য</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>নাম: <strong>{order.customer_name}</strong></p>
-              <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ফোন: {order.customer_phone}</p>
+             <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>
+  {order.customer_phone && order.customer_phone.includes('@') 
+    ? `ইমেইল: ${order.customer_phone}` 
+    : `ফোন: ${order.customer_phone}`}
+</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>জেলা: {order.district}, {order.upazila}</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '3px 0' }}>ঠিকানা: {order.address}</p>
               <p style={{ fontSize: '11px', color: '#374151', margin: '6px 0 2px 0', fontWeight: 'bold' }}>অর্ডার #: {order.id}</p>
