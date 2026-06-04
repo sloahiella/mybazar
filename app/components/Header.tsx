@@ -100,7 +100,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
           <span style={{ fontSize: '10px' }}>Wishlist</span>
         </button>
 
-        <div style={{ position: 'relative', display: 'block' }}>
+       <div style={{ position: 'relative', display: isMobile ? 'none' : 'block' }}>
           <button onClick={() => setShowProfile(!showProfile)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
             <span style={{ fontSize: '20px' }}>🛒</span>
             {cartCount > 0 && (
