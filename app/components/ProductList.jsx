@@ -1465,7 +1465,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
         <>
           <style>{mobileGridStyle}</style>
           {/* 👑 আল্টিমেট পারফেক্ট ফিক্স: w-max এবং max-w-full দিয়ে জোরাজুরি ছাড়াই কার্ড দুটোকে পাশাপাশি আনা হলো ভাই */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-1.5 pt-0 w-max max-w-full justify-start">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-1.5 pt-0">
             {displayProducts.map((product, index) => (
               <ProductCard  
                 key={product.id} 
