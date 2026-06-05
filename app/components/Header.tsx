@@ -100,7 +100,53 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
           <span style={{ fontSize: '10px' }}>Wishlist</span>
         </button>
 
-       <div style={{ position: 'relative', display: isMobile ? 'none' : 'block' }}>
+      <div style={{ position: 'relative', display: isMobile ? 'none' : 'block' }}>
+        {isMobile && showProfile && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 999, display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ background: 'white', width: '280px', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
+                {customerPhone ? (
+                  <>
+                    <div style={{ background: PINK, padding: '24px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <button onClick={() => setShowProfile(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer', marginRight: '4px' }}>←</button>
+                      <div style={{ width: '56px', height: '56px', borderRadius: '50%', overflow: 'hidden', background: '#fbbf24', flexShrink: 0 }}>
+                        {customerAvatar ? <img src={customerAvatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 'bold', color: '#111' }}>{customerName?.[0]?.toUpperCase()}</div>}
+                      </div>
+                      <div>
+                        <p style={{ fontWeight: 'bold', color: 'white', margin: 0, fontSize: '16px' }}>{customerName}</p>
+                        <p style={{ color: 'rgba(255,255,255,0.8)', margin: '4px 0 0 0', fontSize: '12px' }}>{customerPhone}</p>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      {[
+                        { icon: '📋', label: 'অর্ডার লিস্ট', onClick: () => { setShowProfile(false); onOrdersClick && onOrdersClick(); } },
+                        { icon: '❤️', label: 'আমার Wishlist', onClick: () => setShowProfile(false) },
+                        { icon: '📍', label: 'আমার ঠিকানা', onClick: () => setShowProfile(false) },
+                        { icon: '👤', label: 'Account তথ্য', onClick: () => setShowProfile(false) },
+                      ].map((item, i) => (
+                        <button key={i} onClick={item.onClick} style={{ width: '100%', padding: '14px 16px', background: 'none', border: 'none', borderBottom: '1px solid #f3f4f6', textAlign: 'left', cursor: 'pointer', fontSize: '14px', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span style={{ fontSize: '18px' }}>{item.icon}</span>
+                          {item.label}
+                        </button>
+                      ))}
+                      <button onClick={handleLogout} style={{ width: '100%', padding: '14px 16px', background: 'none', border: 'none', borderTop: '1px solid #e5e7eb', textAlign: 'left', cursor: 'pointer', fontSize: '14px', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
+                        <span style={{ fontSize: '18px' }}>🚪</span>
+                        লগআউট
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>👤</div>
+                    <p style={{ fontSize: '16px', color: '#374151', marginBottom: '16px' }}>লগইন করুন</p>
+                    <button onClick={() => { setShowProfile(false); onCartClick && onCartClick(); }} style={{ background: PINK, color: 'white', border: 'none', borderRadius: '12px', padding: '12px 24px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+                      🔑 লগইন করুন
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div onClick={() => setShowProfile(false)} style={{ position: 'fixed', inset: 0, zIndex: -1 }} />
+            </div>
+          )}
           <button onClick={() => setShowProfile(!showProfile)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
             <span style={{ fontSize: '20px' }}>🛒</span>
             {cartCount > 0 && (
@@ -171,7 +217,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
         <span style={{ fontSize: '20px' }}>☰</span>
         <span style={{ fontSize: '10px', color: '#6b7280' }}>Category</span>
       </button>
-      <button onClick={onCartClick} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px', position: 'relative' }}>
+    <button onClick={() => setShowProfile(!showProfile)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px', position: 'relative' }}>
         <span style={{ fontSize: '20px' }}>🛒</span>
         {cartCount > 0 && <span style={{ position: 'absolute', top: '4px', right: '8px', background: '#db2777', color: 'white', fontSize: '10px', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{cartCount}</span>}
         <span style={{ fontSize: '10px', color: '#6b7280' }}>Cart</span>
