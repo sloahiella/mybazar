@@ -1309,9 +1309,9 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
     );
   }
 
- if (showCart) {
+if (showCart) {
     return (
-      <div className="min-h-screen bg-pink-50 pb-32">
+      <div style={{ position: 'fixed', inset: 0, background: '#fdf2f8', zIndex: 200, overflowY: 'auto', paddingBottom: '120px' }}>
      <div style={{ background: '#db2777', color: 'white', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '12px', height: '60px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
           <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>←</button>
           <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>🛒 আপনার ঝুড়ি</h2>
