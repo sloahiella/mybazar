@@ -10,7 +10,7 @@ const supabase = createClient(
 const LOGO_URL = 'https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/Untitled%20folder/logo.jpg'
 const PINK = '#be185d' 
 
-export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, onAdminClick, sellerUser, onSellerClick, onOrdersClick }: {
+export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, onAdminClick, sellerUser, onSellerClick, onOrdersClick, hideHeader = false }: {
   cartCount?: number
   onCartClick?: () => void
   onMenuClick?: () => void
@@ -19,6 +19,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
   sellerUser?: any
   onSellerClick?: () => void
   onOrdersClick?: () => void
+  hideHeader?: boolean
 }) {
   const [showProfile, setShowProfile] = useState(false)
   const [customerName, setCustomerName] = useState<string | null>(null)
@@ -58,6 +59,8 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
     setShowProfile(false)
     window.location.reload()
   }
+
+  if (hideHeader) return null;
 
   return (
    <>

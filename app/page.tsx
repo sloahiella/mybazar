@@ -426,6 +426,7 @@ export default function Home() {
   const [showPageMenu, setShowPageMenu] = useState(false);
   const [openCart, setOpenCart] = useState(false);
   const [showCustomerAuth, setShowCustomerAuth] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState('today');
 
   useEffect(() => {
@@ -648,9 +649,10 @@ export default function Home() {
           }} />
         </div>
       )}
-      <Header
+<Header
         role={role}
         sellerUser={sellerUser}
+        hideHeader={cartOpen}
         onSellerClick={() => setShowSellerDrawer(true)}
         onAdminClick={() => {
           setShowAdminDrawer(true);
@@ -689,6 +691,7 @@ export default function Home() {
         onMenuClose={() => setShowPageMenu(false)}
         openCart={openCart}
         onCartClose={() => setOpenCart(false)}
+        onCartOpenChange={(val: boolean) => setCartOpen(val)}
         onOrderSuccess={(orderId: number, phone: string) => {
           localStorage.setItem('customer_phone', phone);
         }}

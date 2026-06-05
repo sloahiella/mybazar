@@ -1077,7 +1077,10 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
   );
 }
 
-export default function ProductList({ branch, role, onOrderSuccess, onPageChange, openMenu, onMenuClose, openCart, onCartClose }) {
+if (showCart) {
+    if (onCartOpenChange) onCartOpenChange(true);
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: '#fdf2f8', zIndex: 200, overflowY: 'auto', paddingBottom: '120px' }}></div>
   const isMobile = useIsMobile()
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
