@@ -61,7 +61,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
 
   return (
    <>
-    <div style={{ background: PINK, color: 'white', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '60px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+    <div style={{ background: PINK, color: 'white', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '60px', position: 'sticky', top: 0, zIndex: 50, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
 
       {/* বাম দিক (মেনু ও লোগো) */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
