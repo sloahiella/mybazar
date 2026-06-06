@@ -592,70 +592,51 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
   const filteredSales = dateFilteredOrders.reduce((a: number, o: any) => a + o.total_amount, 0);
   const filteredOrders2 = dateFilteredOrders.length;
 
- if (!selectedBranch) {
+if (!selectedBranch) {
     return (
-      <div style={{ minHeight: '100vh', background: PINK_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-        <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-          {role && (<><span style={{ fontSize: '12px', background: PINK_LIGHT, color: PINK, padding: '4px 8px', borderRadius: '20px', fontWeight: '500', border: `1px solid ${PINK_BORDER}` }}>{role === 'admin' ? '👑 Admin' : `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'}`}</span><button onClick={handleLogout} style={{ fontSize: '12px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>লগআউট</button></>)}
-        </div>
-
+      <div style={{ minHeight: '100vh', background: PINK_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
         <AnimatePresence>
           {!isDoorOpen && (
-            <div style={{ position: 'relative', maxWidth: '400px', width: '100%', margin: '0 16px' }}>
-              <div className="rotating-border" style={{ opacity: isDoorOpen ? 0 : 1, transition: 'opacity 0.2s' }}>
-                <div style={{ background: 'white', padding: '32px', borderRadius: '21px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)' }}>
-                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                    <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', marginBottom: '12px', cursor: 'pointer', display: 'block', margin: '0 auto 12px' }}
-                      onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ position: 'relative', width: '300px', height: '400px' }}>
+              {/* দরজা খোলার অ্যানিমেশন (মাঝখান থেকে দুই ভাগ) */}
+              <motion.div
+                initial={{ x: 0 }}
+                exit={{ x: -200, opacity: 0 }}
+                style={{ position: 'absolute', left: 0, width: '50%', height: '100%', background: 'white', zIndex: 10, borderRadius: '21px 0 0 21px', borderLeft: '2px solid #db2777' }}
+              />
+              <motion.div
+                initial={{ x: 0 }}
+                exit={{ x: 200, opacity: 0 }}
+                style={{ position: 'absolute', right: 0, width: '50%', height: '100%', background: 'white', zIndex: 10, borderRadius: '0 21px 21px 0', borderRight: '2px solid #db2777' }}
+              />
+
+              {/* কার্ডের কন্টেন্ট */}
+              <div style={{ position: 'relative', zIndex: 20, padding: '32px' }}>
+                 <img src={LOGO_URL} alt="Logo" style={{ height: '80px', margin: '0 auto 12px' }} />
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {branches.map((branch) => (
-                      <button key={branch.id} 
-                        onClick={() => { 
-                          setIsDoorOpen(true); 
-                          setTimeout(() => setSelectedBranch(branch), 1500); // অ্যানিমেশন শেষ হতে সময় দিন
-                        }} 
-                        style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer' }}>
-                        {branch.name.charAt(0).toUpperCase() + branch.name.slice(1)}
+                      <button key={branch.id} onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 1000); }} style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', cursor: 'pointer' }}>
+                        {branch.name}
                       </button>
                     ))}
-                  </div>
-                </div>
+                 </div>
               </div>
 
-              {/* এটি ভাঙার টুকরো অ্যানিমেশন */}
+              {/* টুকরো হয়ে ভেঙে যাওয়া (Shatter Effect) */}
               {isDoorOpen && (
-                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-                  {[...Array(20)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        width: '20px',
-                        height: '20px',
-                        background: i % 2 === 0 ? PINK : PINK_LIGHT,
-                        borderRadius: i % 3 === 0 ? '50%' : '0%', // গোল ও চারকোনা টুকরো
-                      }}
-                      initial={{ opacity: 0, x: 0, y: 0, scale: 1 }}
-                      animate={{
-                        opacity: [1, 1, 0],
-                        x: (Math.random() - 0.5) * 600, // চারপাশে ছিটিয়ে যাবে
-                        y: (Math.random() - 0.5) * 600,
-                        scale: Math.random() * 2, // টুকরো বড়-ছোট হবে
-                        rotate: Math.random() * 360,
-                      }}
-                      transition={{ duration: 1.5, ease: 'easeOut' }}
-                    />
-                  ))}
-                </div>
+                [...Array(15)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    style={{ position: 'absolute', top: '50%', left: '50%', width: '30px', height: '30px', background: PINK, borderRadius: '4px' }}
+                    initial={{ opacity: 1, scale: 1 }}
+                    animate={{ x: (Math.random() - 0.5) * 800, y: (Math.random() - 0.5) * 800, opacity: 0, scale: 0 }}
+                    transition={{ duration: 1.2 }}
+                  />
+                ))
               )}
             </div>
           )}
         </AnimatePresence>
-
-        {showLoginModal && ( ... )} {/* মোডাল কোড আগের মতোই থাকবে */}
       </div>
     );
   }
