@@ -806,7 +806,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
             </span>
           </div>
         ) : (
-          <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '12px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
+          <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '15px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
         )}
         
         <div style={{ marginTop: '4px' }}>
@@ -948,7 +948,9 @@ function EditProductModal({ product, onClose, onSave }) {
           <div style={{ background: '#f0fdf4', borderRadius: '8px', padding: '12px' }}>
             <label style={{ fontSize: '12px', color: '#15803d', fontWeight: 'bold' }}>প্রধান ছবি</label>
             {form.image_url && <img src={form.image_url} alt="main" style={{ width: '100%', objectFit: 'contain', borderRadius: '8px', marginTop: '8px', maxHeight: '120px' }} />}
-            <input type="file" accept="image/*" onChange={uploadMainImage} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
+           <input type="file" accept="image/*" onChange={uploadMainImage} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
+<p style={{ fontSize: '11px', color: '#6b7280', margin: '6px 0 2px 0' }}>অথবা URL দিন (imgbb.com থেকে)</p>
+          <input type="text" placeholder="https://i.ibb.co/..." value={form.image_url} onChange={e => setForm(prev => ({ ...prev, image_url: e.target.value }))} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '13px', boxSizing: 'border-box', outline: 'none', color: '#1f2937', marginTop: '4px' }} />
           </div>
           <div style={{ background: '#eff6ff', borderRadius: '8px', padding: '12px' }}>
             <label style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: 'bold' }}>অতিরিক্ত ছবি</label>
@@ -961,9 +963,8 @@ function EditProductModal({ product, onClose, onSave }) {
               ))}
             </div>
             <input type="file" accept="image/*" onChange={uploadExtraImage} style={{ border: '2px solid #bfdbfe', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
-            {uploading && <p style={{ fontSize: '12px', color: '#3b82f6', marginTop: '4px' }}>আপলোড হচ্ছে...</p>}
+          {uploading && <p style={{ fontSize: '12px', color: '#3b82f6', marginTop: '4px' }}>আপলোড হচ্ছে...</p>}
           </div>
-          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ডিসকাউন্ট % (যেমন: 10, 20, 45)</label><input name="discount_percent" type="number" min="0" max="99" value={form.discount_percent} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>বৈশিষ্ট্য</label><textarea name="description" value={form.description && form.description.includes('\nSize:') ? form.description.split('\nSize:')[0] : form.description} onChange={handle} rows={3} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'vertical', color: '#1f2937' }} /></div>
           <div style={{ background: '#eff6ff', borderRadius: '8px', padding: '12px' }}>
             <label style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: 'bold' }}>স্টক সেট করুন (বর্তমান: {currentStock} {product.unit})</label>
@@ -992,7 +993,15 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   const allSizesList = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
-  const [selectedSizes, setSelectedSizes] = useState([]);
+ const [selectedSizes, setSelectedSizes] = useState([]);
+  const [pages, setPages] = useState([]);
+
+  useEffect(() => { fetchPages(); }, []);
+
+  async function fetchPages() {
+    const { data } = await supabase.from('pages').select('id, name, name_bn').order('name_bn');
+    if (data) setPages(data);
+  }
 
   async function uploadImage(e) {
     const file = e.target.files?.[0]; if (!file) return;
@@ -1039,9 +1048,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>পণ্য কোড *</label><input name="product_code" value={form.product_code} onChange={handle} placeholder="P001" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>দাম *</label><input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label><select name="unit" value={form.unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="Kg">Kg</option><option value="Liter">Liter</option><option value="pcs">pcs</option><option value="packet">Packet</option></select></div>
-          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (ইং)</label><input name="category" value={form.category} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
-          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (বাং)</label><input name="category_bn" value={form.category_bn} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
-          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>প্রধান পেজ আইডি</label><input name="page_id" value={form.page_id} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+         <div><label style={{ fontSize: '12px', color: '#6b7280' }}>পেজ সিলেক্ট করুন</label><select name="page_id" value={form.page_id} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="">-- পেজ সিলেক্ট করুন --</option>{pages.map(page => <option key={page.id} value={page.id}>{page.name_bn || page.name}</option>)}</select></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>প্রাথমিক স্টক</label><input name="stock" type="number" value={form.stock} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           
           <div style={{ background: '#fdf2f8', borderRadius: '10px', padding: '12px', border: '1px solid #fbcfe8' }}>
@@ -1063,8 +1070,9 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           <div>
             <label style={{ fontSize: '12px', color: '#6b7280' }}>প্রধান ছবি</label>
             {form.image_url && <img src={form.image_url} alt="product" style={{ width: '100%', objectFit: 'contain', borderRadius: '8px', marginTop: '8px', maxHeight: '120px' }} />}
-            <input type="file" accept="image/*" onChange={uploadImage} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
-            {uploading && <p style={{ fontSize: '12px', color: '#3b82f6', marginTop: '4px' }}>আপলোড হচ্ছে...</p>}
+           <input type="file" accept="image/*" onChange={uploadImage} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
+<p style={{ fontSize: '11px', color: '#6b7280', margin: '6px 0 2px 0' }}>অথবা URL দিন (imgbb.com থেকে)</p>
+<input type="text" placeholder="https://i.ibb.co/..." value={form.image_url} onChange={e => setForm(prev => ({ ...prev, image_url: e.target.value }))} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '13px', boxSizing: 'border-box', outline: 'none', color: '#1f2937', marginTop: '4px' }} />
           </div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>বৈশিষ্ট্য</label><textarea name="description" value={form.description} onChange={handle} rows={2} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'vertical', color: '#1f2937' }} /></div>
         </div>
@@ -1077,8 +1085,9 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
   );
 }
 
-export default function ProductList({ branch, role, onOrderSuccess, onPageChange, openMenu, onMenuClose, openCart, onCartClose }) {
-  const isMobile = useIsMobile()
+
+export default function ProductList({ branch, role, onOrderSuccess, onPageChange, openMenu, onMenuClose, openCart, onCartClose, onCartOpenChange }) {
+const isMobile = useIsMobile()
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState([]);
@@ -1308,11 +1317,11 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
       </div>
     );
   }
-
- if (showCart) {
+if (showCart) {
+    if (onCartOpenChange) onCartOpenChange(true);
     return (
-      <div className="min-h-screen bg-pink-50 pb-32">
-     <div style={{ background: '#db2777', color: 'white', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '12px', height: '60px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+      <div style={{ position: 'fixed', inset: 0, background: '#fdf2f8', zIndex: 999, overflowY: 'auto', paddingBottom: '120px' }}>
+     <div style={{ background: '#df1d75', color: 'white', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '12px', height: '60px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
           <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>←</button>
           <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>🛒 আপনার ঝুড়ি</h2>
           <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '20px', fontSize: '13px' }}>{cart.length} টি</span>
