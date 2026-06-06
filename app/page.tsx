@@ -592,101 +592,69 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
   const filteredSales = dateFilteredOrders.reduce((a: number, o: any) => a + o.total_amount, 0);
   const filteredOrders2 = dateFilteredOrders.length;
 
-// নতুন উন্নত কোডটি এখানে বসান
 if (!selectedBranch) {
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: '#fdf2f8', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
+    <div style={{ minHeight: '100vh', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
       <AnimatePresence>
         {!isDoorOpen && (
-          <motion.div 
-            style={{ 
-              position: 'relative', 
-              width: '400px', 
-              height: '400px', 
-              backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", // আপনার দেওয়া সেই চমৎকার দরজার ছবির লিংক
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 10,
-              borderRadius: '20px',
-              boxShadow: '0 15px 35px rgba(0,0,0,0.2)'
-            }}
-          >
-            {/* লোগো সেকশন */}
-            <div style={{ marginBottom: '30px', textAlign: 'center' }}>
-              {/* আপনার লোগোর ছবি বসানো হলো */}
-              <img src={LOGO_URL} alt="Sohel Mart Logo" style={{ height: '70px', borderRadius: '15px', display: 'block', margin: '0 auto' }} />
-              {/* সোহেল মার্ট লেখা - গাঢ় গোলাপি রঙে */}
-              <h1 style={{ fontSize: '20px', color: '#be185d', margin: '15px 0 0 0', fontWeight: 'bold' }}>SOHEL MART</h1>
-            </div>
+          <div style={{ position: 'relative', width: '400px', height: '400px' }}>
+            
+            {/* বাম দরজা */}
+            <motion.div
+              animate={isDoorOpen ? { x: -400 } : { x: 0 }}
+              transition={{ duration: 1, ease: "easeInOut" }}
+              style={{ position: 'absolute', left: 0, width: '50%', height: '100%', backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", backgroundSize: '800px 400px', backgroundPosition: 'left', zIndex: 10 }}
+            />
+            {/* ডান দরজা */}
+            <motion.div
+              animate={isDoorOpen ? { x: 400 } : { x: 0 }}
+              transition={{ duration: 1, ease: "easeInOut" }}
+              style={{ position: 'absolute', right: 0, width: '50%', height: '100%', backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", backgroundSize: '800px 400px', backgroundPosition: 'right', zIndex: 10 }}
+            />
 
-            {/* শাখা বাটন সেকশন */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '220px' }}>
+            {/* লোগো ও বাটন (দরজার উপরে ভাসমান) */}
+            <div style={{ position: 'absolute', zIndex: 15, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+              <img src={LOGO_URL} alt="Logo" style={{ height: '70px', marginBottom: '20px' }} />
+              
               {branches.map((branch) => (
                 <button 
                   key={branch.id} 
-                  onClick={() => {
-                    setIsDoorOpen(true);
-                    setTimeout(() => setSelectedBranch(branch), 1200);
-                  }}
+                  onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 1200); }}
                   style={{
-                    padding: '14px',
-                    // সাদা ব্যাকগ্রাউন্ড আর নেই, বাটনগুলো নকশার ওপর সরাসরি বসানো
-                    background: 'none',
+                    padding: '12px 30px',
+                    background: 'rgba(255, 255, 255, 0.7)', // হালকা সাদা লেয়ার
+                    backdropFilter: 'blur(4px)',
                     border: '1px solid #d4af37',
                     borderRadius: '8px',
-                    // লেখাগুলো গাঢ় গোলাপি রঙে
                     color: '#be185d',
                     fontWeight: 'bold',
                     fontSize: '18px',
                     cursor: 'pointer',
-                    // বাটনগুলোতে হালকা শ্যাডো
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                    width: '200px'
                   }}
                 >
                   {branch.name.toUpperCase()}
                 </button>
               ))}
             </div>
-          </motion.div>
+
+            {/* ভাঙার ইফেক্ট (দরজা খোলার শেষে) */}
+            {isDoorOpen && (
+              <div style={{ position: 'absolute', inset: 0, zIndex: 20 }}>
+                {[...Array(20)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 1 }}
+                    animate={{ x: (Math.random() - 0.5) * 800, y: (Math.random() - 0.5) * 800, opacity: 0 }}
+                    transition={{ duration: 1.5, delay: 0.5 }}
+                    style={{ position: 'absolute', top: '50%', left: '50%', width: '20px', height: '20px', background: '#d4af37' }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </AnimatePresence>
-
-      {/* দরজা খোলার সময় ভাঙার টুকরোর ইফেক্ট */}
-      {isDoorOpen && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 20 }}>
-          {[...Array(25)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ x: 0, y: 0, opacity: 1 }}
-              animate={{ 
-                x: (Math.random() - 0.5) * 1200, 
-                y: (Math.random() - 0.5) * 1000, 
-                rotate: Math.random() * 360,
-                opacity: 0, scale: 0 
-              }}
-              transition={{ duration: 1.5, ease: "easeOut" }}
-              style={{ 
-                position: 'absolute', top: '50%', left: '50%', 
-                width: '20px', height: '20px', 
-                // টুকরোগুলোর রঙ দরজার নকশার সাথে মিলিয়ে সোনার করা হলো
-                background: '#d4af37' 
-              }}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
