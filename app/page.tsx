@@ -592,9 +592,8 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
   const filteredSales = dateFilteredOrders.reduce((a: number, o: any) => a + o.total_amount, 0);
   const filteredOrders2 = dateFilteredOrders.length;
 
-// নতুন কোডটি এখানে বসান
-// --- এখান থেকে কপি করা শুরু করুন ---
- if (!selectedBranch) {
+// নতুন উন্নত কোডটি এখানে বসান
+if (!selectedBranch) {
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -612,19 +611,24 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
               position: 'relative', 
               width: '400px', 
               height: '400px', 
-              backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", // আপনার দেওয়া ছবির লিংক
+              backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", // আপনার দেওয়া সেই চমৎকার দরজার ছবির লিংক
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 10
+              zIndex: 10,
+              borderRadius: '20px',
+              boxShadow: '0 15px 35px rgba(0,0,0,0.2)'
             }}
           >
             {/* লোগো সেকশন */}
             <div style={{ marginBottom: '30px', textAlign: 'center' }}>
-              <img src={LOGO_URL} alt="Sohel Mart Logo" style={{ height: '60px', borderRadius: '10px' }} />
+              {/* আপনার লোগোর ছবি বসানো হলো */}
+              <img src={LOGO_URL} alt="Sohel Mart Logo" style={{ height: '70px', borderRadius: '15px', display: 'block', margin: '0 auto' }} />
+              {/* সোহেল মার্ট লেখা - গাঢ় গোলাপি রঙে */}
+              <h1 style={{ fontSize: '20px', color: '#be185d', margin: '15px 0 0 0', fontWeight: 'bold' }}>SOHEL MART</h1>
             </div>
 
             {/* শাখা বাটন সেকশন */}
@@ -638,13 +642,16 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
                   }}
                   style={{
                     padding: '14px',
-                    background: 'white',
+                    // সাদা ব্যাকগ্রাউন্ড আর নেই, বাটনগুলো নকশার ওপর সরাসরি বসানো
+                    background: 'none',
                     border: '1px solid #d4af37',
                     borderRadius: '8px',
-                    color: '#885a3a',
+                    // লেখাগুলো গাঢ় গোলাপি রঙে
+                    color: '#be185d',
                     fontWeight: 'bold',
-                    fontSize: '16px',
+                    fontSize: '18px',
                     cursor: 'pointer',
+                    // বাটনগুলোতে হালকা শ্যাডো
                     boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                   }}
                 >
@@ -656,7 +663,7 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
         )}
       </AnimatePresence>
 
-      {/* দরজা খোলার সময় ধূলিসাৎ ইফেক্ট */}
+      {/* দরজা খোলার সময় ভাঙার টুকরোর ইফেক্ট */}
       {isDoorOpen && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 20 }}>
           {[...Array(25)].map((_, i) => (
@@ -672,7 +679,9 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
               transition={{ duration: 1.5, ease: "easeOut" }}
               style={{ 
                 position: 'absolute', top: '50%', left: '50%', 
-                width: '20px', height: '20px', background: '#d4af37' 
+                width: '20px', height: '20px', 
+                // টুকরোগুলোর রঙ দরজার নকশার সাথে মিলিয়ে সোনার করা হলো
+                background: '#d4af37' 
               }}
             />
           ))}
