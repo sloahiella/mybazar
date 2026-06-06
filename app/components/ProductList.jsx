@@ -243,7 +243,7 @@ function OrdersModal({ onClose, isAdmin = false }) {
 
   async function fetchOrders(p) {
     if (!p) return;
-    setsetLoading(true);
+    setLoading(true);
     const { data } = await supabase.from('orders').select('*, order_items(*, products(name, name_bn, unit, image_url, product_code))').eq('customer_phone', p).order('created_at', { ascending: false });
     if (data) setOrders(data);
     setLoading(false); setSearched(true);
@@ -251,7 +251,7 @@ function OrdersModal({ onClose, isAdmin = false }) {
   }
 
   async function fetchAllOrders() {
-    setsetLoading(true);
+    setLoading(true);
     const { data } = await supabase.from('orders').select('*, order_items(*, products(name, name_bn, unit, image_url, product_code))').order('created_at', { ascending: false });
     if (data) setOrders(data);
     setLoading(false); setSearched(true);
@@ -858,7 +858,7 @@ function EditProductModal({ product, onClose, onSave }) {
 
   async function uploadMainImage(e) {
     const file = e.target.files?.[0]; if (!file) return;
-    setUpsetLoading(true);
+    setUploading(true);
     const fileName = `${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from('products').upload(fileName, file);
     if (error) { alert('সমস্যা: ' + error.message); setUploading(false); return; }
@@ -869,7 +869,7 @@ function EditProductModal({ product, onClose, onSave }) {
 
   async function uploadExtraImage(e) {
     const file = e.target.files?.[0]; if (!file) return;
-    setUpsetLoading(true);
+    setUploading(true);
     const fileName = `${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from('products').upload(fileName, file);
     if (error) { alert('সমস্যা: ' + error.message); setUploading(false); return; }
@@ -892,7 +892,7 @@ function EditProductModal({ product, onClose, onSave }) {
   };
 
   async function save() {
-    setsetLoading(true);
+    setLoading(true);
     
     let rawDesc = form.description;
     if (rawDesc.includes('\nSize:')) {
@@ -996,7 +996,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
 
   async function uploadImage(e) {
     const file = e.target.files?.[0]; if (!file) return;
-    setUpsetLoading(true);
+    setUploading(true);
     const fileName = `${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from('products').upload(fileName, file);
     if (error) { alert('সমস্যা: ' + error.message); setUploading(false); return; }
@@ -1175,7 +1175,7 @@ export default function ProductList({ branch, role, onOrderSuccess, onPageChange
   }, [editingProduct, showAddModal, showOrder, showOrders]);
 
   async function fetchProducts() {
-    setsetLoading(true);
+    setLoading(true);
     const { data } = await supabase.from('products').select('*, stock(*), product_images(*)').eq('branch_id', branch.id).eq('is_active', true).order('sort_order', { ascending: true });
     if (data) setProducts(data);
     setLoading(false);
