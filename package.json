@@ -13,6 +13,7 @@
     "@supabase/supabase-js": "^2.104.1",
     "@tailwindcss/forms": "^0.5.11",
     "firebase": "^12.13.0",
+    "framer-motion": "^12.40.0",
     "next": "^15.5.18",
     "react": "19.2.4",
     "react-dom": "19.2.4",

@@ -4,6 +4,7 @@ import Header from './components/Header'
 import SellerPanel from './components/SellerPanel'
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { motion, AnimatePresence } from 'framer-motion'; // এটি যোগ করুন
 import ProductList from './components/ProductList';
 import CustomerAuth from './components/CustomerAuth';
 import HeroBanner from './components/HeroBanner';
@@ -428,6 +429,7 @@ export default function Home() {
   const [showCustomerAuth, setShowCustomerAuth] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState('today');
+const [isDoorOpen, setIsDoorOpen] = useState(false);
 
   useEffect(() => {
     fetchBranches();
@@ -590,24 +592,38 @@ export default function Home() {
   const filteredSales = dateFilteredOrders.reduce((a: number, o: any) => a + o.total_amount, 0);
   const filteredOrders2 = dateFilteredOrders.length;
 
-  if (!selectedBranch) {
+ if (!selectedBranch) {
     return (
       <div style={{ minHeight: '100vh', background: PINK_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
           {role && (<><span style={{ fontSize: '12px', background: PINK_LIGHT, color: PINK, padding: '4px 8px', borderRadius: '20px', fontWeight: '500', border: `1px solid ${PINK_BORDER}` }}>{role === 'admin' ? '👑 Admin' : `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'}`}</span><button onClick={handleLogout} style={{ fontSize: '12px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>লগআউট</button></>)}
         </div>
 
-        <div className="rotating-border" style={{ maxWidth: '400px', width: '100%', margin: '0 16px' }}>
-        <div style={{ background: 'white', padding: '32px', borderRadius: '21px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)' }}>
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', marginBottom: '12px', cursor: 'pointer', display: 'block', margin: '0 auto 12px' }}
-                onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-             {branches.map((branch) => (<button key={branch.id} onClick={() => setSelectedBranch(branch)} style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer' }}>{branch.name.charAt(0).toUpperCase() + branch.name.slice(1)}</button>))}
-            </div>
-          </div>
-        </div>
+        <AnimatePresence>
+          {!isDoorOpen && (
+            <motion.div
+              initial={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 2, opacity: 0, rotate: 10 }}
+              transition={{ duration: 0.8 }}
+              className="rotating-border" 
+              style={{ maxWidth: '400px', width: '100%', margin: '0 16px' }}
+            >
+              <div style={{ background: 'white', padding: '32px', borderRadius: '21px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)' }}>
+                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                  <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', marginBottom: '12px', cursor: 'pointer', display: 'block', margin: '0 auto 12px' }}
+                    onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {branches.map((branch) => (
+                    <button key={branch.id} onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 800); }} style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer' }}>
+                      {branch.name.charAt(0).toUpperCase() + branch.name.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {showLoginModal && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
@@ -630,7 +646,6 @@ export default function Home() {
       </div>
     );
   }
-
   return (
     <div style={{ minHeight: '100vh', background: '#fdf2f8', overflowX: 'hidden' }}>
       {selectedOrder && <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={role === 'admin'} />}
