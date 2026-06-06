@@ -594,67 +594,54 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
 
 if (!selectedBranch) {
   return (
-    <div style={{ minHeight: '100vh', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
-      <AnimatePresence>
-        {!isDoorOpen && (
-          <div style={{ position: 'relative', width: '400px', height: '400px' }}>
-            
-            {/* বাম দরজা */}
-            <motion.div
-              animate={isDoorOpen ? { x: -400 } : { x: 0 }}
-              transition={{ duration: 1, ease: "easeInOut" }}
-              style={{ position: 'absolute', left: 0, width: '50%', height: '100%', backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", backgroundSize: '800px 400px', backgroundPosition: 'left', zIndex: 10 }}
-            />
-            {/* ডান দরজা */}
-            <motion.div
-              animate={isDoorOpen ? { x: 400 } : { x: 0 }}
-              transition={{ duration: 1, ease: "easeInOut" }}
-              style={{ position: 'absolute', right: 0, width: '50%', height: '100%', backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", backgroundSize: '800px 400px', backgroundPosition: 'right', zIndex: 10 }}
-            />
+    <div style={{ 
+      minHeight: '100vh', 
+      background: '#fdf2f8', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center' 
+    }}>
+      {/* দরজা এবং কন্টেন্ট এর মেইন বক্স */}
+      <motion.div 
+        animate={isDoorOpen ? { opacity: 0, scale: 1.2 } : { opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8 }}
+        style={{ 
+          width: '400px', 
+          height: '400px', 
+          backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", 
+          backgroundSize: 'cover',
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          gap: '20px',
+          borderRadius: '15px'
+        }}
+      >
+        {/* লোগো */}
+        <img src={LOGO_URL} alt="Logo" style={{ height: '60px' }} />
 
-            {/* লোগো ও বাটন (দরজার উপরে ভাসমান) */}
-            <div style={{ position: 'absolute', zIndex: 15, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
-              <img src={LOGO_URL} alt="Logo" style={{ height: '70px', marginBottom: '20px' }} />
-              
-              {branches.map((branch) => (
-                <button 
-                  key={branch.id} 
-                  onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 1200); }}
-                  style={{
-                    padding: '12px 30px',
-                    background: 'rgba(255, 255, 255, 0.7)', // হালকা সাদা লেয়ার
-                    backdropFilter: 'blur(4px)',
-                    border: '1px solid #d4af37',
-                    borderRadius: '8px',
-                    color: '#be185d',
-                    fontWeight: 'bold',
-                    fontSize: '18px',
-                    cursor: 'pointer',
-                    width: '200px'
-                  }}
-                >
-                  {branch.name.toUpperCase()}
-                </button>
-              ))}
-            </div>
-
-            {/* ভাঙার ইফেক্ট (দরজা খোলার শেষে) */}
-            {isDoorOpen && (
-              <div style={{ position: 'absolute', inset: 0, zIndex: 20 }}>
-                {[...Array(20)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 1 }}
-                    animate={{ x: (Math.random() - 0.5) * 800, y: (Math.random() - 0.5) * 800, opacity: 0 }}
-                    transition={{ duration: 1.5, delay: 0.5 }}
-                    style={{ position: 'absolute', top: '50%', left: '50%', width: '20px', height: '20px', background: '#d4af37' }}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </AnimatePresence>
+        {/* বাটনসমূহ */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '200px' }}>
+          {branches.map((branch) => (
+            <button 
+              key={branch.id} 
+              onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 1000); }}
+              style={{
+                padding: '12px',
+                background: 'rgba(255, 255, 255, 0.6)', // হালকা সাদা লেয়ার
+                border: '1px solid #d4af37',
+                borderRadius: '8px',
+                color: '#be185d',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
+              {branch.name.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }
