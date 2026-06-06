@@ -593,59 +593,55 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
   const filteredOrders2 = dateFilteredOrders.length;
 
 if (!selectedBranch) {
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fdf2f8' }}>
-      {/* মেইন কন্টেইনার - ৪ কালার বর্ডার */}
-      <div style={{ 
-        position: 'relative', width: '408px', height: '408px', borderRadius: '24px', padding: '4px',
-        background: 'linear-gradient(45deg, #be185d, #d4af37, #fbcfe8, #ffffff)',
-        animation: 'rotate 3s linear infinite'
-      }}>
-        <style>{`@keyframes rotate { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }`}</style>
-        
-        {/* দরজা কন্টেইনার */}
-        <div style={{ position: 'relative', width: '400px', height: '400px', borderRadius: '20px', overflow: 'hidden', display: 'flex' }}>
-          
-          {/* লোগো এবং বাটন লেয়ার (দরজার পাল্লার উপরে থাকবে) */}
-          <div style={{ position: 'absolute', inset: 0, zIndex: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
-            <img src={LOGO_URL} alt="Logo" style={{ height: '70px' }} />
-            {branches.map((branch) => (
-              <button 
-                key={branch.id} 
-                onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 1000); }}
-                style={{
-                  padding: '12px 40px',
-                  background: 'rgba(255, 255, 255, 0.5)',
-                  border: '1px solid #d4af37',
-                  borderRadius: '8px',
-                  color: '#be185d',
-                  fontWeight: 'bold',
-                  fontSize: '18px',
-                  cursor: 'pointer'
-                }}
-              >
-                {branch.name.toUpperCase()}
-              </button>
-            ))}
-          </div>
+    return (
+      <div style={{ minHeight: '100vh', background: PINK_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <AnimatePresence>
+          {!isDoorOpen && (
+            <motion.div
+              initial={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 2, opacity: 0, rotate: 10 }}
+              transition={{ duration: 0.8 }}
+              className="rotating-border"
+              style={{ maxWidth: '400px', width: '100%', margin: '0 16px' }}
+            >
+              <div style={{ background: 'white', padding: '32px', borderRadius: '21px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)' }}>
+                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                  <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', cursor: 'pointer', display: 'block', margin: '0 auto 12px' }}
+                    onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {branches.map((branch) => (
+                    <button key={branch.id} onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 800); }} style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer' }}>
+                      {branch.name.charAt(0).toUpperCase() + branch.name.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          {/* বাম পাল্লা */}
-          <motion.div
-            animate={isDoorOpen ? { x: -200 } : { x: 0 }}
-            transition={{ duration: 1 }}
-            style={{ width: '50%', height: '100%', backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", backgroundSize: '400px 400px', backgroundPosition: 'left', zIndex: 10 }}
-          />
-          {/* ডান পাল্লা */}
-          <motion.div
-            animate={isDoorOpen ? { x: 200 } : { x: 0 }}
-            transition={{ duration: 1 }}
-            style={{ width: '50%', height: '100%', backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", backgroundSize: '400px 400px', backgroundPosition: 'right', zIndex: 10 }}
-          />
-        </div>
+        {showLoginModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+            <div style={{ background: 'white', borderRadius: '20px', padding: '24px', maxWidth: '340px', width: '100%', margin: '0 16px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: PINK, textAlign: 'center', marginBottom: '16px' }}>🔐 লগইন</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                <button onClick={() => setLoginType('admin')} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: loginType === 'admin' ? PINK : '#e5e7eb', background: loginType === 'admin' ? PINK : 'white', color: loginType === 'admin' ? 'white' : '#374151' }}>👑 Admin</button>
+                <button onClick={() => setLoginType('editor')} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: loginType === 'editor' ? PINK : '#e5e7eb', background: loginType === 'editor' ? PINK : 'white', color: loginType === 'editor' ? 'white' : '#374151' }}>✏️ Editor</button>
+                <button onClick={() => { setShowLoginModal(false); window.location.href = '/seller/login'; }} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid #16a34a', cursor: 'pointer', background: 'white', color: '#16a34a' }}>🏪 Seller</button>
+              </div>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} placeholder={loginType === 'admin' ? 'Admin পাসওয়ার্ড' : 'Editor পাসওয়ার্ড'} style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginBottom: '8px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} autoFocus />
+              {loginError && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '8px' }}>{loginError}</p>}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={handleLogin} style={{ background: PINK, color: 'white', border: 'none', borderRadius: '8px', padding: '10px', flex: 1, fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>লগইন</button>
+                <button onClick={() => { setShowLoginModal(false); setPassword(''); setLoginError(''); }} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '10px 16px', fontSize: '14px', cursor: 'pointer' }}>বাতিল</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
-}
+    );
+  }
   return (
     <div style={{ minHeight: '100vh', background: '#fdf2f8', overflowX: 'hidden' }}>
       {selectedOrder && <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={role === 'admin'} />}
