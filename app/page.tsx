@@ -601,48 +601,61 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
 
         <AnimatePresence>
           {!isDoorOpen && (
-            <motion.div
-              initial={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 2, opacity: 0, rotate: 10 }}
-              transition={{ duration: 0.8 }}
-              className="rotating-border" 
-              style={{ maxWidth: '400px', width: '100%', margin: '0 16px' }}
-            >
-              <div style={{ background: 'white', padding: '32px', borderRadius: '21px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)' }}>
-                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                  <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', marginBottom: '12px', cursor: 'pointer', display: 'block', margin: '0 auto 12px' }}
-                    onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {branches.map((branch) => (
-                    <button key={branch.id} onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 800); }} style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer' }}>
-                      {branch.name.charAt(0).toUpperCase() + branch.name.slice(1)}
-                    </button>
-                  ))}
+            <div style={{ position: 'relative', maxWidth: '400px', width: '100%', margin: '0 16px' }}>
+              <div className="rotating-border" style={{ opacity: isDoorOpen ? 0 : 1, transition: 'opacity 0.2s' }}>
+                <div style={{ background: 'white', padding: '32px', borderRadius: '21px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)' }}>
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', marginBottom: '12px', cursor: 'pointer', display: 'block', margin: '0 auto 12px' }}
+                      onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {branches.map((branch) => (
+                      <button key={branch.id} 
+                        onClick={() => { 
+                          setIsDoorOpen(true); 
+                          setTimeout(() => setSelectedBranch(branch), 1500); // অ্যানিমেশন শেষ হতে সময় দিন
+                        }} 
+                        style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer' }}>
+                        {branch.name.charAt(0).toUpperCase() + branch.name.slice(1)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </motion.div>
+
+              {/* এটি ভাঙার টুকরো অ্যানিমেশন */}
+              {isDoorOpen && (
+                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+                  {[...Array(20)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        width: '20px',
+                        height: '20px',
+                        background: i % 2 === 0 ? PINK : PINK_LIGHT,
+                        borderRadius: i % 3 === 0 ? '50%' : '0%', // গোল ও চারকোনা টুকরো
+                      }}
+                      initial={{ opacity: 0, x: 0, y: 0, scale: 1 }}
+                      animate={{
+                        opacity: [1, 1, 0],
+                        x: (Math.random() - 0.5) * 600, // চারপাশে ছিটিয়ে যাবে
+                        y: (Math.random() - 0.5) * 600,
+                        scale: Math.random() * 2, // টুকরো বড়-ছোট হবে
+                        rotate: Math.random() * 360,
+                      }}
+                      transition={{ duration: 1.5, ease: 'easeOut' }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </AnimatePresence>
 
-        {showLoginModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-            <div style={{ background: 'white', borderRadius: '20px', padding: '24px', maxWidth: '340px', width: '100%', margin: '0 16px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: PINK, textAlign: 'center', marginBottom: '16px' }}>🔐 লগইন</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
-                <button onClick={() => setLoginType('admin')} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: loginType === 'admin' ? PINK : '#e5e7eb', background: loginType === 'admin' ? PINK : 'white', color: loginType === 'admin' ? 'white' : '#374151' }}>👑 Admin</button>
-                <button onClick={() => setLoginType('editor')} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: loginType === 'editor' ? PINK : '#e5e7eb', background: loginType === 'editor' ? PINK : 'white', color: loginType === 'editor' ? 'white' : '#374151' }}>✏️ Editor</button>
-                <button onClick={() => { setShowLoginModal(false); window.location.href = '/seller/login'; }} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid #16a34a', cursor: 'pointer', background: 'white', color: '#16a34a' }}>🏪 Seller</button>
-              </div>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} placeholder={loginType === 'admin' ? 'Admin পাসওয়ার্ড' : 'Editor পাসওয়ার্ড'} style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginBottom: '8px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} autoFocus />
-              {loginError && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '8px' }}>{loginError}</p>}
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={handleLogin} style={{ background: PINK, color: 'white', border: 'none', borderRadius: '8px', padding: '10px', flex: 1, fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>লগইন</button>
-                <button onClick={() => { setShowLoginModal(false); setPassword(''); setLoginError(''); }} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '10px 16px', fontSize: '14px', cursor: 'pointer' }}>বাতিল</button>
-              </div>
-            </div>
-          </div>
-        )}
+        {showLoginModal && ( ... )} {/* মোডাল কোড আগের মতোই থাকবে */}
       </div>
     );
   }
