@@ -594,121 +594,93 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
 
 // নতুন কোডটি এখানে বসান
 // --- এখান থেকে কপি করা শুরু করুন ---
-  if (!selectedBranch) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
-        
-        <AnimatePresence>
-          {!isDoorOpen && (
-            <div style={{ position: 'relative', width: '100%', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-              
-              {/* বাম দিকের নকশা করা দরজা পাল্লা */}
-              <motion.div
-                initial={{ x: 0 }}
-                exit={{ x: '-100%', opacity: 0 }}
-                transition={{ duration: 1.2, ease: [0.45, 0.05, 0.55, 0.95] }}
-                style={{
-                  position: 'absolute', left: 0, width: '50%', height: '100%',
-                  background: '#be185d', borderRight: '2px solid rgba(255,255,255,0.3)',
-                  boxShadow: 'inset -10px 0 30px rgba(0,0,0,0.4)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-                  backgroundImage: 'radial-gradient(circle at center, #db2777 0%, #be185d 100%)'
-                }}
-              >
-                 {/* দরজার বর্ডার ডিজাইন */}
-                 <div style={{ width: '85%', height: '90%', border: '2px solid rgba(255,255,255,0.1)', borderRadius: '20px 0 0 20px', margin: '20px' }}></div>
-              </motion.div>
-
-              {/* ডান দিকের নকশা করা দরজা পাল্লা */}
-              <motion.div
-                initial={{ x: 0 }}
-                exit={{ x: '100%', opacity: 0 }}
-                transition={{ duration: 1.2, ease: [0.45, 0.05, 0.55, 0.95] }}
-                style={{
-                  position: 'absolute', right: 0, width: '50%', height: '100%',
-                  background: '#be185d', borderLeft: '2px solid rgba(255,255,255,0.3)',
-                  boxShadow: 'inset 10px 0 30px rgba(0,0,0,0.4)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
-                  backgroundImage: 'radial-gradient(circle at center, #db2777 0%, #be185d 100%)'
-                }}
-              >
-                 <div style={{ width: '85%', height: '90%', border: '2px solid rgba(255,255,255,0.1)', borderRadius: '0 20px 20px 0', margin: '20px' }}></div>
-              </motion.div>
-
-              {/* লোগো এবং বাটন (দরজার মাঝখানে ভাসমান থাকবে) */}
-              <motion.div 
-                exit={{ scale: 1.5, opacity: 0, filter: 'blur(10px)' }}
-                transition={{ duration: 0.8 }}
-                style={{ position: 'relative', zIndex: 110, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
-              >
-                {/* আপনার ওয়েবসাইটের লোগো */}
-                <div style={{ background: 'white', padding: '15px', borderRadius: '25px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-                   <img src={LOGO_URL} alt="Sohel Mart" style={{ height: '80px', display: 'block' }} />
-                </div>
-
-                {/* শাখা বাটনসমূহ */}
-                <div style={{ display: 'flex', gap: '20px' }}>
-                  {branches.map((branch) => (
-                    <motion.button 
-                      key={branch.id} 
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => {
-                        setIsDoorOpen(true);
-                        // ৫০০ মিলিসেকেন্ড পর পেছনের ওয়েবসাইট লোড হবে যাতে ট্রানজিশন স্মুথ হয়
-                        setTimeout(() => setSelectedBranch(branch), 800); 
-                      }} 
-                      style={{ 
-                        padding: '16px 40px', background: 'white', border: 'none', 
-                        borderRadius: '50px', color: '#be185d', fontWeight: 'bold', 
-                        fontSize: '20px', cursor: 'pointer', boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
-                        minWidth: '160px'
-                      }}
-                    >
-                      {branch.name_bn || branch.name}
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* ভাঙার টুকরো বা ধূলিসাৎ ইফেক্ট (দরজা খোলার সময়) */}
-              {isDoorOpen && (
-                <div style={{ position: 'absolute', inset: 0, zIndex: 120, pointerEvents: 'none' }}>
-                  {[...Array(25)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                      animate={{ 
-                        x: (Math.random() - 0.5) * 1200, 
-                        y: (Math.random() - 0.5) * 800, 
-                        rotate: Math.random() * 360,
-                        opacity: 0, scale: 0 
-                      }}
-                      transition={{ duration: 1.5, ease: "easeOut" }}
-                      style={{
-                        position: 'absolute', top: '50%', left: '50%',
-                        width: '25px', height: '25px', background: '#fbcfe8',
-                        borderRadius: i % 2 === 0 ? '50%' : '4px',
-                        boxShadow: '0 0 10px rgba(255,255,255,0.5)'
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
+ if (!selectedBranch) {
+  return (
+    <div style={{ 
+      minHeight: '100vh', 
+      background: '#fdf2f8', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      <AnimatePresence>
+        {!isDoorOpen && (
+          <motion.div 
+            style={{ 
+              position: 'relative', 
+              width: '400px', 
+              height: '400px', 
+              backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", // আপনার দেওয়া ছবির লিংক
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10
+            }}
+          >
+            {/* লোগো সেকশন */}
+            <div style={{ marginBottom: '30px', textAlign: 'center' }}>
+              <img src={LOGO_URL} alt="Sohel Mart Logo" style={{ height: '60px', borderRadius: '10px' }} />
             </div>
-          )}
-        </AnimatePresence>
 
-        {/* নিচের লগইন মোডাল আগের মতোই থাকবে */}
-        {showLoginModal && (
-           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
-             {/* আপনার আগের মোডাল কোড */}
-           </div>
+            {/* শাখা বাটন সেকশন */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '220px' }}>
+              {branches.map((branch) => (
+                <button 
+                  key={branch.id} 
+                  onClick={() => {
+                    setIsDoorOpen(true);
+                    setTimeout(() => setSelectedBranch(branch), 1200);
+                  }}
+                  style={{
+                    padding: '14px',
+                    background: 'white',
+                    border: '1px solid #d4af37',
+                    borderRadius: '8px',
+                    color: '#885a3a',
+                    fontWeight: 'bold',
+                    fontSize: '16px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  {branch.name.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </motion.div>
         )}
-      </div>
-    );
-  }
-  // --- এখান পর্যন্ত কপি শেষ ---
+      </AnimatePresence>
+
+      {/* দরজা খোলার সময় ধূলিসাৎ ইফেক্ট */}
+      {isDoorOpen && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 20 }}>
+          {[...Array(25)].map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ x: 0, y: 0, opacity: 1 }}
+              animate={{ 
+                x: (Math.random() - 0.5) * 1200, 
+                y: (Math.random() - 0.5) * 1000, 
+                rotate: Math.random() * 360,
+                opacity: 0, scale: 0 
+              }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+              style={{ 
+                position: 'absolute', top: '50%', left: '50%', 
+                width: '20px', height: '20px', background: '#d4af37' 
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
   return (
     <div style={{ minHeight: '100vh', background: '#fdf2f8', overflowX: 'hidden' }}>
       {selectedOrder && <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={role === 'admin'} />}
