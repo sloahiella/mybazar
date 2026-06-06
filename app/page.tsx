@@ -595,31 +595,37 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
 if (!selectedBranch) {
     return (
       <div style={{ minHeight: '100vh', background: PINK_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-        <AnimatePresence>
-          {!isDoorOpen && (
-            <motion.div
-              initial={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 2, opacity: 0, rotate: 10 }}
-              transition={{ duration: 0.8 }}
-              className="rotating-border"
-              style={{ maxWidth: '400px', width: '100%', margin: '0 16px' }}
-            >
-              <div style={{ background: 'white', padding: '32px', borderRadius: '21px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)' }}>
-                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                  <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', cursor: 'pointer', display: 'block', margin: '0 auto 12px' }}
-                    onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {branches.map((branch) => (
-                    <button key={branch.id} onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 800); }} style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer' }}>
-                      {branch.name.charAt(0).toUpperCase() + branch.name.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="rotating-border" style={{ maxWidth: '400px', width: '100%', margin: '0 16px', position: 'relative', overflow: 'hidden', borderRadius: '21px' }}>
+          
+          {/* বাম দরজা */}
+          <motion.div
+            animate={isDoorOpen ? { x: '-100%' } : { x: '0%' }}
+            transition={{ duration: 0.8 }}
+            style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', zIndex: 10, backgroundImage: 'url(https://i.ibb.co/Ldb5bfHk/98.jpg)', backgroundSize: '800px auto', backgroundPosition: 'left center' }}
+          />
+
+          {/* ডান দরজা */}
+          <motion.div
+            animate={isDoorOpen ? { x: '100%' } : { x: '0%' }}
+            transition={{ duration: 0.8 }}
+            style={{ position: 'absolute', top: 0, right: 0, width: '50%', height: '100%', zIndex: 10, backgroundImage: 'url(https://i.ibb.co/Ldb5bfHk/98.jpg)', backgroundSize: '800px auto', backgroundPosition: 'right center' }}
+          />
+
+          {/* ভেতরের content */}
+          <div style={{ background: 'white', padding: '32px', borderRadius: '21px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', cursor: 'pointer', display: 'block', margin: '0 auto 12px' }}
+                onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {branches.map((branch) => (
+                <button key={branch.id} onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 900); }} style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer' }}>
+                  {branch.name.charAt(0).toUpperCase() + branch.name.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {showLoginModal && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
