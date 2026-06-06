@@ -596,20 +596,22 @@ if (!selectedBranch) {
     return (
       <div style={{ minHeight: '100vh', background: PINK_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         <div className="rotating-border" style={{ maxWidth: '400px', width: '100%', margin: '0 16px', borderRadius: '21px', position: 'relative' }}>
-          
-          {/* ভেতরের content — লোগো ও বাটন */}
           <div style={{ background: 'white', padding: '32px', borderRadius: '21px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)', position: 'relative', overflow: 'hidden', minHeight: '280px' }}>
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', cursor: 'pointer', display: 'block', margin: '0 auto 12px' }}
-                onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {branches.map((branch) => (
-                <button key={branch.id} onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 900); }}
-                  style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer' }}>
-                  {branch.name.charAt(0).toUpperCase() + branch.name.slice(1)}
-                </button>
-              ))}
+
+            {/* লোগো ও বাটন — সবার উপরে zIndex 20 */}
+            <div style={{ position: 'relative', zIndex: 20 }}>
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <img src={LOGO_URL} alt="লোগো" style={{ height: '80px', width: 'auto', borderRadius: '12px', cursor: 'pointer', display: 'block', margin: '0 auto 12px' }}
+                  onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {branches.map((branch) => (
+                  <button key={branch.id} onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 900); }}
+                    style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer', position: 'relative', zIndex: 20 }}>
+                    {branch.name.charAt(0).toUpperCase() + branch.name.slice(1)}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* বাম দরজার পাল্লা */}
@@ -618,16 +620,21 @@ if (!selectedBranch) {
               transition={{ duration: 0.9, ease: 'easeInOut' }}
               style={{
                 position: 'absolute', top: 0, left: 0,
-                width: '50%', height: '100%', zIndex: 10,
-                background: 'linear-gradient(135deg, #be185d 0%, #db2777 50%, #f472b6 100%)',
-                borderRight: '2px solid #fbcfe8',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '50%', height: '100%', zIndex: 15,
+                background: 'white',
+                borderRight: '1px solid #fbcfe8',
               }}
             >
-              {/* দরজার ডিজাইন */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '30px', height: '60px', border: '2px solid rgba(255,255,255,0.4)', borderRadius: '6px', background: 'rgba(255,255,255,0.1)' }} />
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'rgba(255,255,255,0.8)' }} />
+              {/* পিংক ডিজাইন */}
+              <div style={{ padding: '20px', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between' }}>
+                {/* উপরে চিকন লাইন */}
+                <div style={{ width: '60%', height: '2px', background: PINK, borderRadius: '2px' }} />
+                <div style={{ width: '40%', height: '2px', background: PINK_BORDER, borderRadius: '2px' }} />
+                {/* মাঝে হার্ট */}
+                <div style={{ fontSize: '28px' }}>🩷</div>
+                {/* নিচে চিকন লাইন */}
+                <div style={{ width: '40%', height: '2px', background: PINK_BORDER, borderRadius: '2px' }} />
+                <div style={{ width: '60%', height: '2px', background: PINK, borderRadius: '2px' }} />
               </div>
             </motion.div>
 
@@ -637,18 +644,21 @@ if (!selectedBranch) {
               transition={{ duration: 0.9, ease: 'easeInOut' }}
               style={{
                 position: 'absolute', top: 0, right: 0,
-                width: '50%', height: '100%', zIndex: 10,
-                background: 'linear-gradient(225deg, #be185d 0%, #db2777 50%, #f472b6 100%)',
-                borderLeft: '2px solid #fbcfe8',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '50%', height: '100%', zIndex: 15,
+                background: 'white',
+                borderLeft: '1px solid #fbcfe8',
               }}
             >
-              {/* দরজার ডিজাইন */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '30px', height: '60px', border: '2px solid rgba(255,255,255,0.4)', borderRadius: '6px', background: 'rgba(255,255,255,0.1)' }} />
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'rgba(255,255,255,0.8)' }} />
+              {/* পিংক ডিজাইন */}
+              <div style={{ padding: '20px', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ width: '60%', height: '2px', background: PINK, borderRadius: '2px' }} />
+                <div style={{ width: '40%', height: '2px', background: PINK_BORDER, borderRadius: '2px' }} />
+                <div style={{ fontSize: '28px' }}>🩷</div>
+                <div style={{ width: '40%', height: '2px', background: PINK_BORDER, borderRadius: '2px' }} />
+                <div style={{ width: '60%', height: '2px', background: PINK, borderRadius: '2px' }} />
               </div>
             </motion.div>
+
           </div>
         </div>
 
