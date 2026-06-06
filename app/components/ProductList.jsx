@@ -806,7 +806,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
             </span>
           </div>
         ) : (
-          <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '20px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
+          <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '30px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
         )}
         
         <div style={{ marginTop: '4px' }}>
