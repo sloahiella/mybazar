@@ -594,54 +594,57 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
 
 if (!selectedBranch) {
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: '#fdf2f8', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center' 
-    }}>
-      {/* দরজা এবং কন্টেন্ট এর মেইন বক্স */}
-      <motion.div 
-        animate={isDoorOpen ? { opacity: 0, scale: 1.2 } : { opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8 }}
-        style={{ 
-          width: '400px', 
-          height: '400px', 
-          backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", 
-          backgroundSize: 'cover',
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          gap: '20px',
-          borderRadius: '15px'
-        }}
-      >
-        {/* লোগো */}
-        <img src={LOGO_URL} alt="Logo" style={{ height: '60px' }} />
+    <div style={{ minHeight: '100vh', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      
+      {/* বাইরের ঘূর্ণায়মান বর্ডার */}
+      <div style={{ 
+        position: 'relative', width: '404px', height: '404px', padding: '4px', borderRadius: '24px',
+        background: 'linear-gradient(45deg, #be185d, #d4af37, #fbcfe8, #ffffff)', 
+        animation: 'rotate 3s linear infinite' 
+      }}>
+        <style>{`@keyframes rotate { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }`}</style>
+        
+        {/* মেইন ডোর কন্টেইনার */}
+        <div style={{ position: 'relative', width: '400px', height: '400px', background: '#fdf2f8', borderRadius: '20px', overflow: 'hidden', display: 'flex' }}>
+          
+          {/* বাম দরজা */}
+          <motion.div
+            animate={isDoorOpen ? { x: -200 } : { x: 0 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+            style={{ width: '50%', height: '100%', backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", backgroundSize: '400px 400px', backgroundPosition: 'left', zIndex: 10 }}
+          />
+          
+          {/* ডান দরজা */}
+          <motion.div
+            animate={isDoorOpen ? { x: 200 } : { x: 0 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+            style={{ width: '50%', height: '100%', backgroundImage: "url('https://i.ibb.co/Ldb5bfHk/98.jpg')", backgroundSize: '400px 400px', backgroundPosition: 'right', zIndex: 10 }}
+          />
 
-        {/* বাটনসমূহ */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '200px' }}>
-          {branches.map((branch) => (
-            <button 
-              key={branch.id} 
-              onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 1000); }}
-              style={{
-                padding: '12px',
-                background: 'rgba(255, 255, 255, 0.6)', // হালকা সাদা লেয়ার
-                border: '1px solid #d4af37',
-                borderRadius: '8px',
-                color: '#be185d',
-                fontWeight: 'bold',
-                cursor: 'pointer'
-              }}
-            >
-              {branch.name.toUpperCase()}
-            </button>
-          ))}
+          {/* কন্টেন্ট লেয়ার (লোগো ও বাটন) */}
+          <div style={{ position: 'absolute', inset: 0, zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+            <img src={LOGO_URL} alt="Logo" style={{ height: '70px' }} />
+            {branches.map((branch) => (
+              <button 
+                key={branch.id} 
+                onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 1200); }}
+                style={{
+                  padding: '12px 40px',
+                  background: 'rgba(255, 255, 255, 0.7)',
+                  border: '1px solid #d4af37',
+                  borderRadius: '8px',
+                  color: '#be185d',
+                  fontWeight: 'bold',
+                  fontSize: '18px',
+                  cursor: 'pointer'
+                }}
+              >
+                {branch.name.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
