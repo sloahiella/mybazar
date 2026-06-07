@@ -179,27 +179,6 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
   <button type="button" onClick={() => setEditingProduct({...editingProduct, is_active: !editingProduct.is_active})} style={{ padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: editingProduct.is_active ? '#16a34a' : '#e5e7eb', background: editingProduct.is_active ? '#dcfce7' : '#f3f4f6', color: editingProduct.is_active ? '#16a34a' : '#9ca3af' }}>{editingProduct.is_active ? '✅ Active' : '❌ Inactive'}</button>
 </div>
 
-<div style={{ background: '#eff6ff', borderRadius: '8px', padding: '12px' }}>
-  <label style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: 'bold' }}>অতিরিক্ত ছবি</label>
-  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
-    {(editingProduct.product_images || []).map((img: any, i: number) => (
-      <div key={i} style={{ position: 'relative' }}>
-        <img src={img.image_url} alt="" style={{ width: '60px', height: '60px', objectFit: 'contain', borderRadius: '6px', border: '1px solid #e5e7eb' }} />
-        <button onClick={async () => { await supabase.from('product_images').delete().eq('id', img.id); fetchProducts(); setEditingProduct({...editingProduct, product_images: editingProduct.product_images.filter((_: any, j: number) => j !== i)}); }} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', cursor: 'pointer' }}>✕</button>
-      </div>
-    ))}
-  </div>
-  <input type="file" accept="image/*" onChange={async e => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const fileName = `${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from('products').upload(fileName, file);
-    if (error) { alert('Error: ' + error.message); return; }
-    const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName);
-    await supabase.from('product_images').insert({ product_id: editingProduct.id, image_url: urlData.publicUrl });
-    fetchProducts();
-    setEditingProduct({...editingProduct, product_images: [...(editingProduct.product_images || []), { image_url: urlData.publicUrl }]});
-  }} style={{ border: '2px solid #bfdbfe', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
-</div>
               <div><label style={{ fontSize: '12px', color: '#6b7280' }}>বৈশিষ্ট্য</label><textarea defaultValue={editingProduct.description} onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} rows={3} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'vertical', color: '#1f2937' }} /></div>
             </div>
             <div style={{ display: 'flex', gap: '8px', padding: '16px', borderTop: '1px solid #e5e7eb' }}>
