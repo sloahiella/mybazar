@@ -154,10 +154,68 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
     setEditingProduct({...editingProduct, product_images: [...(editingProduct.product_images || []), { image_url: urlData.publicUrl }]});
   }} style={{ border: '2px solid #bfdbfe', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
 </div>
+             <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ডিসকাউন্ট %</label><input type="number" defaultValue={editingProduct.discount_percent || ''} onChange={e => setEditingProduct({...editingProduct, discount_percent: parseFloat(e.target.value)})} placeholder="যেমন: 10, 20" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+
+<div>
+  <label style={{ fontSize: '12px', color: '#6b7280' }}>📐 সাইজ</label>
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+    {['S','M','L','XL','XXL','Free Size'].map(size => {
+      const selected = (editingProduct.sizes || []).includes(size);
+      return (
+        <button key={size} type="button" onClick={() => {
+          const current = editingProduct.sizes || [];
+          const updated = selected ? current.filter((s: string) => s !== size) : [...current, size];
+          setEditingProduct({...editingProduct, sizes: updated});
+        }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: selected ? '#db2777' : '#e5e7eb', background: selected ? '#db2777' : 'white', color: selected ? 'white' : '#374151' }}>{size}</button>
+      );
+    })}
+  </div>
+</div>
+
+<div><label style={{ fontSize: '12px', color: '#6b7280' }}>স্টক আপডেট</label><input type="number" placeholder="নতুন স্টক পরিমাণ" onChange={e => setEditingProduct({...editingProduct, newStock: e.target.value})} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /><p style={{ fontSize: '11px', color: '#9ca3af', margin: '4px 0 0 0' }}>বর্তমান স্টক: {editingProduct.stock?.[0]?.quantity || 0} pcs</p></div>
+
+<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+  <label style={{ fontSize: '12px', color: '#6b7280' }}>Status:</label>
+  <button type="button" onClick={() => setEditingProduct({...editingProduct, is_active: !editingProduct.is_active})} style={{ padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: editingProduct.is_active ? '#16a34a' : '#e5e7eb', background: editingProduct.is_active ? '#dcfce7' : '#f3f4f6', color: editingProduct.is_active ? '#16a34a' : '#9ca3af' }}>{editingProduct.is_active ? '✅ Active' : '❌ Inactive'}</button>
+</div>
+
+<div style={{ background: '#eff6ff', borderRadius: '8px', padding: '12px' }}>
+  <label style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: 'bold' }}>অতিরিক্ত ছবি</label>
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+    {(editingProduct.product_images || []).map((img: any, i: number) => (
+      <div key={i} style={{ position: 'relative' }}>
+        <img src={img.image_url} alt="" style={{ width: '60px', height: '60px', objectFit: 'contain', borderRadius: '6px', border: '1px solid #e5e7eb' }} />
+        <button onClick={async () => { await supabase.from('product_images').delete().eq('id', img.id); fetchProducts(); setEditingProduct({...editingProduct, product_images: editingProduct.product_images.filter((_: any, j: number) => j !== i)}); }} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', cursor: 'pointer' }}>✕</button>
+      </div>
+    ))}
+  </div>
+  <input type="file" accept="image/*" onChange={async e => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const fileName = `${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from('products').upload(fileName, file);
+    if (error) { alert('Error: ' + error.message); return; }
+    const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName);
+    await supabase.from('product_images').insert({ product_id: editingProduct.id, image_url: urlData.publicUrl });
+    fetchProducts();
+    setEditingProduct({...editingProduct, product_images: [...(editingProduct.product_images || []), { image_url: urlData.publicUrl }]});
+  }} style={{ border: '2px solid #bfdbfe', borderRadius: '8px', padding: '8px', width: '100%', fontSize: '13px', marginTop: '8px', boxSizing: 'border-box' }} />
+</div>
               <div><label style={{ fontSize: '12px', color: '#6b7280' }}>বৈশিষ্ট্য</label><textarea defaultValue={editingProduct.description} onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} rows={3} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'vertical', color: '#1f2937' }} /></div>
             </div>
             <div style={{ display: 'flex', gap: '8px', padding: '16px', borderTop: '1px solid #e5e7eb' }}>
-              <button onClick={async () => { await supabase.from('products').update({ name: editingProduct.name, price_per_unit: editingProduct.price_per_unit, unit: editingProduct.unit, description: editingProduct.description, image_url: editingProduct.image_url }).eq('id', editingProduct.id); setEditingProduct(null); fetchProducts(); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', flex: 1, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>সেভ করুন</button>
+              <button onClick={async () => {await supabase.from('products').update({ 
+  name: editingProduct.name, 
+  price_per_unit: editingProduct.price_per_unit, 
+  unit: editingProduct.unit, 
+  description: editingProduct.description, 
+  image_url: editingProduct.image_url,
+  discount_percent: editingProduct.discount_percent || 0,
+  is_active: editingProduct.is_active,
+  sizes: editingProduct.sizes || []
+}).eq('id', editingProduct.id);
+if (editingProduct.newStock) {
+  await supabase.from('stock').upsert({ product_id: editingProduct.id, quantity: parseFloat(editingProduct.newStock) }, { onConflict: 'product_id' });
+} setEditingProduct(null); fetchProducts(); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', flex: 1, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>সেভ করুন</button>
               <button onClick={() => setEditingProduct(null)} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '12px', padding: '12px 20px', fontSize: '16px', cursor: 'pointer' }}>বাতিল</button>
             </div>
           </div>
