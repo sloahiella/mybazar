@@ -280,14 +280,14 @@ export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any;
 
  if (tab === 'sellerpage' && selectedSellerPage) {
     return (
-      <div style={{ position: 'fixed', inset: 0, background: '#ffffff', zIndex: 99999, overflowY: 'auto' }}>
+      <div style={{ position: 'fixed', inset: 0, background: '#ffffff', zIndex: 9999, overflowY: 'auto' }}>
         <SellerPageProducts seller={seller} pageId={selectedSellerPage} onBack={() => setTab('products')} />
       </div>
     )
   }
 
   return (
-    <div style={{ position: 'fixed', right: 0, top: 0, height: '100%', width: '400px', background: '#ffffff', zIndex: 99999, boxShadow: '-5px 0 15px rgba(0,0,0,0.2)', padding: '20px', overflowY: 'auto', color: '#000000' }}>
+   <div style={{ position: 'fixed', right: 0, top: 0, height: '100%', width: '400px', background: '#ffffff', zIndex: 9999, boxShadow: '-5px 0 15px rgba(0,0,0,0.2)', padding: '20px', overflowY: 'auto', color: '#000000' }}>
 
       {/* হেডার */}
       <div style={{ background: '#db2777', padding: '15px', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderRadius: '8px' }}>
