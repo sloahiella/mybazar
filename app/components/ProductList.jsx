@@ -742,8 +742,8 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
 
   return (
     <div 
-      onDragOver={e => { e.preventDefault(); onDragOver && onDragOver(); }} 
-      onDrop={onDrop}
+    onDragOver={e => { e.preventDefault(); e.stopPropagation(); onDragOver && onDragOver(); }} 
+      onDrop={e => { e.preventDefault(); e.stopPropagation(); onDrop && onDrop(); }}
       style={{ 
         background: 'white', 
         borderRadius: '12px', 
