@@ -789,7 +789,14 @@ if (!selectedBranch) {
               </div>
             )}
             <div style={{ display: 'flex', gap: '8px', padding: '0 16px 12px', overflowX: 'auto' }}>
-              {[{ key: 'orders', label: '📋 Orders' }, ...(role === 'admin' ? [{ key: 'notifications', label: `🔔 ${unreadCount > 0 ? `(${unreadCount})` : ''}` }, { key: 'sellers', label: '🏪 Sellers' }, { key: 'withdrawals', label: '💰 Withdraw' }] : [])].map(t => (<button key={t.key} onClick={() => { setAdminTab(t.key); if (t.key === 'notifications') markAllRead(); }} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: adminTab === t.key ? PINK : '#f3f4f6', color: adminTab === t.key ? 'white' : '#374151' }}>{t.label}</button>))}
+             {[{ key: 'orders', label: '📋 Orders' }, ...(role === 'admin' ? [{ key: 'sellers', label: '🏪 Sellers' }, { key: 'withdrawals', label: '💰 Withdraw' }] : [])].map(t => (
+  <button key={t.key} onClick={() => { setAdminTab(t.key); if (t.key === 'orders') markAllRead(); }} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: adminTab === t.key ? PINK : '#f3f4f6', color: adminTab === t.key ? 'white' : '#374151', position: 'relative' }}>
+    {t.label}
+    {t.key === 'orders' && unreadCount > 0 && (
+      <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', color: 'white', fontSize: '10px', minWidth: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', padding: '0 3px' }}>{unreadCount}</span>
+    )}
+  </button>
+))}
               <button onClick={handleLogout} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: '#fee2e2', color: '#dc2626' }}>Logout</button>
             </div>
             {adminTab === 'orders' && (
