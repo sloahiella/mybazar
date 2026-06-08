@@ -46,10 +46,11 @@ function CategoryGrid({ branch, onSelectPage }) {
 
   // ✅ ফিক্সড ডাইনামিক ক্যাটাগরি কভার লজিক: মেইন পেজের কভার ছবিও এখন কারেন্ট শাখা (branch.id) মেনে কাজ করবে ভাই
   async function fetchFirstProduct(pageId) {
-    const { data } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
+  const { data } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
       .eq('page_id', pageId)
-      .eq('branch_id', branch.id) // 👑 ঢাকা শাখায় শুধু ঢাকার আর লালমোহনে শুধু লালমোহনের প্রোডাক্টের ছবি কভার হবে ভাই!
+      .eq('branch_id', branch.id)
       .eq('is_active', true)
+      .order('sort_order', { ascending: true })
       .limit(1)
       .single();
     if (data) setPageProducts(prev => ({ ...prev, [pageId]: data }));
