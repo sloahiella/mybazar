@@ -1197,10 +1197,15 @@ const isMobile = useIsMobile()
   function handleDragStart(index) { dragItem.current = index; setDragIndex(index); }
   function handleDragOver(index) { dragOverItem.current = index; if (dragIndex !== null && dragIndex !== index) setDragOverIndex(index); }
 
- async function handleDrop() {
+const draggedPageId = selectedPage ? selectedPage.id : null;
+
+  async function handleDrop() {
     const from = dragItem.current; const to = dragOverItem.current;
     if (from === null || to === null || from === to) { setDragIndex(null); setDragOverIndex(null); return; }
-    const items = Array.from(displayProducts);
+    let pageProducts = draggedPageId
+      ? products.filter(p => String(p.page_id) === String(draggedPageId))
+      : products;
+    const items = Array.from(pageProducts);
     const [removed] = items.splice(from, 1);
     items.splice(to, 0, removed);
     dragItem.current = null; dragOverItem.current = null;
