@@ -344,8 +344,9 @@ export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any;
             setTab(item.id)
           }} style={{ whiteSpace: 'nowrap', padding: '10px 15px', fontSize: '14px', border: 'none', background: tab === item.id ? '#db2777' : '#f3f4f6', color: tab === item.id ? '#ffffff' : '#000000', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', position: 'relative' }}>
             {item.label}
-            {item.badge > 0 && <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', color: 'white', fontSize: '10px', minWidth: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', padding: '0 3px' }}>{item.badge}</span>}
+           {item.badge > 0 && <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', color: 'white', fontSize: '10px', minWidth: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', padding: '0 3px' }}>{item.badge}</span>}
           </button>
+        ))}
       </div>
 
       {/* অর্ডার লিস্ট */}
