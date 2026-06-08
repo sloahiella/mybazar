@@ -251,6 +251,7 @@ export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any;
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<any>(null)
   const [autoPrint, setAutoPrint] = useState(false)
+  const [newOrderCount, setNewOrderCount] = useState(0)
 
   useEffect(() => {
     if (tab === 'orders') fetchOrders()
@@ -271,6 +272,9 @@ export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any;
       if (dateFilter === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
       return true
     })
+  const lastSeen = localStorage.getItem(`seller_last_seen_${seller.id}`) || '0'
+    const newOrders = filtered.filter((o: any) => new Date(o.order?.created_at).getTime() > parseInt(lastSeen))
+    setNewOrderCount(newOrders.length)
     setOrders(filtered)
   }
 
@@ -326,7 +330,7 @@ export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any;
       {/* মেনু বাটন */}
       <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '15px' }}>
         {[
-          { id: 'orders', label: '🛒 অর্ডার লিস্ট' },
+        { id: 'orders', label: '🛒 অর্ডার লিস্ট', badge: newOrderCount },
           { id: 'products', label: '📦 প্রোডাক্ট ও পেজ' },
           { id: 'wallet', label: '💰 ওয়ালেট' },
           { id: 'withdraw', label: '🏦 উত্তোলন' },
@@ -336,9 +340,12 @@ export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any;
             if (item.id === 'logout') { await supabase.auth.signOut(); onClose(); window.location.reload(); return; }
             if (item.id === 'wallet') { window.location.href = '/seller/wallet'; return; }
             if (item.id === 'withdraw') { window.location.href = '/seller/withdraw'; return; }
+           if (item.id === 'orders') { localStorage.setItem(`seller_last_seen_${seller.id}`, Date.now().toString()); setNewOrderCount(0); }
             setTab(item.id)
-          }} style={{ whiteSpace: 'nowrap', padding: '10px 15px', fontSize: '14px', border: 'none', background: tab === item.id ? '#db2777' : '#f3f4f6', color: tab === item.id ? '#ffffff' : '#000000', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>{item.label}</button>
-        ))}
+          }} style={{ whiteSpace: 'nowrap', padding: '10px 15px', fontSize: '14px', border: 'none', background: tab === item.id ? '#db2777' : '#f3f4f6', color: tab === item.id ? '#ffffff' : '#000000', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', position: 'relative' }}>
+            {item.label}
+            {item.badge > 0 && <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', color: 'white', fontSize: '10px', minWidth: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', padding: '0 3px' }}>{item.badge}</span>}
+          </button>
       </div>
 
       {/* অর্ডার লিস্ট */}
