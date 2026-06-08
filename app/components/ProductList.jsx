@@ -1197,16 +1197,16 @@ const isMobile = useIsMobile()
   function handleDragStart(index) { dragItem.current = index; setDragIndex(index); }
   function handleDragOver(index) { dragOverItem.current = index; if (dragIndex !== null && dragIndex !== index) setDragOverIndex(index); }
 
-  async function handleDrop() {
+ async function handleDrop() {
     const from = dragItem.current; const to = dragOverItem.current;
     if (from === null || to === null || from === to) { setDragIndex(null); setDragOverIndex(null); return; }
-    const items = Array.from(products);
+    const items = Array.from(displayProducts);
     const [removed] = items.splice(from, 1);
     items.splice(to, 0, removed);
-    setProducts(items);
     dragItem.current = null; dragOverItem.current = null;
     setDragIndex(null); setDragOverIndex(null);
     for (let i = 0; i < items.length; i++) { await supabase.from('products').update({ sort_order: i }).eq('id', items[i].id); }
+    fetchProducts();
   }
 
   const getFilteredProductsForMenu = () => {
