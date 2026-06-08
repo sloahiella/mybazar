@@ -848,12 +848,6 @@ if (!selectedBranch) {
             )}
             {adminTab === 'sellers' && role === 'admin' && <SellerManagement />}
             {adminTab === 'withdrawals' && role === 'admin' && <WithdrawalManagement />}
-            {adminTab === 'notifications' && role === 'admin' && (
-              <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {notifications.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো নোটিফিকেশনে নেই</p>}
-                {notifications.map((n: any) => (<div key={n.id} style={{ padding: '12px', borderRadius: '12px', border: '1px solid', borderColor: n.is_read ? '#e5e7eb' : PINK_BORDER, background: n.is_read ? '#f9fafb' : PINK_LIGHT }}><p style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', margin: '0 0 4px 0' }}>🔔 {n.message}</p><p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>{new Date(n.created_at).toLocaleString('bn-BD')}</p></div>))}
-              </div>
-            )}
           </div>
         </div>
       )}
