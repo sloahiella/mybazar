@@ -219,10 +219,10 @@ function SellerProductsTab({ seller, onSelectPage }: { seller: any; onSelectPage
   async function requestNewPage() {
     if (!newPageName.trim()) return
     await supabase.from('seller_pages').insert({ seller_id: seller.id, page_name: newPageName, status: 'pending' })
+    await supabase.from('notifications').insert({ message: `🏪 ${seller.shop_name} নতুন পেজ request করেছে: "${newPageName}"`, is_read: false, type: 'page_request' })
     setMsg('✅ নতুন পেজ request পাঠানো হয়েছে! Admin approve করলে দেখাবে।')
     setNewPageName(''); fetchMyPages()
   }
-
   return (
     <div style={{ padding: '16px' }}>
       {myPages.length === 0 && <p style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '12px' }}>কোনো পেজ নেই</p>}
