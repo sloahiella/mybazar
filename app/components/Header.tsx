@@ -10,7 +10,7 @@ const supabase = createClient(
 const LOGO_URL = 'https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/Untitled%20folder/logo.jpg'
 const PINK = '#be185d' 
 
-export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, onAdminClick, sellerUser, onSellerClick, onOrdersClick, hideHeader = false }: {
+export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, onAdminClick, sellerUser, onSellerClick, onOrdersClick, hideHeader = false, notificationCount = 0 }: {
   cartCount?: number
   onCartClick?: () => void
   onMenuClick?: () => void
@@ -20,6 +20,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
   onSellerClick?: () => void
   onOrdersClick?: () => void
   hideHeader?: boolean
+  notificationCount?: number
 }) {
   const [showProfile, setShowProfile] = useState(false)
   const [customerName, setCustomerName] = useState<string | null>(null)
@@ -84,9 +85,12 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
           </button>
         )}
 
-        {(role === 'admin' || role === 'editor') && (
-          <button onClick={onAdminClick} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+      {(role === 'admin' || role === 'editor') && (
+          <button onClick={onAdminClick} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', position: 'relative' }}>
             <span style={{ fontSize: '20px' }}>{role === 'admin' ? '👑' : '📋'}</span>
+            {notificationCount > 0 && (
+              <span style={{ position: 'absolute', top: '2px', right: '2px', background: '#ef4444', color: 'white', fontSize: '10px', minWidth: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', padding: '0 3px' }}>{notificationCount}</span>
+            )}
             <span style={{ fontSize: '10px' }}>{role === 'admin' ? 'Admin' : 'Editor'}</span>
           </button>
         )}

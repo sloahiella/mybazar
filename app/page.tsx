@@ -705,6 +705,7 @@ if (!selectedBranch) {
         role={role}
         sellerUser={sellerUser}
         hideHeader={cartOpen}
+       notificationCount={unreadCount}
         onSellerClick={() => setShowSellerDrawer(true)}
         onAdminClick={() => {
           setShowAdminDrawer(true);
