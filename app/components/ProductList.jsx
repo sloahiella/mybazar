@@ -45,8 +45,8 @@ function CategoryGrid({ branch, onSelectPage }) {
   }
 
   // ✅ ফিক্সড ডাইনামিক ক্যাটাগরি কভার লজিক: মেইন পেজের কভার ছবিও এখন কারেন্ট শাখা (branch.id) মেনে কাজ করবে ভাই
-  async function fetchFirstProduct(pageId) {
-  const { data } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
+ async function fetchFirstProduct(pageId) {
+    const { data } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
       .eq('page_id', pageId)
       .eq('branch_id', branch.id)
       .eq('is_active', true)
