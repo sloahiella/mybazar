@@ -792,16 +792,16 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
       )}
       <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div onClick={() => onDoubleClick(product)} style={{ cursor: 'pointer', userSelect: 'none', marginBottom: '4px' }}>
-          <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '13px', lineHeight: '1.4', wordBreak: 'break-word', margin: 0 }}>{product.name}</p>
+         <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '15px', lineHeight: '1.4', wordBreak: 'break-word', margin: 0 }}>{product.name}</p>
         </div>
         <div style={{ flex: 1 }} />
         
       {product.discount_percent > 0 ? (
           <div style={{ margin: '2px 0' }}>
-            <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '20px', margin: '0 0 2px 0' }}>
+            <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '22px', margin: '0 0 2px 0' }}>
               ৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}
             </p>
-            <p style={{ margin: 0, fontSize: '11px' }}>
+           <p style={{ margin: 0, fontSize: '14px' }}>
               <span style={{ color: '#9ca3af', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
               {' '}
               <span style={{ color: '#f97316', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
