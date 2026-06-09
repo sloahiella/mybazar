@@ -578,7 +578,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', maxWidth: '200px' }}>
+         <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', maxWidth: '280px' }}>
             <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', display: 'flex', alignItems: 'center', marginRight: '6px' }}>Quantity</span>
             <input 
               type="number" 
