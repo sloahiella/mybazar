@@ -798,7 +798,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
         
       {product.discount_percent > 0 ? (
           <div style={{ margin: '2px 0' }}>
-            <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '16px', margin: '0 0 2px 0' }}>
+            <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px', margin: '0 0 2px 0' }}>
               ৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}
             </p>
             <p style={{ margin: 0, fontSize: '11px' }}>
