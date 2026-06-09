@@ -798,7 +798,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
         
    {product.discount_percent > 0 ? (
             <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ color: '#db2777', fontWeight: '900', fontSize: '32px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
+              <span style={{ color: '#db2777', fontWeight: '900', fontSize: '25px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
               <span style={{ color: '#9ca3af', fontSize: '20px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
               <span style={{ color: '#f97316', fontSize: '18px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
             </div>
