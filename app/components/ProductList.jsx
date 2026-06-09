@@ -1198,10 +1198,12 @@ const isMobile = useIsMobile()
   function handleDragStart(index) { dragItem.current = index; setDragIndex(index); }
   function handleDragOver(index) { dragOverItem.current = index; if (dragIndex !== null && dragIndex !== index) setDragOverIndex(index); }
 
-  async function handleDrop() {
+ async function handleDrop() {
     const from = dragItem.current; const to = dragOverItem.current;
     if (from === null || to === null || from === to) { setDragIndex(null); setDragOverIndex(null); return; }
-    const currentProducts = getDisplayProducts();
+    const currentProducts = selectedPage
+      ? products.filter(p => String(p.page_id) === String(selectedPage.id) || subPageIds.map(String).includes(String(p.page_id)))
+      : products;
     const items = Array.from(currentProducts);
     const [removed] = items.splice(from, 1);
     items.splice(to, 0, removed);
