@@ -499,9 +499,9 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
             </span>
           </div>
 
-          {product.discount_percent > 0 ? (
-            <div style={{ marginBottom: '16px' }}>
-              <p style={{ color: '#db2777', fontWeight: '900', fontSize: '28px', margin: '0 0 2px 0' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</p>
+       {product.discount_percent > 0 ? (
+            <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ color: '#db2777', fontWeight: '900', fontSize: '24px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
               <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ color: '#9ca3af', fontSize: '16px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
                 <span style={{ color: '#f97316', fontSize: '14px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
