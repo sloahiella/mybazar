@@ -47,13 +47,17 @@ function CategoryGrid({ branch, onSelectPage }) {
   // ✅ ফিক্সড ডাইনামিক ক্যাটাগরি কভার লজিক: মেইন পেজের কভার ছবিও এখন কারেন্ট শাখা (branch.id) মেনে কাজ করবে ভাই
  async function fetchFirstProduct(pageId) {
     const { data } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
-      .eq('page_id', pageId)
-      .eq('branch_id', branch.id)
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true })
-      .limit(1)
-      .single();
-    if (data) setPageProducts(prev => ({ ...prev, [pageId]: data }));
+      .eq('page_id', pageId).eq('branch_id', branch.id).eq('is_active', true)
+      .order('sort_order', { ascending: true }).limit(1).single();
+    if (data) { setPageProducts(prev => ({ ...prev, [pageId]: data })); return; }
+    const { data: subPages } = await supabase.from('pages').select('id').eq('parent_id', pageId);
+    if (subPages && subPages.length > 0) {
+      const ids = subPages.map(p => p.id);
+      const { data: subData } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
+        .in('page_id', ids).eq('branch_id', branch.id).eq('is_active', true)
+        .order('sort_order', { ascending: true }).limit(1).single();
+      if (subData) setPageProducts(prev => ({ ...prev, [pageId]: subData }));
+    }
   }
 
   if (pages.length === 0) return null;
