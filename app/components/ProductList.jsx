@@ -792,7 +792,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
       )}
       <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div onClick={() => onDoubleClick(product)} style={{ cursor: 'pointer', userSelect: 'none', marginBottom: '4px' }}>
-         <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '15px', lineHeight: '1.4', wordBreak: 'break-word', margin: 0 }}>{product.name}</p>
+        <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '17px', lineHeight: '1.4', wordBreak: 'break-word', margin: 0 }}>{product.name}</p>
         </div>
         <div style={{ flex: 1 }} />
         
