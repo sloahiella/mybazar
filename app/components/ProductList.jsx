@@ -599,7 +599,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
                 fontFamily: 'Arial, sans-serif', 
                 fontWeight: 'bold'
               }} 
-              placeholder="পরিমাণ"
+              placeholder="পরিমাণ লিখুন"
             />
             {isPiece ? (
               <span style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '0 10px', fontSize: '12px', color: '#6b7280', background: '#f9fafb', display: 'flex', alignItems: 'center' }}>pcs</span>
