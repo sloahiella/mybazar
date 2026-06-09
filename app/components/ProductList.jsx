@@ -796,14 +796,12 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
         </div>
         <div style={{ flex: 1 }} />
         
-     {product.discount_percent > 0 ? (
-          <div style={{ margin: '2px 0', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-            <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '22px' }}>
-              ৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}
-            </span>
-          <span style={{ color: '#9ca3af', fontSize: '16px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
-            <span style={{ color: '#f97316', fontSize: '15px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
-          </div>
+   {product.discount_percent > 0 ? (
+            <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ color: '#db2777', fontWeight: '900', fontSize: '32px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
+              <span style={{ color: '#9ca3af', fontSize: '20px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
+              <span style={{ color: '#f97316', fontSize: '18px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
+            </div>
         ) : (
           <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
         )}
