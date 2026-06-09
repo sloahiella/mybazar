@@ -988,7 +988,7 @@ function EditProductModal({ product, onClose, onSave }) {
 }
 
 function AddProductModal({ branch, defaultPage, onClose, onSave }) {
-  const [form, setForm] = useState({ name: '', name_bn: '', product_code: '', description: '', price_per_unit: '', unit: 'Kg', category: '', category_bn: '', stock: '', image_url: '', page_id: defaultPage?.id || '' });
+  const [form, setForm] = useState({ name: '', name_bn: '', product_code: '', description: '', price_per_unit: '', unit: 'Kg', category: '', category_bn: '', stock: '', image_url: '', page_id: defaultPage?.id || '', discount_percent: 0 });
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
@@ -1029,7 +1029,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
 
     const finalDescription = selectedSizes.length > 0 ? `${form.description}\nSize: ${selectedSizes.join(', ')}` : form.description;
 
-    const { data: product, error } = await supabase.from('products').insert({ name: form.name, name_bn: form.name_bn, product_code: form.product_code, description: finalDescription, price_per_unit: parseFloat(form.price_per_unit), unit: form.unit, branch_id: branch.id, category: form.category, category_bn: form.category_bn, image_url: form.image_url, page_id: form.page_id ? parseInt(form.page_id) : null, is_active: true }).select().single();
+   const { data: product, error } = await supabase.from('products').insert({ name: form.name, name_bn: form.name_bn, product_code: form.product_code, description: finalDescription, price_per_unit: parseFloat(form.price_per_unit), unit: form.unit, branch_id: branch.id, category: form.category, category_bn: form.category_bn, image_url: form.image_url, page_id: form.page_id ? parseInt(form.page_id) : null, is_active: true, discount_percent: parseFloat(form.discount_percent) || 0 }).select().single();
     if (error) { alert('সমস্যা: ' + error.message); setLoading(false); return; }
     if (form.stock && parseFloat(form.stock) > 0) { await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) }); }
     alert('পণ্য যোগ হয়েছে!');
@@ -1050,6 +1050,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>দাম *</label><input name="price_per_unit" type="number" value={form.price_per_unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label><select name="unit" value={form.unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="Kg">Kg</option><option value="Liter">Liter</option><option value="pcs">pcs</option><option value="packet">Packet</option></select></div>
          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>পেজ সিলেক্ট করুন</label><select name="page_id" value={form.page_id} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="">-- পেজ সিলেক্ট করুন --</option>{pages.map(page => <option key={page.id} value={page.id}>{page.name_bn || page.name}</option>)}</select></div>
+         <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ডিসকাউন্ট %</label><input name="discount_percent" type="number" value={form.discount_percent || ''} onChange={handle} placeholder="যেমন: 10, 20" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>প্রাথমিক স্টক</label><input name="stock" type="number" value={form.stock} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           
           <div style={{ background: '#fdf2f8', borderRadius: '10px', padding: '12px', border: '1px solid #fbcfe8' }}>
