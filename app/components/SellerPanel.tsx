@@ -1,4 +1,4 @@
-'use client'
+ï»¿'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
@@ -230,7 +230,7 @@ function SellerProductsTab({ seller, onSelectPage }: { seller: any; onSelectPage
         <div key={p.id} onClick={() => onSelectPage(p.page_id || p.id)}
           style={{ background: 'white', borderRadius: '10px', padding: '14px 16px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e5e7eb', cursor: 'pointer' }}>
           <p style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: '#111' }}>?? {p.pages?.name_bn || p.pages?.name || p.page_name || 'Unknown'}</p>
-          <span style={{ fontSize: '20px', color: '#9ca3af' }}>›</span>
+          <span style={{ fontSize: '20px', color: '#9ca3af' }}>Â¢</span>
         </div>
       ))}
       <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '12px', marginTop: '16px' }}>
@@ -400,7 +400,7 @@ export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any;
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{selected.products?.name}</p>
-                    <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>{selected.price} Tk × {selected.quantity} {selected.products?.unit}</p>
+                    <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>{selected.price} Tk â•« {selected.quantity} {selected.products?.unit}</p>
                   </div>
                   {selected.products?.image_url && <img src={selected.products.image_url} alt="" style={{ width: '40px', height: '40px', objectFit: 'contain', borderRadius: '6px', margin: '0 8px' }} />}
                   <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#db2777', margin: 0 }}>{selected.price * selected.quantity} Tk</p>
