@@ -28,6 +28,28 @@ function isOfficeOpen() {
  return totalMinutes >= 300 && totalMinutes <= 1440;
 }
 
+function StarRating({ productId, isAdmin }) {
+  const [rating, setRating] = useState(0);
+  useEffect(() => {
+    supabase.from('products').select('rating').eq('id', productId).single().then(({ data }) => {
+      if (data?.rating) setRating(data.rating);
+    });
+  }, [productId]);
+  async function handleRate(val) {
+    if (!isAdmin) return;
+    setRating(val);
+    await supabase.from('products').update({ rating: val }).eq('id', productId);
+  }
+  return (
+    <div style={{ display: 'flex', gap: '2px' }}>
+      {[1,2,3,4,5].map(i => (
+        <span key={i} onClick={() => handleRate(i)} style={{ fontSize: '22px', color: '#db2777', cursor: isAdmin ? 'pointer' : 'default' }}>
+          {i <= rating ? '★' : '☆'}
+        </span>
+      ))}
+    </div>
+  );
+}
 function CategoryGrid({ branch, onSelectPage }) {
   const [pages, setPages] = useState([]);
   const [pageProducts, setPageProducts] = useState({});
@@ -489,9 +511,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
           <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '20px', margin: '0 0 10px 0', lineHeight: 1.4 }}>{product.name}</p>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '16px', borderBottom: '1px solid #f3f4f6', paddingBottom: '12px' }}>
-            <div style={{ display: 'flex', color: '#db2777', fontSize: '22px', fontWeight: 'bold', letterSpacing: '3px' }}>
-              {'☆'.repeat(5)}
-            </div>
+           <StarRating productId={product.id} isAdmin={isAdmin} />
             <span style={{ fontSize: '13px', color: '#4b5563', fontWeight: '700', marginLeft: '4px' }}>{reviews.length || 0} Reviews</span>
             <span style={{ color: '#d1d5db', margin: '0 4px' }}>|</span>
             <span style={{ fontSize: '13px', color: stock > 0 ? '#4b5563' : '#ef4444', fontWeight: '700' }}>
@@ -1344,8 +1364,8 @@ if (showCart) {
 
   return (
     <div className="pb-24">
-      {selectedProduct && (
-        <ProductDetailModal 
+    {selectedProduct && (
+        <ProductDetailModal
           product={selectedProduct} 
           onClose={() => setSelectedProduct(null)} 
           onAdd={addToCart} 
