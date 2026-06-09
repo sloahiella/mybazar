@@ -592,14 +592,14 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
                 borderRadius: '8px', 
                 padding: '8px', 
                 width: '100%', 
-                fontSize: '14px', 
+                fontSize: '12px', 
                 color: '#1f2937', 
                 outline: 'none', 
                 textAlign: 'center',
                 fontFamily: 'Arial, sans-serif', 
                 fontWeight: 'bold'
               }} 
-              placeholder="পরিমাণ লিখুন" 
+              placeholder="পরিমাণ"
             />
             {isPiece ? (
               <span style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '0 10px', fontSize: '12px', color: '#6b7280', background: '#f9fafb', display: 'flex', alignItems: 'center' }}>pcs</span>
