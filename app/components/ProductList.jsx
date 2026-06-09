@@ -579,7 +579,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
           )}
 
          <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', maxWidth: '280px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', display: 'flex', alignItems: 'center', marginRight: '6px' }}>Quantity</span>
+           <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#374151', display: 'flex', alignItems: 'center', marginRight: '6px' }}>Quantity</span>
             <input 
               type="number" 
               min="1" 
@@ -602,7 +602,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
               placeholder="পরিমাণ লিখুন"
             />
             {isPiece ? (
-              <span style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '0 10px', fontSize: '12px', color: '#6b7280', background: '#f9fafb', display: 'flex', alignItems: 'center' }}>pcs</span>
+             <span style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '0 10px', fontSize: '16px', color: '#6b7280', background: '#f9fafb', display: 'flex', alignItems: 'center' }}>pcs</span>
             ) : (
               <select value={unit} onChange={e => setUnit(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '0 4px', fontSize: '12px', background: 'white' }}>
                 {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
