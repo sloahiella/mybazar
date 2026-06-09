@@ -801,8 +801,8 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
             <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '22px' }}>
               ৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}
             </span>
-            <span style={{ color: '#9ca3af', fontSize: '14px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
-            <span style={{ color: '#f97316', fontSize: '12px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
+          <span style={{ color: '#9ca3af', fontSize: '14px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
+            <span style={{ color: '#f97316', fontSize: '14px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
           </div>
         ) : (
           <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
