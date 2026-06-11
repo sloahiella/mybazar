@@ -38,7 +38,8 @@ export default function RootLayout({
     <html lang="bn">
       <head>
         <link rel="icon" href="https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/LOGO%20.jpeg?v=2" />
-        
+       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
         {/* 🔔 OneSignal Push Notification Scripts */}
         <Script 
           src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
