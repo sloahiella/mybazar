@@ -520,13 +520,11 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
           </div>
 
        {product.discount_percent > 0 ? (
-            <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-             <span style={{ color: '#db2777', fontWeight: '900', fontSize: '20px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
-              <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ color: '#9ca3af', fontSize: '16px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
-                <span style={{ color: '#f97316', fontSize: '14px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
-              </p>
-            </div>
+            <div style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+              <span style={{ color: '#db2777', fontWeight: '900', fontSize: isMobile ? '14px' : '16px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
+              <span style={{ color: '#9ca3af', fontSize: '12px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
+              <span style={{ color: '#f97316', fontSize: '11px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
+            </div>
           ) : (
              <p style={{ color: '#db2777', fontWeight: '900', fontSize: '24px', margin: '0 0 16px 0' }}>৳{product.price_per_unit}</p>
           )}
