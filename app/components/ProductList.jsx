@@ -747,6 +747,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
   const isLiter = u === 'liter' || u === 'l';
   const isPiece = !isKg && !isLiter;
   const canEdit = isAdmin || (isEditor && String(product.page_id) === String(editorPageId));
+const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   const allImages = [];
   if (product.image_url) allImages.push(product.image_url);
