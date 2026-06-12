@@ -28,6 +28,28 @@ function isOfficeOpen() {
  return totalMinutes >= 300 && totalMinutes <= 1440;
 }
 
+function StarRating({ productId, isAdmin }) {
+  const [rating, setRating] = useState(0);
+  useEffect(() => {
+    supabase.from('products').select('rating').eq('id', productId).single().then(({ data }) => {
+      if (data?.rating) setRating(data.rating);
+    });
+  }, [productId]);
+  async function handleRate(val) {
+    if (!isAdmin) return;
+    setRating(val);
+    await supabase.from('products').update({ rating: val }).eq('id', productId);
+  }
+  return (
+    <div style={{ display: 'flex', gap: '2px' }}>
+      {[1,2,3,4,5].map(i => (
+        <span key={i} onClick={() => handleRate(i)} style={{ fontSize: '22px', color: '#db2777', cursor: isAdmin ? 'pointer' : 'default' }}>
+          {i <= rating ? '★' : '☆'}
+        </span>
+      ))}
+    </div>
+  );
+}
 function CategoryGrid({ branch, onSelectPage }) {
   const [pages, setPages] = useState([]);
   const [pageProducts, setPageProducts] = useState({});
@@ -489,9 +511,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
           <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '20px', margin: '0 0 10px 0', lineHeight: 1.4 }}>{product.name}</p>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '16px', borderBottom: '1px solid #f3f4f6', paddingBottom: '12px' }}>
-            <div style={{ display: 'flex', color: '#db2777', fontSize: '22px', fontWeight: 'bold', letterSpacing: '3px' }}>
-              {'☆'.repeat(5)}
-            </div>
+           <StarRating productId={product.id} isAdmin={isAdmin} />
             <span style={{ fontSize: '13px', color: '#4b5563', fontWeight: '700', marginLeft: '4px' }}>{reviews.length || 0} Reviews</span>
             <span style={{ color: '#d1d5db', margin: '0 4px' }}>|</span>
             <span style={{ fontSize: '13px', color: stock > 0 ? '#4b5563' : '#ef4444', fontWeight: '700' }}>
@@ -499,9 +519,9 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
             </span>
           </div>
 
-          {product.discount_percent > 0 ? (
-            <div style={{ marginBottom: '16px' }}>
-              <p style={{ color: '#db2777', fontWeight: '900', fontSize: '28px', margin: '0 0 2px 0' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</p>
+       {product.discount_percent > 0 ? (
+            <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+             <span style={{ color: '#db2777', fontWeight: '900', fontSize: '20px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
               <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ color: '#9ca3af', fontSize: '16px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
                 <span style={{ color: '#f97316', fontSize: '14px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
@@ -798,7 +818,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
         
    {product.discount_percent > 0 ? (
             <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ color: '#db2777', fontWeight: '900', fontSize: '32px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
+              <span style={{ color: '#db2777', fontWeight: '900', fontSize: '25px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
               <span style={{ color: '#9ca3af', fontSize: '20px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
               <span style={{ color: '#f97316', fontSize: '18px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
             </div>
@@ -1345,7 +1365,7 @@ if (showCart) {
   return (
     <div className="pb-24">
       {selectedProduct && (
-        <ProductDetailModal 
+        <ProductDetailModal
           product={selectedProduct} 
           onClose={() => setSelectedProduct(null)} 
           onAdd={addToCart} 
