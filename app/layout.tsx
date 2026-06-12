@@ -31,7 +31,7 @@ export default function RootLayout({
     <html lang="bn">
       <head>
         <link rel="icon" href="https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/LOGO%20.jpeg?v=2" />
-      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
 
         {/* 🔔 OneSignal Push Notification Scripts */}
         <Script 
@@ -53,6 +53,7 @@ export default function RootLayout({
           `}
         </Script>
 
+        {/* 📱 Facebook Browser Font Fix */}
         <Script id="fix-font-size" strategy="afterInteractive">
           {`
             document.addEventListener('DOMContentLoaded', function() {
@@ -67,7 +68,8 @@ export default function RootLayout({
             });
           `}
         </Script>
-        {/* 🎬 Microsoft Clarity User Session Recording Script (আপনার আসল আইডি সহ) */}
+
+        {/* 🎬 Microsoft Clarity */}
         <Script id="microsoft-clarity" strategy="afterInteractive">
           {`
             (function(c,l,a,r,i,t,y){
@@ -75,6 +77,20 @@ export default function RootLayout({
                 t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
                 y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
             })(window, document, "clarity", "script", "wy7tt71xy3");
+          `}
+        </Script>
+
+        {/* 📊 Google Analytics GA4 */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-587K38L62P"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-587K38L62P');
           `}
         </Script>
       </head>
