@@ -53,6 +53,20 @@ export default function RootLayout({
           `}
         </Script>
 
+        <Script id="fix-font-size" strategy="afterInteractive">
+          {`
+            document.addEventListener('DOMContentLoaded', function() {
+              if (navigator.userAgent.includes('FBAN') || navigator.userAgent.includes('FBAV') || navigator.userAgent.includes('Instagram')) {
+                var meta = document.querySelector('meta[name="viewport"]');
+                if (meta) {
+                  meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no');
+                }
+                document.documentElement.style.webkitTextSizeAdjust = '100%';
+                document.documentElement.style.textSizeAdjust = '100%';
+              }
+            });
+          `}
+        </Script>
         {/* 🎬 Microsoft Clarity User Session Recording Script (আপনার আসল আইডি সহ) */}
         <Script id="microsoft-clarity" strategy="afterInteractive">
           {`
