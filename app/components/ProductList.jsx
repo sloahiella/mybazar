@@ -410,7 +410,8 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
   const [listings, setListings] = useState([]);
   const [showOtherSellers, setShowOtherSellers] = useState(false);
 
-  const u = (product.unit || '').toLowerCase().trim();
+const isMobile = typeof window !== 'undefined' && window.innerWidth < 768; 
+ const u = (product.unit || '').toLowerCase().trim();
   const isKg = u === 'kg';
   const isLiter = u === 'liter' || u === 'l';
   const isPiece = !isKg && !isLiter;
@@ -816,11 +817,11 @@ const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
         <div style={{ flex: 1 }} />
         
    {product.discount_percent > 0 ? (
-            <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ color: '#db2777', fontWeight: '900', fontSize: '25px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
-              <span style={{ color: '#9ca3af', fontSize: '20px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
-              <span style={{ color: '#f97316', fontSize: '18px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
-            </div>
+           <div style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+              <span style={{ color: '#db2777', fontWeight: '900', fontSize: isMobile ? '14px' : '16px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
+              <span style={{ color: '#9ca3af', fontSize: '12px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
+              <span style={{ color: '#f97316', fontSize: '11px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
+            </div>
         ) : (
           <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
         )}
