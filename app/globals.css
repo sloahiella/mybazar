@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+* {
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+@import "tailwindcss";
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
