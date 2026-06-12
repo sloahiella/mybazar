@@ -361,8 +361,8 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
   const pages = selectedPage ? subPages : rootPages;
   if (pages.length === 0) return null;
 
-  return (
-    <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', padding: '4px 2px', scrollbarWidth: 'none' }}>
+ return (
+    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '4px 2px', scrollbarWidth: 'none', alignItems: 'center' }}>
       {pages.map(page => {
         const showArrow = !selectedPage;
 
@@ -823,7 +823,7 @@ const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
               <span style={{ color: '#f97316', fontSize: '11px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
             </div>
         ) : (
-          <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
+         <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '13px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
         )}
         
         <div style={{ marginTop: '4px' }}>
