@@ -810,7 +810,7 @@ const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
           )}
         </div>
       )}
-      <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+     <div style={{ padding: '6px', display: 'flex', flexDirection: 'column' }}>
         <div onClick={() => onDoubleClick(product)} style={{ cursor: 'pointer', userSelect: 'none', marginBottom: '4px' }}>
         <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '13px', lineHeight: '1.3', wordBreak: 'break-word', margin: 0 }}>{product.name}</p>
         </div>
