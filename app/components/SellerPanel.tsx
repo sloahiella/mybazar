@@ -79,7 +79,16 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
               <button onClick={() => setEditingProduct(prod)} style={{ background: '#facc15', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer', marginRight: '4px' }}>✏️</button>
               <button onClick={() => deleteProduct(prod.id)} style={{ background: '#fee2e2', color: '#dc2626', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>🗑️</button>
             </div>
-            {prod.image_url && <img src={prod.image_url} alt={prod.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'contain', display: 'block', background: '#f9fafb' }} />}
+           {prod.image_url && (
+              <div style={{ position: 'relative' }}>
+                <img src={prod.image_url} alt={prod.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'contain', display: 'block', background: '#f9fafb', opacity: (prod.stock?.[0]?.quantity || 0) <= 0 ? 0.4 : 1 }} />
+                {(prod.stock?.[0]?.quantity || 0) <= 0 && (
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ background: '#ef4444', color: 'white', fontSize: '12px', fontWeight: '900', padding: '4px 10px', borderRadius: '6px', boxShadow: '0 2px 8px rgba(239,68,68,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🔴 স্টক আউট</span>
+                  </div>
+                )}
+              </div>
+            )}
             <div style={{ padding: '8px', flex: 1 }}>
               <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '13px', margin: '0 0 4px 0' }}>{prod.name}</p>
               <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '12px', margin: '0 0 4px 0' }}>1 {prod.unit} = {prod.price_per_unit} Tk</p>
