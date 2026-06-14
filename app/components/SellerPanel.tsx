@@ -213,8 +213,16 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
                   is_active: editingProduct.is_active,
                 }).eq('id', editingProduct.id);
                 if (error) { alert('সমস্যা: ' + error.message); return; }
-                if (editingProduct.newStock) {
-                  await supabase.from('stock').upsert({ product_id: editingProduct.id, quantity: parseFloat(editingProduct.newStock) }, { onConflict: 'product_id' });
+                if (editingProduct.newStock !== undefined && editingProduct.newStock !== '') {
+                  const newQty = parseFloat(editingProduct.newStock);
+                  const { data: existingStock } = await supabase.from('stock').select('*').eq('product_id', editingProduct.id).single();
+                  if (existingStock) {
+                    const { error: stockError } = await supabase.from('stock').update({ quantity: newQty }).eq('product_id', editingProduct.id);
+                    if (stockError) { alert('স্টক সমস্যা: ' + stockError.message); return; }
+                  } else {
+                    const { error: stockError } = await supabase.from('stock').insert({ product_id: editingProduct.id, quantity: newQty });
+                    if (stockError) { alert('স্টক সমস্যা: ' + stockError.message); return; }
+                  }
                 }
                 setEditingProduct(null); fetchProducts();
               }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', flex: 1, fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>সেভ করুন</button>
