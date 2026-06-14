@@ -202,8 +202,8 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
               <div><label style={{ fontSize: '12px', color: '#6b7280' }}>বিবরণ</label><textarea defaultValue={editingProduct.description} onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} rows={3} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', resize: 'vertical', color: '#1f2937' }} /></div>
             </div>
             <div style={{ display: 'flex', gap: '8px', padding: '16px', borderTop: '1px solid #e5e7eb' }}>
-              <button onClick={async () => {
-                await supabase.from('products').update({
+             <button onClick={async () => {
+                const { error } = await supabase.from('products').update({
                   name: editingProduct.name,
                   price_per_unit: editingProduct.price_per_unit,
                   unit: editingProduct.unit,
@@ -211,8 +211,8 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
                   image_url: editingProduct.image_url,
                   discount_percent: editingProduct.discount_percent || 0,
                   is_active: editingProduct.is_active,
-                  sizes: editingProduct.sizes || []
                 }).eq('id', editingProduct.id);
+                if (error) { alert('সমস্যা: ' + error.message); return; }
                 if (editingProduct.newStock) {
                   await supabase.from('stock').upsert({ product_id: editingProduct.id, quantity: parseFloat(editingProduct.newStock) }, { onConflict: 'product_id' });
                 }
