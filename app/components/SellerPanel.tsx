@@ -91,7 +91,7 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
             )}
             <div style={{ padding: '8px', flex: 1 }}>
               <p style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '13px', margin: '0 0 4px 0' }}>{prod.name}</p>
-              <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '12px', margin: '0 0 4px 0' }}>1 {prod.unit} = {prod.price_per_unit} Tk</p>
+             <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '15px', margin: '0 0 4px 0' }}>1 {prod.unit} = {prod.price_per_unit} Tk</p>
               <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>Stock: {prod.stock?.[0]?.quantity || 0}</p>
             </div>
           </div>
