@@ -437,14 +437,12 @@ const [isDoorOpen, setIsDoorOpen] = useState(false);
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
   const { data: seller } = await supabase.from('sellers').select('*, profiles(full_name)').eq('profile_id', user.id).single()
-  if (seller?.is_approved) {
+ if (seller?.is_approved) {
     setSellerUser(seller)
-    // seller এর branch এ সরাসরি নিয়ে যাও
     if (seller.branch_id) {
       const { data: branch } = await supabase.from('branches').select('*').eq('id', seller.branch_id).single()
       if (branch) {
         setSelectedBranch(branch)
-        setShowSellerDrawer(true)
       }
     }
   }
