@@ -14,6 +14,8 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
   const [productForm, setProductForm] = useState({ name: '', price: '', unit: 'pcs', description: '', stock: '' })
   const [uploading, setUploading] = useState(false)
   const [productImage, setProductImage] = useState('')
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [pageName, setPageName] = useState('')
 
   useEffect(() => { fetchProducts(); fetchPageName(); }, [pageId])
@@ -61,6 +63,17 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
     await supabase.from('products').delete().eq('id', id)
     fetchProducts()
   }
+async function handleDrop(toIndex: number) {
+    if (dragIndex === null || dragIndex === toIndex) { setDragIndex(null); setDragOverIndex(null); return; }
+    const items = [...products]
+    const [removed] = items.splice(dragIndex, 1)
+    items.splice(toIndex, 0, removed)
+    setProducts(items)
+    setDragIndex(null); setDragOverIndex(null)
+    for (let i = 0; i < items.length; i++) {
+      await supabase.from('products').update({ sort_order: i }).eq('id', items[i].id)
+    }
+  }
 
   return (
     <div>
@@ -73,8 +86,13 @@ function SellerPageProducts({ seller, pageId, onBack }: { seller: any; pageId: n
       {products.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '40px 0' }}>কোনো পণ্য নেই</p>}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px', padding: '12px' }}>
-        {products.map(prod => (
-          <div key={prod.id} style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', overflow: 'hidden', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column' }}>
+       {products.map((prod, index) => (
+         <div key={prod.id} 
+            draggable
+            onDragStart={() => setDragIndex(index)}
+            onDragOver={e => { e.preventDefault(); if (dragIndex !== null && dragIndex !== index) setDragOverIndex(index); }}
+            onDrop={e => { e.preventDefault(); handleDrop(index); }}
+            style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', overflow: 'hidden', border: dragOverIndex === index ? '2px solid #db2777' : '1px solid #e5e7eb', opacity: dragIndex === index ? 0.5 : 1, display: 'flex', flexDirection: 'column', cursor: 'grab' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '6px 6px 0' }}>
               <button onClick={() => setEditingProduct(prod)} style={{ background: '#facc15', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer', marginRight: '4px' }}>✏️</button>
               <button onClick={() => deleteProduct(prod.id)} style={{ background: '#fee2e2', color: '#dc2626', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>🗑️</button>
