@@ -430,7 +430,8 @@ export default function Home() {
   const [cartOpen, setCartOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState('today');
 const [showSettings, setShowSettings] = useState(false);
-  const [emailSubject, setEmailSubject] = useState('');
+const [showEmailForm, setShowEmailForm] = useState(false);  
+const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [isDoorOpen, setIsDoorOpen] = useState(false);
@@ -772,8 +773,15 @@ if (!selectedBranch) {
               <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>⚙️ Settings</h2>
               <button onClick={() => setShowSettings(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
-            <div style={{ padding: '16px' }}>
+        <div style={{ padding: '16px' }}>
+              {!showEmailForm && (
+                <button onClick={() => setShowEmailForm(true)} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600', color: '#1f2937', textAlign: 'left' }}>
+                  <span style={{ fontSize: '20px' }}>📧</span> Email Send
+                </button>
+              )}
+              {showEmailForm && (
               <div style={{ background: '#fdf2f8', border: `1px solid ${PINK_BORDER}`, borderRadius: '12px', padding: '16px' }}>
+                <button onClick={() => setShowEmailForm(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', marginBottom: '8px', padding: 0 }}>← ব্যাক</button>
                 <p style={{ fontWeight: 'bold', fontSize: '15px', color: PINK, margin: '0 0 4px 0' }}>📧 কাস্টমারদের ইমেইল পাঠান</p>
                 <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 12px 0' }}>মেসেজে {'{name}'} লিখলে কাস্টমারের নাম বসে যাবে</p>
                 <input
@@ -811,9 +819,10 @@ if (!selectedBranch) {
                   disabled={sendingEmail}
                   style={{ background: PINK, color: 'white', border: 'none', borderRadius: '10px', padding: '12px', width: '100%', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', opacity: sendingEmail ? 0.5 : 1 }}
                 >
-                  {sendingEmail ? 'পাঠানো হচ্ছে...' : '📧 ইমেইল পাঠান'}
+{sendingEmail ? 'পাঠানো হচ্ছে...' : '📧 ইমেইল পাঠান'}
                 </button>
               </div>
+              )}
             </div>
           </div>
         </div>
