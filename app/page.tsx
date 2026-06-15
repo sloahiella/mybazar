@@ -429,7 +429,11 @@ export default function Home() {
   const [showCustomerAuth, setShowCustomerAuth] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState('today');
-const [isDoorOpen, setIsDoorOpen] = useState(false);
+const [showSettings, setShowSettings] = useState(false);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [isDoorOpen, setIsDoorOpen] = useState(false);
 
   useEffect(() => {
     fetchBranches();
@@ -711,6 +715,7 @@ if (!selectedBranch) {
           fetchOrders(pageId || undefined);
           fetchNotifications();
         }}
+        onSettingsClick={() => setShowSettings(true)}
         onMenuClick={() => setShowPageMenu(true)}
         onOrdersClick={() => {
           const savedPhone = localStorage.getItem('customer_phone');
@@ -759,6 +764,61 @@ if (!selectedBranch) {
         }}
       />
 
+{showSettings && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowSettings(false)} />
+          <div style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: '380px', background: 'white', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
+            <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>⚙️ Settings</h2>
+              <button onClick={() => setShowSettings(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ padding: '16px' }}>
+              <div style={{ background: '#fdf2f8', border: `1px solid ${PINK_BORDER}`, borderRadius: '12px', padding: '16px' }}>
+                <p style={{ fontWeight: 'bold', fontSize: '15px', color: PINK, margin: '0 0 4px 0' }}>📧 কাস্টমারদের ইমেইল পাঠান</p>
+                <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 12px 0' }}>মেসেজে {'{name}'} লিখলে কাস্টমারের নাম বসে যাবে</p>
+                <input
+                  value={emailSubject}
+                  onChange={e => setEmailSubject(e.target.value)}
+                  placeholder="সাবজেক্ট লিখুন..."
+                  style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginBottom: '8px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }}
+                />
+                <textarea
+                  value={emailMessage}
+                  onChange={e => setEmailMessage(e.target.value)}
+                  placeholder="প্রিয় {name}, আমাদের নতুন অফার..."
+                  rows={6}
+                  style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginBottom: '8px', boxSizing: 'border-box', outline: 'none', resize: 'vertical', color: '#1f2937' }}
+                />
+                <button
+                  onClick={async () => {
+                    if (!emailSubject || !emailMessage) { alert('সাবজেক্ট এবং মেসেজ লিখুন!'); return; }
+                    if (!confirm('সব কাস্টমারকে ইমেইল পাঠানো হবে। নিশ্চিত?')) return;
+                    setSendingEmail(true);
+                    try {
+                      const res = await fetch('https://jthdtmqrapnfmmmeuqsw.supabase.co/functions/v1/send-bulk-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ subject: emailSubject, message: emailMessage })
+                      });
+                      const data = await res.json();
+                      if (data.ok) { alert(`✅ ${data.sent} জন কাস্টমারকে ইমেইল পাঠানো হয়েছে!`); setEmailSubject(''); setEmailMessage(''); }
+                      else { alert('সমস্যা: ' + (data.error || 'অজানা সমস্যা')); }
+                    } catch (e: any) {
+                      alert('সমস্যা: ' + e.message);
+                    }
+                    setSendingEmail(false);
+                  }}
+                  disabled={sendingEmail}
+                  style={{ background: PINK, color: 'white', border: 'none', borderRadius: '10px', padding: '12px', width: '100%', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', opacity: sendingEmail ? 0.5 : 1 }}
+                >
+                  {sendingEmail ? 'পাঠানো হচ্ছে...' : '📧 ইমেইল পাঠান'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {showSellerDrawer && <SellerPanel seller={sellerUser} onClose={() => setShowSellerDrawer(false)} />}
       {showAdminDrawer && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
