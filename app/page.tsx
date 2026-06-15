@@ -803,7 +803,7 @@ if (!selectedBranch) {
                     if (!confirm('সব কাস্টমারকে ইমেইল পাঠানো হবে। নিশ্চিত?')) return;
                     setSendingEmail(true);
                     try {
-                      const res = await fetch('https://jthdtmqrapnfmmmeuqsw.supabase.co/functions/v1/send-bulk-email', {
+                      const res = await fetch('https://jthdtmqrapnfmmmeuqsw.supabase.co/functions/v1/smart-worker', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ subject: emailSubject, message: emailMessage })
