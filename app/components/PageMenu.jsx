@@ -170,6 +170,7 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
                     <button onClick={() => { setShowAddSub(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>¼ সাব-পেজ যোগ</button>
                     <button onClick={() => { setShowPasswordSet(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>🔑 Password সেট করুন</button>
                     <button onClick={() => { setShowPaymentSet(true); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>💳 Payment নম্বর সেট</button>
+                   <button onClick={() => { const url = `https://sohelmart.com?page=${page.id}`; navigator.clipboard.writeText(url); alert('✅ Link copy হয়েছে!'); setShowDotMenu(false); }} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#374151' }}>🔗 Link Copy</button>
                     <button onClick={deletePage} style={{ width: '100%', textAlign: 'left', padding: '10px 14px', fontSize: '13px', border: 'none', background: 'none', cursor: 'pointer', color: '#dc2626' }}>🗑️ মুছুন</button>
                   </div>
                 </>
