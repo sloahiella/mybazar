@@ -617,49 +617,160 @@ if (!selectedBranch) {
               </div>
             </div>
 
-            {/* বাম দরজার পাল্লা */}
+           {/* বাম দরজার পাল্লা */}
             <motion.div
               animate={isDoorOpen ? { x: '-100%' } : { x: '0%' }}
-              transition={{ duration: 0.9, ease: 'easeInOut' }}
+              transition={{ duration: 1.0, ease: [0.76, 0, 0.24, 1] }}
               style={{
                 position: 'absolute', top: 0, left: 0,
                 width: '50%', height: '100%', zIndex: 15,
-                background: 'white',
-                borderRight: '1px solid #fbcfe8',
+                background: 'linear-gradient(135deg, #fff0f6 0%, #ffe4f0 50%, #ffd6e8 100%)',
+                borderRight: '2px solid #f9a8d4',
+                overflow: 'hidden',
               }}
             >
-              {/* পিংক ডিজাইন */}
-              <div style={{ padding: '20px', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between' }}>
-                {/* উপরে চিকন লাইন */}
-                <div style={{ width: '60%', height: '2px', background: PINK, borderRadius: '2px' }} />
-                <div style={{ width: '40%', height: '2px', background: PINK_BORDER, borderRadius: '2px' }} />
-                {/* মাঝে হার্ট */}
-                <div style={{ fontSize: '28px' }}>🩷</div>
-                {/* নিচে চিকন লাইন */}
-                <div style={{ width: '40%', height: '2px', background: PINK_BORDER, borderRadius: '2px' }} />
-                <div style={{ width: '60%', height: '2px', background: PINK, borderRadius: '2px' }} />
-              </div>
+              <svg width="100%" height="100%" viewBox="0 0 150 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                {/* বর্ডার ডিজাইন */}
+                <rect x="4" y="4" width="142" height="292" rx="4" fill="none" stroke="#f472b6" strokeWidth="1.5" strokeDasharray="4,3"/>
+                <rect x="10" y="10" width="130" height="280" rx="3" fill="none" stroke="#fda4af" strokeWidth="0.8"/>
+                
+                {/* উপরের কোণের পাতা */}
+                <g transform="translate(20, 20)">
+                  <ellipse cx="0" cy="0" rx="18" ry="8" fill="#f9a8d4" opacity="0.6" transform="rotate(-45)"/>
+                  <ellipse cx="0" cy="0" rx="14" ry="6" fill="#fb7185" opacity="0.5" transform="rotate(-20)"/>
+                  <ellipse cx="0" cy="0" rx="10" ry="5" fill="#f43f5e" opacity="0.4" transform="rotate(10)"/>
+                  <circle cx="0" cy="0" r="3" fill="#be185d" opacity="0.8"/>
+                </g>
+                <g transform="translate(130, 20)">
+                  <ellipse cx="0" cy="0" rx="18" ry="8" fill="#f9a8d4" opacity="0.6" transform="rotate(45)"/>
+                  <ellipse cx="0" cy="0" rx="14" ry="6" fill="#fb7185" opacity="0.5" transform="rotate(20)"/>
+                  <ellipse cx="0" cy="0" rx="10" ry="5" fill="#f43f5e" opacity="0.4" transform="rotate(-10)"/>
+                  <circle cx="0" cy="0" r="3" fill="#be185d" opacity="0.8"/>
+                </g>
+
+                {/* মাঝের ফুল */}
+                <g transform="translate(75, 150)">
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fda4af" opacity="0.7" transform="rotate(0)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fda4af" opacity="0.7" transform="rotate(45)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fda4af" opacity="0.7" transform="rotate(90)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fda4af" opacity="0.7" transform="rotate(135)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fbcfe8" opacity="0.6" transform="rotate(22.5)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fbcfe8" opacity="0.6" transform="rotate(67.5)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fbcfe8" opacity="0.6" transform="rotate(112.5)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fbcfe8" opacity="0.6" transform="rotate(157.5)"/>
+                  <circle cx="0" cy="0" r="10" fill="#db2777"/>
+                  <circle cx="0" cy="0" r="6" fill="#be185d"/>
+                  <circle cx="0" cy="0" r="3" fill="#fce7f3"/>
+                </g>
+
+                {/* ছোট পাতা উপরে */}
+                <g transform="translate(75, 70)">
+                  <ellipse cx="-15" cy="0" rx="12" ry="5" fill="#f9a8d4" opacity="0.5" transform="rotate(-30 -15 0)"/>
+                  <ellipse cx="15" cy="0" rx="12" ry="5" fill="#f9a8d4" opacity="0.5" transform="rotate(30 15 0)"/>
+                  <ellipse cx="0" cy="-10" rx="5" ry="12" fill="#fda4af" opacity="0.5"/>
+                </g>
+
+                {/* ছোট পাতা নিচে */}
+                <g transform="translate(75, 230)">
+                  <ellipse cx="-15" cy="0" rx="12" ry="5" fill="#f9a8d4" opacity="0.5" transform="rotate(30 -15 0)"/>
+                  <ellipse cx="15" cy="0" rx="12" ry="5" fill="#f9a8d4" opacity="0.5" transform="rotate(-30 15 0)"/>
+                  <ellipse cx="0" cy="10" rx="5" ry="12" fill="#fda4af" opacity="0.5"/>
+                </g>
+
+                {/* নিচের কোণের পাতা */}
+                <g transform="translate(20, 280)">
+                  <ellipse cx="0" cy="0" rx="18" ry="8" fill="#f9a8d4" opacity="0.6" transform="rotate(45)"/>
+                  <ellipse cx="0" cy="0" rx="14" ry="6" fill="#fb7185" opacity="0.5" transform="rotate(20)"/>
+                  <circle cx="0" cy="0" r="3" fill="#be185d" opacity="0.8"/>
+                </g>
+                <g transform="translate(130, 280)">
+                  <ellipse cx="0" cy="0" rx="18" ry="8" fill="#f9a8d4" opacity="0.6" transform="rotate(-45)"/>
+                  <ellipse cx="0" cy="0" rx="14" ry="6" fill="#fb7185" opacity="0.5" transform="rotate(-20)"/>
+                  <circle cx="0" cy="0" r="3" fill="#be185d" opacity="0.8"/>
+                </g>
+
+                {/* দরজার হাতল */}
+                <circle cx="132" cy="150" r="5" fill="#db2777" opacity="0.8"/>
+                <circle cx="132" cy="150" r="3" fill="#fce7f3"/>
+              </svg>
             </motion.div>
 
             {/* ডান দরজার পাল্লা */}
             <motion.div
               animate={isDoorOpen ? { x: '100%' } : { x: '0%' }}
-              transition={{ duration: 0.9, ease: 'easeInOut' }}
+              transition={{ duration: 1.0, ease: [0.76, 0, 0.24, 1] }}
               style={{
                 position: 'absolute', top: 0, right: 0,
                 width: '50%', height: '100%', zIndex: 15,
-                background: 'white',
-                borderLeft: '1px solid #fbcfe8',
+                background: 'linear-gradient(225deg, #fff0f6 0%, #ffe4f0 50%, #ffd6e8 100%)',
+                borderLeft: '2px solid #f9a8d4',
+                overflow: 'hidden',
               }}
             >
-              {/* পিংক ডিজাইন */}
-              <div style={{ padding: '20px', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ width: '60%', height: '2px', background: PINK, borderRadius: '2px' }} />
-                <div style={{ width: '40%', height: '2px', background: PINK_BORDER, borderRadius: '2px' }} />
-                <div style={{ fontSize: '28px' }}>🩷</div>
-                <div style={{ width: '40%', height: '2px', background: PINK_BORDER, borderRadius: '2px' }} />
-                <div style={{ width: '60%', height: '2px', background: PINK, borderRadius: '2px' }} />
-              </div>
+              <svg width="100%" height="100%" viewBox="0 0 150 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                {/* বর্ডার ডিজাইন */}
+                <rect x="4" y="4" width="142" height="292" rx="4" fill="none" stroke="#f472b6" strokeWidth="1.5" strokeDasharray="4,3"/>
+                <rect x="10" y="10" width="130" height="280" rx="3" fill="none" stroke="#fda4af" strokeWidth="0.8"/>
+
+                {/* উপরের কোণের পাতা */}
+                <g transform="translate(20, 20)">
+                  <ellipse cx="0" cy="0" rx="18" ry="8" fill="#f9a8d4" opacity="0.6" transform="rotate(-45)"/>
+                  <ellipse cx="0" cy="0" rx="14" ry="6" fill="#fb7185" opacity="0.5" transform="rotate(-20)"/>
+                  <ellipse cx="0" cy="0" rx="10" ry="5" fill="#f43f5e" opacity="0.4" transform="rotate(10)"/>
+                  <circle cx="0" cy="0" r="3" fill="#be185d" opacity="0.8"/>
+                </g>
+                <g transform="translate(130, 20)">
+                  <ellipse cx="0" cy="0" rx="18" ry="8" fill="#f9a8d4" opacity="0.6" transform="rotate(45)"/>
+                  <ellipse cx="0" cy="0" rx="14" ry="6" fill="#fb7185" opacity="0.5" transform="rotate(20)"/>
+                  <ellipse cx="0" cy="0" rx="10" ry="5" fill="#f43f5e" opacity="0.4" transform="rotate(-10)"/>
+                  <circle cx="0" cy="0" r="3" fill="#be185d" opacity="0.8"/>
+                </g>
+
+                {/* মাঝের ফুল */}
+                <g transform="translate(75, 150)">
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fda4af" opacity="0.7" transform="rotate(0)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fda4af" opacity="0.7" transform="rotate(45)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fda4af" opacity="0.7" transform="rotate(90)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fda4af" opacity="0.7" transform="rotate(135)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fbcfe8" opacity="0.6" transform="rotate(22.5)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fbcfe8" opacity="0.6" transform="rotate(67.5)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fbcfe8" opacity="0.6" transform="rotate(112.5)"/>
+                  <ellipse cx="0" cy="-22" rx="9" ry="16" fill="#fbcfe8" opacity="0.6" transform="rotate(157.5)"/>
+                  <circle cx="0" cy="0" r="10" fill="#db2777"/>
+                  <circle cx="0" cy="0" r="6" fill="#be185d"/>
+                  <circle cx="0" cy="0" r="3" fill="#fce7f3"/>
+                </g>
+
+                {/* ছোট পাতা উপরে */}
+                <g transform="translate(75, 70)">
+                  <ellipse cx="-15" cy="0" rx="12" ry="5" fill="#f9a8d4" opacity="0.5" transform="rotate(-30 -15 0)"/>
+                  <ellipse cx="15" cy="0" rx="12" ry="5" fill="#f9a8d4" opacity="0.5" transform="rotate(30 15 0)"/>
+                  <ellipse cx="0" cy="-10" rx="5" ry="12" fill="#fda4af" opacity="0.5"/>
+                </g>
+
+                {/* ছোট পাতা নিচে */}
+                <g transform="translate(75, 230)">
+                  <ellipse cx="-15" cy="0" rx="12" ry="5" fill="#f9a8d4" opacity="0.5" transform="rotate(30 -15 0)"/>
+                  <ellipse cx="15" cy="0" rx="12" ry="5" fill="#f9a8d4" opacity="0.5" transform="rotate(-30 15 0)"/>
+                  <ellipse cx="0" cy="10" rx="5" ry="12" fill="#fda4af" opacity="0.5"/>
+                </g>
+
+                {/* নিচের কোণের পাতা */}
+                <g transform="translate(20, 280)">
+                  <ellipse cx="0" cy="0" rx="18" ry="8" fill="#f9a8d4" opacity="0.6" transform="rotate(45)"/>
+                  <ellipse cx="0" cy="0" rx="14" ry="6" fill="#fb7185" opacity="0.5" transform="rotate(20)"/>
+                  <circle cx="0" cy="0" r="3" fill="#be185d" opacity="0.8"/>
+                </g>
+                <g transform="translate(130, 280)">
+                  <ellipse cx="0" cy="0" rx="18" ry="8" fill="#f9a8d4" opacity="0.6" transform="rotate(-45)"/>
+                  <ellipse cx="0" cy="0" rx="14" ry="6" fill="#fb7185" opacity="0.5" transform="rotate(-20)"/>
+                  <circle cx="0" cy="0" r="3" fill="#be185d" opacity="0.8"/>
+                </g>
+
+                {/* দরজার হাতল */}
+                <circle cx="18" cy="150" r="5" fill="#db2777" opacity="0.8"/>
+                <circle cx="18" cy="150" r="3" fill="#fce7f3"/>
+              </svg>
             </motion.div>
 
           </div>
