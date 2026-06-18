@@ -5,6 +5,15 @@
   text-size-adjust: 100% !important;
 }
 @import "tailwindcss";
+@keyframes glowBorder {
+  0% { box-shadow: 0 0 4px 1px rgba(219, 39, 119, 0.3); }
+  50% { box-shadow: 0 0 10px 3px rgba(219, 39, 119, 0.6), 0 0 20px 5px rgba(219, 39, 119, 0.2); }
+  100% { box-shadow: 0 0 4px 1px rgba(219, 39, 119, 0.3); }
+}
+
+.product-card-glow {
+  animation: glowBorder 2.5s ease-in-out infinite;
+}
 
 :root {
   --background: #ffffff;
