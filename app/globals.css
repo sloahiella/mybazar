@@ -5,23 +5,18 @@
   text-size-adjust: 100% !important;
 }
 @import "tailwindcss";
-@property --border-angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-
 @keyframes borderRotate {
-  to { --border-angle: 360deg; }
+  0% { border-color: #db2777; }
+  16% { border-color: #f97316; }
+  33% { border-color: #facc15; }
+  50% { border-color: #22c55e; }
+  66% { border-color: #3b82f6; }
+  83% { border-color: #a855f7; }
+  100% { border-color: #db2777; }
 }
 
 .product-card-glow {
-  border: 2px solid transparent !important;
-  background-image: 
-    linear-gradient(white, white),
-    conic-gradient(from var(--border-angle), #db2777, #f97316, #facc15, #22c55e, #3b82f6, #a855f7, #db2777);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+  border: 2px solid #db2777 !important;
   animation: borderRotate 3s linear infinite;
 }
 
