@@ -5,14 +5,24 @@
   text-size-adjust: 100% !important;
 }
 @import "tailwindcss";
-@keyframes glowBorder {
-  0% { box-shadow: 0 0 4px 1px rgba(219, 39, 119, 0.3); }
-  50% { box-shadow: 0 0 10px 3px rgba(219, 39, 119, 0.6), 0 0 20px 5px rgba(219, 39, 119, 0.2); }
-  100% { box-shadow: 0 0 4px 1px rgba(219, 39, 119, 0.3); }
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes borderRotate {
+  to { --border-angle: 360deg; }
 }
 
 .product-card-glow {
-  animation: glowBorder 2.5s ease-in-out infinite;
+  border: 2px solid transparent !important;
+  background-image: 
+    linear-gradient(white, white),
+    conic-gradient(from var(--border-angle), #db2777, #f97316, #facc15, #22c55e, #3b82f6, #a855f7, #db2777);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  animation: borderRotate 3s linear infinite;
 }
 
 :root {
