@@ -768,7 +768,6 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
     <div 
       onDragOver={e => { e.preventDefault(); onDragOver && onDragOver(); }} 
       onDrop={e => { e.preventDefault(); onDrop && onDrop(); }}
-      className="product-card-glow"
       style={{ 
         background: 'white',
         borderRadius: '12px', 

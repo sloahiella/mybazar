@@ -4,21 +4,6 @@
   -webkit-text-size-adjust: 100% !important;
   text-size-adjust: 100% !important;
 }
-@import "tailwindcss";
-@keyframes borderRotate {
-  0% { border-color: #db2777; }
-  16% { border-color: #f97316; }
-  33% { border-color: #facc15; }
-  50% { border-color: #22c55e; }
-  66% { border-color: #3b82f6; }
-  83% { border-color: #a855f7; }
-  100% { border-color: #db2777; }
-}
-
-.product-card-glow {
-  border: 2px solid #db2777 !important;
-  animation: borderRotate 3s linear infinite;
-}
 
 :root {
   --background: #ffffff;
