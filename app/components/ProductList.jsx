@@ -1119,6 +1119,7 @@ const isMobile = useIsMobile()
   const [editingProduct, setEditingProduct] = useState(null);
   const [selectedName, setSelectedName] = useState(null);
   const [selectedPage, setSelectedPage] = useState(null);
+  const [initialPageLoaded, setInitialPageLoaded] = useState(false);
   const [pageHistory, setPageHistory] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalPage, setAddModalPage] = useState(null);
@@ -1142,7 +1143,21 @@ const isMobile = useIsMobile()
   const editorPageId = isEditor ? localStorage.getItem('editor_page_id') : null;
 
   useEffect(() => { fetchProducts(); }, [branch]);
-  
+  useEffect(() => {
+    async function loadInitialPage() {
+      if (initialPageLoaded) return;
+      const savedPageId = localStorage.getItem('current_page_id');
+      if (savedPageId) {
+        const { data: page } = await supabase.from('pages').select('*').eq('id', savedPageId).single();
+        if (page) {
+          setSelectedPage(page);
+          fetchSubPageIds(page.id);
+        }
+      }
+      setInitialPageLoaded(true);
+    }
+    loadInitialPage();
+  }, [branch]);
   useEffect(() => {
     if (openCart) {
       const savedPhone = localStorage.getItem('customer_phone');

@@ -438,6 +438,21 @@ const [emailSubject, setEmailSubject] = useState('');
 
   useEffect(() => {
     fetchBranches();
+    async function checkUrlPage() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageId = urlParams.get('page');
+      if (pageId) {
+        const { data: page } = await supabase.from('pages').select('branch_id').eq('id', pageId).single();
+        if (page?.branch_id) {
+          const { data: branch } = await supabase.from('branches').select('*').eq('id', page.branch_id).single();
+          if (branch) {
+            setSelectedBranch(branch);
+            localStorage.setItem('current_page_id', pageId);
+          }
+        }
+      }
+    }
+    checkUrlPage();
     async function checkSellerLogin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
@@ -608,8 +623,18 @@ if (!selectedBranch) {
                   onClick={() => { const count = parseInt(sessionStorage.getItem('logoClick') || '0') + 1; sessionStorage.setItem('logoClick', String(count)); if (count >= 5) { sessionStorage.removeItem('logoClick'); setShowLoginModal(true); } }} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {branches.map((branch) => (
-                  <button key={branch.id} onClick={() => { setIsDoorOpen(true); setTimeout(() => setSelectedBranch(branch), 900); }}
+              {branches.map((branch) => (
+                  <button key={branch.id} onClick={() => { 
+                    setIsDoorOpen(true); 
+                    setTimeout(() => {
+                      setSelectedBranch(branch);
+                      const urlParams = new URLSearchParams(window.location.search);
+                      const pageId = urlParams.get('page');
+                      if (pageId) {
+                        localStorage.setItem('current_page_id', pageId);
+                      }
+                    }, 900); 
+                  }}
                     style={{ padding: '14px', background: PINK_LIGHT, border: `2px solid ${PINK_BORDER}`, borderRadius: '12px', color: PINK_DARK, fontWeight: '600', fontSize: '16px', cursor: 'pointer', position: 'relative', zIndex: 20 }}>
                     {branch.name.charAt(0).toUpperCase() + branch.name.slice(1)}
                   </button>
