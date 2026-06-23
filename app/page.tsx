@@ -443,12 +443,14 @@ useEffect(() => {
       const urlParams = new URLSearchParams(window.location.search);
       const pageId = urlParams.get('page');
       if (pageId) {
-        const { data: page } = await supabase.from('pages').select('branch_id').eq('id', pageId).single();
+        const { data: page } = await supabase.from('pages').select('branch_id, name, name_bn').eq('id', pageId).single();
         if (page?.branch_id) {
           const { data: branch } = await supabase.from('branches').select('*').eq('id', page.branch_id).single();
           if (branch) {
             setSelectedBranch(branch);
             localStorage.setItem('current_page_id', pageId);
+            localStorage.setItem('current_page_name', page.name_bn || page.name);
+            setCurrentPageId(pageId);
           }
         }
       }
