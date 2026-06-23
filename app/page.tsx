@@ -435,8 +435,9 @@ const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [isDoorOpen, setIsDoorOpen] = useState(false);
-
-  useEffect(() => {
+const [currentPageId, setCurrentPageId] = useState<string | null>(null);
+ 
+useEffect(() => {
     fetchBranches();
     async function checkUrlPage() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -871,8 +872,8 @@ if (!selectedBranch) {
         }}
       />
 
-      {/* হেডারের ঠিক নিচে অটো-স্লাইডিং হিরো ব্যানার */}
-      <HeroBanner />
+    {/* হোম পেজে HeroBanner, Category page এ নয় */}
+      {!currentPageId && <HeroBanner />}
 
       {/* 👑 প্রফেশনাল ট্রাস্ট ও ডেলিভারি বারটি অন রাখা হলো */}
       <FeatureBar />
@@ -889,6 +890,7 @@ if (!selectedBranch) {
           localStorage.setItem('customer_phone', phone);
         }}
         onPageChange={(pageId: string | null) => {
+         setCurrentPageId(pageId);
           localStorage.setItem('current_page_id', pageId || '');
           if (role === 'admin') fetchOrders(pageId || undefined);
           
