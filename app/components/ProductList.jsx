@@ -1406,22 +1406,22 @@ if (showCart) {
         role={role} // 👑 এই ১টি লাইন নতুন যোগ হলো ভাই, যাতে চাইল্ড পেজগুলোও কারেন্ট ব্রাঞ্চ ডাটা পায়
       />
 
-     {selectedPage && (
+       {selectedPage && (
         <div style={{
           position: 'relative',
           overflow: 'hidden',
           background: 'linear-gradient(135deg, #be185d 0%, #db2777 50%, #e11d74 100%)',
-          padding: '20px 16px',
+          padding: '24px 16px',
           marginBottom: '8px',
+          minHeight: '120px',
+          display: 'flex',
+          alignItems: 'center',
         }}>
-          {/* শহরের silhouette */}
           <svg style={{ position: 'absolute', bottom: 0, left: 0, right: 0, opacity: 0.08, width: '100%' }} viewBox="0 0 800 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0,120 L0,80 L20,80 L20,60 L40,60 L40,80 L60,80 L60,40 L70,40 L70,20 L80,20 L80,40 L90,40 L90,80 L110,80 L110,50 L130,50 L130,80 L150,80 L150,60 L160,60 L160,30 L170,30 L170,60 L180,60 L180,80 L200,80 L200,70 L210,70 L210,50 L220,50 L220,70 L230,70 L230,80 L250,80 L250,40 L260,40 L260,10 L270,10 L270,40 L280,40 L280,80 L300,80 L300,55 L320,55 L320,80 L340,80 L340,65 L350,65 L350,45 L360,45 L360,65 L370,65 L370,80 L390,80 L390,50 L400,50 L400,80 L420,80 L420,60 L440,60 L440,80 L460,80 L460,35 L470,35 L470,15 L480,15 L480,35 L490,35 L490,80 L510,80 L510,55 L530,55 L530,80 L550,80 L550,65 L560,65 L560,45 L570,45 L570,65 L580,65 L580,80 L600,80 L600,50 L610,50 L610,70 L620,70 L620,80 L640,80 L640,40 L650,40 L650,20 L660,20 L660,40 L670,40 L670,80 L690,80 L690,60 L700,60 L700,80 L720,80 L720,50 L740,50 L740,80 L760,80 L760,65 L770,65 L770,80 L800,80 L800,120 Z" fill="white"/>
           </svg>
-
-          {/* Text */}
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '13px', fontWeight: '500', margin: '0 0 4px 0', letterSpacing: '0.5px' }}>Bangladesh Online Favorite Shop</p>
+            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '13px', fontWeight: '500', margin: '0 0 6px 0', letterSpacing: '0.5px' }}>Bangladesh Online Favorite Shop</p>
             <p style={{ color: 'white', fontSize: '28px', fontWeight: '900', margin: 0, textTransform: 'uppercase', letterSpacing: '1px', textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>{selectedPage.name_bn || selectedPage.name}</p>
           </div>
         </div>
