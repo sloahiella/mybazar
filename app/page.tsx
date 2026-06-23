@@ -435,7 +435,13 @@ const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [isDoorOpen, setIsDoorOpen] = useState(false);
-const [currentPageId, setCurrentPageId] = useState<string | null>(null);
+const [currentPageId, setCurrentPageId] = useState<string | null>(() => {
+  if (typeof window !== 'undefined') {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('page') || localStorage.getItem('current_page_id') || null;
+  }
+  return null;
+});
  
 useEffect(() => {
     fetchBranches();
