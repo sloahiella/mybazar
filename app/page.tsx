@@ -883,7 +883,7 @@ if (!selectedBranch) {
  {!currentPageId && <HeroBanner />}
       {currentPageId && (
         <div style={{
-          background: 'linear-gradient(135deg, #be185d 0%, #db2777 50%, #e11d74 100%)',
+          background: 'linear-gradient(135deg, #6a0426 0%, #6d0232 50%, #e11d74 100%)',
           padding: '80px 16px',
           minHeight: '360px',
           display: 'flex',
