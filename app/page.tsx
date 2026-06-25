@@ -884,14 +884,16 @@ if (!selectedBranch) {
       {currentPageId && (
         <div style={{
           background: 'linear-gradient(135deg, #be185d 0%, #db2777 50%, #e11d74 100%)',
-          padding: '24px 16px',
-          minHeight: '120px',
+          padding: '40px 16px',
+          minHeight: '180px',
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
         }}>
           <div>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '13px', fontWeight: '500', margin: '0 0 6px 0' }}>Bangladesh Online Favorite Shop</p>
-            <p style={{ color: 'white', fontSize: '28px', fontWeight: '900', margin: 0, textTransform: 'uppercase', textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '14px', fontWeight: '500', margin: '0 0 10px 0', letterSpacing: '2px', textTransform: 'uppercase' }}>Bangladesh Online Favorite Shop</p>
+            <p style={{ color: 'white', fontSize: '36px', fontWeight: '900', margin: 0, textTransform: 'uppercase', letterSpacing: '2px', textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
               {localStorage.getItem('current_page_name') || ''}
             </p>
           </div>
