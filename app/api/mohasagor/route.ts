@@ -4,49 +4,30 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category') || '';
-    const search = searchParams.get('search') || '';
 
-    let allProducts: any[] = [];
-    let currentPage = 1;
-    let lastPage = 1;
+    const res = await fetch(
+      `https://mohasagor.com.bd/api/reseller/product?page=1`,
+      {
+        method: 'GET',
+        headers: {
+          'api-key': process.env.MOHASAGOR_API_KEY || '',
+          'secret-key': process.env.MOHASAGOR_SECRET_KEY || '',
+          'Accept': 'application/json',
+        },
+        cache: 'no-store',
+      }
+    );
 
-    do {
-      const res = await fetch(
-        `https://mohasagor.com.bd/api/reseller/product?page=${currentPage}`,
-        {
-          method: 'GET',
-          headers: {
-            'api-key': process.env.MOHASAGOR_API_KEY || '',
-            'secret-key': process.env.MOHASAGOR_SECRET_KEY || '',
-            'Accept': 'application/json',
-          },
-          cache: 'no-store',
-        }
-      );
+    const data = await res.json();
+    let products = data?.products || [];
 
-      const data = await res.json();
-      lastPage = data?.last_page || 1;
-      const items = data?.products || [];
-      allProducts = [...allProducts, ...items];
-      currentPage++;
-
-    } while (currentPage <= lastPage);
-
-    // Frontend এ category filter
     if (category) {
-      allProducts = allProducts.filter(p => 
+      products = products.filter((p: any) =>
         p.category?.toLowerCase().includes(category.toLowerCase())
       );
     }
 
-    // Search filter
-    if (search) {
-      allProducts = allProducts.filter(p =>
-        p.name?.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-
-    return NextResponse.json({ products: allProducts, total: allProducts.length });
+    return NextResponse.json({ products, total: products.length });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
