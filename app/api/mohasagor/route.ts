@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
 
-const API_KEY = process.env.MOHASAGOR_API_KEY || '';
-const SECRET_KEY = process.env.MOHASAGOR_SECRET_KEY || '';
-
 export async function GET() {
   try {
     let allProducts: any[] = [];
@@ -13,9 +10,11 @@ export async function GET() {
       const res = await fetch(
         `https://mohasagor.com.bd/api/reseller/product?page=${currentPage}`,
         {
+          method: 'GET',
           headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'X-Secret-Key': SECRET_KEY,
+            'api-key': process.env.MOHASAGOR_API_KEY || '',
+            'secret-key': process.env.MOHASAGOR_SECRET_KEY || '',
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
           },
           cache: 'no-store',
@@ -23,8 +22,11 @@ export async function GET() {
       );
 
       const data = await res.json();
-      lastPage = data.last_page || 1;
-      allProducts = [...allProducts, ...(data.data || [])];
+      console.log('Mohasagor response:', JSON.stringify(data).slice(0, 300));
+      
+      lastPage = data?.data?.last_page || data?.last_page || 1;
+      const items = data?.data?.data || data?.data || data?.products || [];
+      allProducts = [...allProducts, ...items];
       currentPage++;
 
     } while (currentPage <= lastPage);
