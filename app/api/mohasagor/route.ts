@@ -15,17 +15,14 @@ export async function GET() {
             'api-key': process.env.MOHASAGOR_API_KEY || '',
             'secret-key': process.env.MOHASAGOR_SECRET_KEY || '',
             'Accept': 'application/json',
-            'Content-Type': 'application/json',
           },
           cache: 'no-store',
         }
       );
 
       const data = await res.json();
-      console.log('Mohasagor response:', JSON.stringify(data).slice(0, 300));
-      
-      lastPage = data?.data?.last_page || data?.last_page || 1;
-      const items = data?.data?.data || data?.data || data?.products || [];
+      lastPage = data?.last_page || 1;
+      const items = data?.products || [];
       allProducts = [...allProducts, ...items];
       currentPage++;
 
