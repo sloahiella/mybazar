@@ -12,6 +12,7 @@ import { requestNotificationPermission, messaging, onMessage } from './firebase'
 
 // 👑 নতুন ফিচার বারটি এখানে ইমপোর্ট করা হলো
 import FeatureBar from './components/FeatureBar';
+import MohasagorProducts from './components/MohasagorProducts';
 
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
