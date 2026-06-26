@@ -11,19 +11,18 @@ export async function GET(request: Request) {
     let lastPage = 1;
 
     do {
-      let url = `https://mohasagor.com.bd/api/reseller/product?page=${currentPage}`;
-      if (category) url += `&category=${encodeURIComponent(category)}`;
-      if (search) url += `&search=${encodeURIComponent(search)}`;
-
-      const res = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'api-key': process.env.MOHASAGOR_API_KEY || '',
-          'secret-key': process.env.MOHASAGOR_SECRET_KEY || '',
-          'Accept': 'application/json',
-        },
-        cache: 'no-store',
-      });
+      const res = await fetch(
+        `https://mohasagor.com.bd/api/reseller/product?page=${currentPage}`,
+        {
+          method: 'GET',
+          headers: {
+            'api-key': process.env.MOHASAGOR_API_KEY || '',
+            'secret-key': process.env.MOHASAGOR_SECRET_KEY || '',
+            'Accept': 'application/json',
+          },
+          cache: 'no-store',
+        }
+      );
 
       const data = await res.json();
       lastPage = data?.last_page || 1;
@@ -32,6 +31,20 @@ export async function GET(request: Request) {
       currentPage++;
 
     } while (currentPage <= lastPage);
+
+    // Frontend এ category filter
+    if (category) {
+      allProducts = allProducts.filter(p => 
+        p.category?.toLowerCase().includes(category.toLowerCase())
+      );
+    }
+
+    // Search filter
+    if (search) {
+      allProducts = allProducts.filter(p =>
+        p.name?.toLowerCase().includes(search.toLowerCase())
+      );
+    }
 
     return NextResponse.json({ products: allProducts, total: allProducts.length });
   } catch (error: any) {
