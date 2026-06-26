@@ -883,7 +883,7 @@ if (!selectedBranch) {
  {!currentPageId && <HeroBanner />}
       {currentPageId && (
         <div style={{
-          background: 'linear-gradient(135deg, #6a0426 0%, #6d0232 50%, #e11d74 100%)',
+          background: 'linear-gradient(135deg, #a00035 0%, #a5004a 50%, #e11d74 100%)',
           padding: '80px 16px',
           minHeight: '360px',
           display: 'flex',
@@ -900,6 +900,7 @@ if (!selectedBranch) {
         </div>
       )}
       <FeatureBar />
+      <MohasagorProducts />
 
       <ProductList
         branch={selectedBranch}
