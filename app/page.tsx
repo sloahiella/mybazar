@@ -436,7 +436,8 @@ const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [isDoorOpen, setIsDoorOpen] = useState(false);
-const [currentPageId, setCurrentPageId] = useState<string | null>(() => {
+const [mohasagorCategory, setMohasagorCategory] = useState<string | null>(null);
+  const [currentPageId, setCurrentPageId] = useState<string | null>(() => {
   if (typeof window !== 'undefined') {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('page') || localStorage.getItem('current_page_id') || null;
@@ -901,7 +902,7 @@ if (!selectedBranch) {
         </div>
       )}
       <FeatureBar />
-      <MohasagorProducts />
+<MohasagorProducts mohasagorCategory={mohasagorCategory} />
 
       <ProductList
         branch={selectedBranch}
@@ -917,6 +918,13 @@ if (!selectedBranch) {
         onPageChange={(pageId: string | null) => {
          setCurrentPageId(pageId);
           localStorage.setItem('current_page_id', pageId || '');
+          if (pageId) {
+            supabase.from('pages').select('mohasagor_category').eq('id', pageId).single().then(({ data }) => {
+              setMohasagorCategory(data?.mohasagor_category || null);
+            });
+          } else {
+            setMohasagorCategory(null);
+          }
           if (role === 'admin') fetchOrders(pageId || undefined);
           
           // ব্রাউজারের ব্যাক বাটন ট্র্যাকিংয়ের জন্য হিস্ট্রি কুয়েরি পুশ
