@@ -1298,7 +1298,7 @@ const isMobile = useIsMobile()
     }
     return products;
   };
-  const categories = [...new Set(getFilteredProductsForMenu().map(p => p.category))].filter(Boolean);
+  const categories = [...new Set(getFilteredProductsForMenu().filter(p => !p.is_mohasagor).map(p => p.category))].filter(Boolean);
 
   // ✅ ফিক্সড ডিসপ্লে ও আপনার শর্ত অনুযায়ী স্টক ফিল্টার লজিক ভাই
   const getDisplayProducts = () => {
