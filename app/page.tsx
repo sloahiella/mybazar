@@ -903,7 +903,6 @@ if (!selectedBranch) {
         </div>
       )}
       <FeatureBar />
-{currentPageId && <MohasagorProducts mohasagorCategory={mohasagorCategory} />}
 
       <ProductList
         branch={selectedBranch}
