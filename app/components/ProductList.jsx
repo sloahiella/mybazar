@@ -1233,7 +1233,10 @@ const isMobile = useIsMobile()
           const mohaProducts = mohaData.products || [];
           
           pagesData.forEach(page => {
-            const matched = mohaProducts.filter(p => p.category?.toLowerCase().includes(page.mohasagor_category.toLowerCase()));
+           const matched = mohaProducts.filter(p => {
+              const searchText = `${p.name} ${p.category}`.toLowerCase();
+              return searchText.includes(page.mohasagor_category.toLowerCase());
+            });
             matched.forEach(mp => {
               allProducts.push({
                 id: `moha-${mp.id}`,
