@@ -1220,7 +1220,51 @@ const isMobile = useIsMobile()
   async function fetchProducts() {
     setLoading(true);
     const { data } = await supabase.from('products').select('*, stock(*), product_images(*)').eq('branch_id', branch.id).eq('is_active', true).order('sort_order', { ascending: true });
-    if (data) setProducts(data);
+    
+    let allProducts = data || [];
+
+    // 👑 Mohasagor products আনার লজিক
+    if (branch.id === 1) {
+      try {
+        const { data: pagesData } = await supabase.from('pages').select('id, mohasagor_category').eq('branch_id', branch.id).not('mohasagor_category', 'is', null);
+        if (pagesData && pagesData.length > 0) {
+          const res = await fetch('/api/mohasagor');
+          const mohaData = await res.json();
+          const mohaProducts = mohaData.products || [];
+          
+          pagesData.forEach(page => {
+            const matched = mohaProducts.filter(p => p.category?.toLowerCase().includes(page.mohasagor_category.toLowerCase()));
+            matched.forEach(mp => {
+              allProducts.push({
+                id: `moha-${mp.id}`,
+                name: mp.name,
+                name_bn: mp.name,
+                product_code: mp.product_code,
+                price_per_unit: mp.sale_price,
+                unit: 'pcs',
+                category: mp.category,
+                category_bn: mp.category,
+                description: mp.details?.replace(/<[^>]*>/g, '') || '',
+                image_url: mp.thumbnail_img,
+                is_active: true,
+                page_id: page.id,
+                discount_percent: mp.price > mp.sale_price ? Math.round((1 - mp.sale_price / mp.price) * 100) : 0,
+                sort_order: 999,
+                stock: [{ quantity: 100 }],
+                product_images: (mp.product_images || []).map(img => ({ image_url: img.product_image, sort_order: 0 })),
+                is_mohasagor: true,
+                seller_id: 'mohasagor',
+                shop_name: 'Mohasagor'
+              });
+            });
+          });
+        }
+      } catch (e) {
+        console.error('Mohasagor fetch error:', e);
+      }
+    }
+
+    setProducts(allProducts);
     setLoading(false);
   }
 
