@@ -13,6 +13,7 @@ import { requestNotificationPermission, messaging, onMessage } from './firebase'
 // 👑 নতুন ফিচার বারটি এখানে ইমপোর্ট করা হলো
 import FeatureBar from './components/FeatureBar';
 import MohasagorProducts from './components/MohasagorProducts';
+import MohasagorAdmin from './components/MohasagorAdmin';
 
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
@@ -937,7 +938,7 @@ if (!selectedBranch) {
       />
 
 {showSettings && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
+       <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowSettings(false)} />
           <div style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: '380px', background: 'white', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
             <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -950,6 +951,7 @@ if (!selectedBranch) {
                   <span style={{ fontSize: '20px' }}>📧</span> Email Send
                 </button>
               )}
+             <MohasagorAdmin branchId={1} />
               {showEmailForm && (
               <div style={{ background: '#fdf2f8', border: `1px solid ${PINK_BORDER}`, borderRadius: '12px', padding: '16px' }}>
                 <button onClick={() => setShowEmailForm(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', marginBottom: '8px', padding: 0 }}>← ব্যাক</button>
