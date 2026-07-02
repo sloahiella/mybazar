@@ -7,6 +7,53 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
+function PageSelector({ pages, value, onChange }) {
+  const [search, setSearch] = useState('');
+  const [open, setOpen] = useState(false);
+  
+  const selected = pages.find(p => p.id === value);
+  const filtered = pages.filter(p => 
+    (p.name_bn || p.name).toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div style={{ position: 'relative', flexShrink: 0, width: '160px' }}>
+      <div
+        onClick={() => setOpen(!open)}
+        style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #e5e7eb', fontSize: '12px', cursor: 'pointer', background: 'white', color: '#1f2937', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+      >
+        {selected ? (selected.name_bn || selected.name) : '-- পেজ নেই --'}
+      </div>
+      {open && (
+        <div style={{ position: 'absolute', right: 0, top: '100%', zIndex: 999, background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', width: '220px' }}>
+          <input
+            autoFocus
+            placeholder="পেজ খুঁজুন..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{ width: '100%', padding: '8px', border: 'none', borderBottom: '1px solid #e5e7eb', fontSize: '13px', outline: 'none', color: '#1f2937', boxSizing: 'border-box' }}
+          />
+          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            <div
+              onClick={() => { onChange(''); setOpen(false); setSearch(''); }}
+              style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', color: '#6b7280' }}
+            >-- পেজ নেই --</div>
+            {filtered.map(pg => (
+              <div
+                key={pg.id}
+                onClick={() => { onChange(pg.id); setOpen(false); setSearch(''); }}
+                style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', color: '#1f2937', background: value === pg.id ? '#fdf2f8' : 'white', paddingLeft: pg.parent_id ? '24px' : '12px' }}
+              >
+                {pg.parent_id ? '↳ ' : ''}{pg.name_bn || pg.name}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MohasagorAdmin({ branchId = 1 }) {
   const [products, setProducts] = useState([]);
   const [pages, setPages] = useState([]);
@@ -37,19 +84,16 @@ export default function MohasagorAdmin({ branchId = 1 }) {
   async function assignProduct(productId, pageId) {
     setSaving(prev => ({ ...prev, [productId]: true }));
     const existing = assignments[productId];
-    if (existing) {
+    if (pageId === '') {
+      await supabase.from('mohasagor_assignments').delete().eq('mohasagor_product_id', productId);
+      setAssignments(prev => { const n = { ...prev }; delete n[productId]; return n; });
+    } else if (existing) {
       await supabase.from('mohasagor_assignments').update({ page_id: pageId }).eq('mohasagor_product_id', productId);
+      setAssignments(prev => ({ ...prev, [productId]: { ...prev[productId], page_id: pageId } }));
     } else {
       await supabase.from('mohasagor_assignments').insert({ mohasagor_product_id: productId, page_id: pageId });
+      setAssignments(prev => ({ ...prev, [productId]: { mohasagor_product_id: productId, page_id: pageId } }));
     }
-    setAssignments(prev => ({ ...prev, [productId]: { mohasagor_product_id: productId, page_id: pageId } }));
-    setSaving(prev => ({ ...prev, [productId]: false }));
-  }
-
-  async function removeAssignment(productId) {
-    setSaving(prev => ({ ...prev, [productId]: true }));
-    await supabase.from('mohasagor_assignments').delete().eq('mohasagor_product_id', productId);
-    setAssignments(prev => { const n = { ...prev }; delete n[productId]; return n; });
     setSaving(prev => ({ ...prev, [productId]: false }));
   }
 
@@ -72,30 +116,17 @@ export default function MohasagorAdmin({ branchId = 1 }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {filtered.map(p => (
           <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: assignments[p.id] ? '#fdf2f8' : '#f9fafb', borderRadius: '10px', padding: '10px', border: assignments[p.id] ? '1px solid #db2777' : '1px solid #e5e7eb' }}>
-            <img src={p.thumbnail_img} alt={p.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
+            <img src={p.thumbnail_img} alt={p.name} style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: '13px', fontWeight: 'bold', margin: '0 0 2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#1f2937' }}>{p.name}</p>
+              <p style={{ fontSize: '12px', fontWeight: 'bold', margin: '0 0 2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#1f2937' }}>{p.name}</p>
               <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>{p.category} • ৳{p.price}</p>
             </div>
-            <select
+            <PageSelector
+              pages={pages}
               value={assignments[p.id]?.page_id || ''}
-              onChange={e => {
-                if (e.target.value === '') removeAssignment(p.id);
-                else assignProduct(p.id, parseInt(e.target.value));
-              }}
-              style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e5e7eb', fontSize: '12px', flexShrink: 0, color: '#1f2937', background: 'white' }}
-            >
-              <option value="">-- পেজ নেই --</option>
-              {pages.filter(pg => !pg.parent_id).map(pg => (
-                <optgroup key={pg.id} label={pg.name_bn || pg.name}>
-                  <option value={pg.id}>{pg.name_bn || pg.name}</option>
-                  {pages.filter(sub => sub.parent_id === pg.id).map(sub => (
-                    <option key={sub.id} value={sub.id}>　{sub.name_bn || sub.name}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            {saving[p.id] && <span style={{ fontSize: '11px', color: '#db2777' }}>...</span>}
+              onChange={(pageId) => assignProduct(p.id, pageId)}
+            />
+            {saving[p.id] && <span style={{ fontSize: '11px', color: '#db2777' }}>✓</span>}
           </div>
         ))}
       </div>
