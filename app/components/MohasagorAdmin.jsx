@@ -42,7 +42,7 @@ function PageSelector({ pages, value, onChange }) {
               <div
                 key={pg.id}
                 onClick={() => { onChange(pg.id); setOpen(false); setSearch(''); }}
-                style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', color: '#1f2937', background: value === pg.id ? '#fdf2f8' : 'white', paddingLeft: pg.parent_id ? '24px' : '12px' }}
+                style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', color: '#1f2937', background: String(value) === String(pg.id) ? '#fdf2f8' : 'white', paddingLeft: pg.parent_id ? '24px' : '12px' }}
               >
                 {pg.parent_id ? '↳ ' : ''}{pg.name_bn || pg.name}
               </div>
@@ -75,26 +75,27 @@ export default function MohasagorAdmin({ branchId = 1 }) {
     setPages(pagesData || []);
 
     const { data: assignData } = await supabase.from('mohasagor_assignments').select('*');
-    const map = {};
-    (assignData || []).forEach(a => { map[a.mohasagor_product_id] = a; });
+  const map = {};
+    (assignData || []).forEach(a => { map[String(a.mohasagor_product_id)] = a; });
     setAssignments(map);
     setLoading(false);
   }
 
   async function assignProduct(productId, pageId) {
-    setSaving(prev => ({ ...prev, [productId]: true }));
-    const existing = assignments[productId];
+    const pid = String(productId);
+    setSaving(prev => ({ ...prev, [pid]: true }));
+    const existing = assignments[pid];
     if (pageId === '') {
       await supabase.from('mohasagor_assignments').delete().eq('mohasagor_product_id', productId);
-      setAssignments(prev => { const n = { ...prev }; delete n[productId]; return n; });
+      setAssignments(prev => { const n = { ...prev }; delete n[pid]; return n; });
     } else if (existing) {
       await supabase.from('mohasagor_assignments').update({ page_id: pageId }).eq('mohasagor_product_id', productId);
-      setAssignments(prev => ({ ...prev, [productId]: { ...prev[productId], page_id: pageId } }));
+      setAssignments(prev => ({ ...prev, [pid]: { ...prev[pid], page_id: pageId } }));
     } else {
       await supabase.from('mohasagor_assignments').insert({ mohasagor_product_id: productId, page_id: pageId });
-      setAssignments(prev => ({ ...prev, [productId]: { mohasagor_product_id: productId, page_id: pageId } }));
+      setAssignments(prev => ({ ...prev, [pid]: { mohasagor_product_id: productId, page_id: pageId } }));
     }
-    setSaving(prev => ({ ...prev, [productId]: false }));
+    setSaving(prev => ({ ...prev, [pid]: false }));
   }
 
   const filtered = products.filter(p =>
