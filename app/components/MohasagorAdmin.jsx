@@ -24,7 +24,7 @@ export default function MohasagorAdmin({ branchId = 1 }) {
     setProducts(data.products || []);
 
     const { data: pagesData } = await supabase
-      .from('pages').select('id, name').eq('branch_id', branchId).order('sort_order');
+      .from('pages').select('id, name, parent_id').eq('branch_id', branchId).order('sort_order');
     setPages(pagesData || []);
 
     const { data: assignData } = await supabase.from('mohasagor_assignments').select('*');
@@ -86,8 +86,13 @@ export default function MohasagorAdmin({ branchId = 1 }) {
               style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e5e7eb', fontSize: '12px', flexShrink: 0, color: '#1f2937', background: 'white' }}
             >
               <option value="">-- পেজ নেই --</option>
-              {pages.map(pg => (
-                <option key={pg.id} value={pg.id}>{pg.name}</option>
+              {pages.filter(pg => !pg.parent_id).map(pg => (
+                <optgroup key={pg.id} label={pg.name}>
+                  <option value={pg.id}>{pg.name}</option>
+                  {pages.filter(sub => sub.parent_id === pg.id).map(sub => (
+                    <option key={sub.id} value={sub.id}>　{sub.name}</option>
+                  ))}
+                </optgroup>
               ))}
             </select>
             {saving[p.id] && <span style={{ fontSize: '11px', color: '#db2777' }}>...</span>}
