@@ -14,11 +14,14 @@ export async function GET(request: Request) {
           'secret-key': process.env.MOHASAGOR_SECRET_KEY || '',
           'Accept': 'application/json',
         },
-        cache: 'no-store',
+       cache: 'no-store',
+        next: { revalidate: 0 },
       }
     );
 
     const data = await res.json();
+    console.log('Mohasagor raw response:', JSON.stringify(data).slice(0, 500));
+    console.log('Status:', res.status);
     let products = data?.products || [];
 
     if (category) {

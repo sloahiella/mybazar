@@ -15,9 +15,7 @@ export default function MohasagorAdmin({ branchId = 1 }) {
   const [saving, setSaving] = useState({});
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
   async function loadData() {
     setLoading(true);
@@ -26,15 +24,10 @@ export default function MohasagorAdmin({ branchId = 1 }) {
     setProducts(data.products || []);
 
     const { data: pagesData } = await supabase
-      .from('pages')
-      .select('id, name')
-      .eq('branch_id', branchId)
-      .order('sort_order');
+      .from('pages').select('id, name').eq('branch_id', branchId).order('sort_order');
     setPages(pagesData || []);
 
-    const { data: assignData } = await supabase
-      .from('mohasagor_assignments')
-      .select('*');
+    const { data: assignData } = await supabase.from('mohasagor_assignments').select('*');
     const map = {};
     (assignData || []).forEach(a => { map[a.mohasagor_product_id] = a; });
     setAssignments(map);
@@ -65,23 +58,23 @@ export default function MohasagorAdmin({ branchId = 1 }) {
     p.category?.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return <p style={{ textAlign: 'center', padding: '40px' }}>লোড হচ্ছে...</p>;
+  if (loading) return <p style={{ textAlign: 'center', padding: '40px', color: '#1f2937' }}>লোড হচ্ছে...</p>;
 
   return (
     <div style={{ padding: '16px' }}>
-      <h2 style={{ color: '#db2777', marginBottom: '12px' }}>মহাসাগর প্রোডাক্ট অ্যাসাইন ({products.length}টি)</h2>
+      <h2 style={{ color: '#db2777', marginBottom: '12px', fontSize: '15px' }}>মহাসাগর প্রোডাক্ট অ্যাসাইন ({products.length}টি)</h2>
       <input
         placeholder="প্রোডাক্ট বা category খুঁজুন..."
         value={search}
         onChange={e => setSearch(e.target.value)}
-        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', marginBottom: '12px', fontSize: '14px' }}
+        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', marginBottom: '12px', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
       />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {filtered.map(p => (
-          <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'white', borderRadius: '10px', padding: '10px', border: assignments[p.id] ? '1px solid #db2777' : '1px solid #e5e7eb' }}>
+          <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: assignments[p.id] ? '#fdf2f8' : '#f9fafb', borderRadius: '10px', padding: '10px', border: assignments[p.id] ? '1px solid #db2777' : '1px solid #e5e7eb' }}>
             <img src={p.thumbnail_img} alt={p.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: '13px', fontWeight: 'bold', margin: '0 0 2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', margin: '0 0 2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#1f2937' }}>{p.name}</p>
               <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>{p.category} • ৳{p.price}</p>
             </div>
             <select
@@ -90,7 +83,7 @@ export default function MohasagorAdmin({ branchId = 1 }) {
                 if (e.target.value === '') removeAssignment(p.id);
                 else assignProduct(p.id, parseInt(e.target.value));
               }}
-              style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e5e7eb', fontSize: '13px', flexShrink: 0 }}
+              style={{ padding: '6px', borderRadius: '6px', border: '1px solid #e5e7eb', fontSize: '12px', flexShrink: 0, color: '#1f2937', background: 'white' }}
             >
               <option value="">-- পেজ নেই --</option>
               {pages.map(pg => (
