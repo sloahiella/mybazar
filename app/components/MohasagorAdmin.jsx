@@ -11,10 +11,10 @@ function PageSelector({ pages, value, onChange }) {
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   
-  const selected = pages.find(p => p.id === value);
-  const filtered = pages.filter(p => 
-    (p.name_bn || p.name).toLowerCase().includes(search.toLowerCase())
-  );
+  const parentPages = pages.filter(p => !p.parent_id);
+  const filtered = search 
+    ? pages.filter(p => (p.name_bn || p.name).toLowerCase().includes(search.toLowerCase()))
+    : pages;
 
   return (
     <div style={{ position: 'relative', flexShrink: 0, width: '160px' }}>
@@ -38,13 +38,31 @@ function PageSelector({ pages, value, onChange }) {
               onClick={() => { onChange(''); setOpen(false); setSearch(''); }}
               style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', color: '#6b7280' }}
             >-- পেজ নেই --</div>
-            {filtered.map(pg => (
+         {search ? filtered.map(pg => (
               <div
                 key={pg.id}
                 onClick={() => { onChange(pg.id); setOpen(false); setSearch(''); }}
                 style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', color: '#1f2937', background: String(value) === String(pg.id) ? '#fdf2f8' : 'white', paddingLeft: pg.parent_id ? '24px' : '12px' }}
               >
                 {pg.parent_id ? '↳ ' : ''}{pg.name_bn || pg.name}
+              </div>
+            )) : parentPages.map(pg => (
+              <div key={pg.id}>
+                <div
+                  onClick={() => { onChange(pg.id); setOpen(false); setSearch(''); }}
+                  style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', color: '#1f2937', fontWeight: 'bold', background: String(value) === String(pg.id) ? '#fdf2f8' : 'white' }}
+                >
+                  {pg.name_bn || pg.name}
+                </div>
+                {pages.filter(sub => String(sub.parent_id) === String(pg.id)).map(sub => (
+                  <div
+                    key={sub.id}
+                    onClick={() => { onChange(sub.id); setOpen(false); setSearch(''); }}
+                    style={{ padding: '6px 12px 6px 24px', fontSize: '12px', cursor: 'pointer', color: '#6b7280', background: String(value) === String(sub.id) ? '#fdf2f8' : 'white' }}
+                  >
+                    ↳ {sub.name_bn || sub.name}
+                  </div>
+                ))}
               </div>
             ))}
           </div>
@@ -124,10 +142,10 @@ export default function MohasagorAdmin({ branchId = 1 }) {
             </div>
             <PageSelector
               pages={pages}
-              value={assignments[p.id]?.page_id || ''}
+              value={assignments[String(p.id)]?.page_id || ''}
               onChange={(pageId) => assignProduct(p.id, pageId)}
             />
-            {saving[p.id] && <span style={{ fontSize: '11px', color: '#db2777' }}>✓</span>}
+            {saving[String(p.id)] && <span style={{ fontSize: '11px', color: '#db2777' }}>✓</span>}
           </div>
         ))}
       </div>
