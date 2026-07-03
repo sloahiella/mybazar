@@ -1254,7 +1254,7 @@ const isMobile = useIsMobile()
                 discount_percent: 0,
                 sort_order: 999,
                 stock: [{ quantity: 100 }],
-                product_images: (mp.product_images || []).map((img: any) => ({ image_url: img.product_image, sort_order: 0 })),
+                product_images: (mp.product_images || []).map((img) => ({ image_url: img.product_image, sort_order: 0 })),
                 is_mohasagor: true,
               });
             }
