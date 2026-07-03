@@ -1223,21 +1223,21 @@ const isMobile = useIsMobile()
     
     let allProducts = data || [];
 
-    // 👑 Mohasagor products আনার লজিক
+   // 👑 Mohasagor products আনার লজিক
     if (branch.id === 1) {
       try {
-        const { data: pagesData } = await supabase.from('pages').select('id, mohasagor_category').eq('branch_id', branch.id).not('mohasagor_category', 'is', null);
-        if (pagesData && pagesData.length > 0) {
+        const { data: assignData } = await supabase
+          .from('mohasagor_assignments')
+          .select('*');
+        
+        if (assignData && assignData.length > 0) {
           const res = await fetch('/api/mohasagor');
           const mohaData = await res.json();
           const mohaProducts = mohaData.products || [];
           
-          pagesData.forEach(page => {
-           const matched = mohaProducts.filter(p => {
-              const searchText = `${p.name} ${p.category}`.toLowerCase();
-              return searchText.includes(page.mohasagor_category.toLowerCase());
-            });
-            matched.forEach(mp => {
+          assignData.forEach(assign => {
+            const mp = mohaProducts.find(p => String(p.id) === String(assign.mohasagor_product_id));
+            if (mp) {
               allProducts.push({
                 id: `moha-${mp.id}`,
                 name: mp.name,
@@ -1250,23 +1250,20 @@ const isMobile = useIsMobile()
                 description: mp.details?.replace(/<[^>]*>/g, '') || '',
                 image_url: mp.thumbnail_img,
                 is_active: true,
-                page_id: page.id,
-               discount_percent: 0,
+                page_id: assign.page_id,
+                discount_percent: 0,
                 sort_order: 999,
                 stock: [{ quantity: 100 }],
-                product_images: (mp.product_images || []).map(img => ({ image_url: img.product_image, sort_order: 0 })),
+                product_images: (mp.product_images || []).map((img: any) => ({ image_url: img.product_image, sort_order: 0 })),
                 is_mohasagor: true,
-                seller_id: 'mohasagor',
-                shop_name: 'Mohasagor'
               });
-            });
+            }
           });
         }
       } catch (e) {
         console.error('Mohasagor fetch error:', e);
       }
     }
-
     setProducts(allProducts);
     setLoading(false);
   }
