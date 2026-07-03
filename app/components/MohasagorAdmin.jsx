@@ -111,7 +111,8 @@ export default function MohasagorAdmin({ branchId = 1 }) {
       await supabase.from('mohasagor_assignments').update({ page_id: pageId }).eq('mohasagor_product_id', productId);
       setAssignments(prev => ({ ...prev, [pid]: { ...prev[pid], page_id: pageId } }));
     } else {
-      await supabase.from('mohasagor_assignments').insert({ mohasagor_product_id: productId, page_id: pageId });
+      const { error } = await supabase.from('mohasagor_assignments').insert({ mohasagor_product_id: productId, page_id: parseInt(pageId) });
+      if (error) console.error('Insert error:', error);
       setAssignments(prev => ({ ...prev, [pid]: { mohasagor_product_id: productId, page_id: pageId } }));
     }
     setSaving(prev => ({ ...prev, [pid]: false }));
