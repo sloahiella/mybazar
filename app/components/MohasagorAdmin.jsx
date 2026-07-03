@@ -11,7 +11,7 @@ function PageSelector({ pages, value, onChange }) {
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   
-  const parentPages = pages.filter(p => !p.parent_id);
+ const selected = pages.find(p => String(p.id) === String(value));
   const filtered = search 
     ? pages.filter(p => (p.name_bn || p.name).toLowerCase().includes(search.toLowerCase()))
     : pages;
