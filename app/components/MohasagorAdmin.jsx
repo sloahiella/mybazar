@@ -135,7 +135,7 @@ export default function MohasagorAdmin({ branchId = 1 }) {
       />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {filtered.map(p => (
-          <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: assignments[p.id] ? '#fdf2f8' : '#f9fafb', borderRadius: '10px', padding: '10px', border: assignments[p.id] ? '1px solid #db2777' : '1px solid #e5e7eb' }}>
+         <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: assignments[String(p.id)] ? '#fdf2f8' : '#f9fafb', borderRadius: '10px', padding: '10px', border: assignments[String(p.id)] ? '1px solid #db2777' : '1px solid #e5e7eb' }}>
             <img src={p.thumbnail_img} alt={p.name} style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: '12px', fontWeight: 'bold', margin: '0 0 2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#1f2937' }}>{p.name}</p>
