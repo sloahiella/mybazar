@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  'https://jthdtmqrapnfmmmeuqsw.supabase.co',
+  'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
 
 function PageSelector({ pages, value, onChange }) {
