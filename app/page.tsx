@@ -438,7 +438,8 @@ const [emailSubject, setEmailSubject] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [isDoorOpen, setIsDoorOpen] = useState(false);
 const [mohasagorCategory, setMohasagorCategory] = useState<string | null>(null);
-  const [currentPageId, setCurrentPageId] = useState<string | null>(() => {
+const [mohasagorRefresh, setMohasagorRefresh] = useState(0); 
+const [currentPageId, setCurrentPageId] = useState<string | null>(() => {
   if (typeof window !== 'undefined') {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('page') || localStorage.getItem('current_page_id') || null;
@@ -951,7 +952,7 @@ if (!selectedBranch) {
                   <span style={{ fontSize: '20px' }}>📧</span> Email Send
                 </button>
               )}
-             <MohasagorAdmin branchId={1} />
+            <MohasagorAdmin branchId={1} onAssign={() => setMohasagorRefresh(r => r + 1)} />
               {showEmailForm && (
               <div style={{ background: '#fdf2f8', border: `1px solid ${PINK_BORDER}`, borderRadius: '12px', padding: '16px' }}>
                 <button onClick={() => setShowEmailForm(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', marginBottom: '8px', padding: 0 }}>← ব্যাক</button>

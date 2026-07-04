@@ -73,7 +73,7 @@ function PageSelector({ pages, value, onChange }) {
   );
 }
 
-export default function MohasagorAdmin({ branchId = 1 }) {
+export default function MohasagorAdmin({ branchId = 1, onAssign }) {
   const [products, setProducts] = useState([]);
   const [pages, setPages] = useState([]);
   const [assignments, setAssignments] = useState({});
@@ -116,6 +116,7 @@ export default function MohasagorAdmin({ branchId = 1 }) {
       setAssignments(prev => ({ ...prev, [pid]: { mohasagor_product_id: productId, page_id: pageId } }));
     }
     setSaving(prev => ({ ...prev, [pid]: false }));
+    if (onAssign) onAssign();
   }
 
   const filtered = products.filter(p =>
