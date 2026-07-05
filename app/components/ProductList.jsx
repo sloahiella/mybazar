@@ -67,7 +67,7 @@ function CategoryGrid({ branch, onSelectPage }) {
   }
 
   // ✅ ফিক্সড ডাইনামিক ক্যাটাগরি কভার লজিক: মেইন পেজের কভার ছবিও এখন কারেন্ট শাখা (branch.id) মেনে কাজ করবে ভাই
- async function fetchFirstProduct(pageId) {
+async function fetchFirstProduct(pageId) {
     const { data } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
       .eq('page_id', pageId).eq('branch_id', branch.id).eq('is_active', true)
       .order('sort_order', { ascending: true }).limit(1).single();
@@ -78,8 +78,18 @@ function CategoryGrid({ branch, onSelectPage }) {
       const { data: subData } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
         .in('page_id', ids).eq('branch_id', branch.id).eq('is_active', true)
         .order('sort_order', { ascending: true }).limit(1).single();
-      if (subData) setPageProducts(prev => ({ ...prev, [pageId]: subData }));
+      if (subData) { setPageProducts(prev => ({ ...prev, [pageId]: subData })); return; }
     }
+    // Mohasagor assignments থেকে ছবি আনার চেষ্টা
+    try {
+      const { data: assigns } = await supabase.from('mohasagor_assignments').select('mohasagor_product_id').eq('page_id', pageId).limit(1);
+      if (assigns && assigns.length > 0) {
+        const res = await fetch(`/api/mohasagor`);
+        const mohaData = await res.json();
+        const mp = mohaData.products?.find(p => String(p.id) === String(assigns[0].mohasagor_product_id));
+        if (mp) setPageProducts(prev => ({ ...prev, [pageId]: { image_url: mp.thumbnail_img, name: mp.name, price_per_unit: mp.price, discount_percent: 0 } }));
+      }
+    } catch (e) {}
   }
 
   if (pages.length === 0) return null;
