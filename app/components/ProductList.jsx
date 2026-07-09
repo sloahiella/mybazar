@@ -50,6 +50,8 @@ function StarRating({ productId, isAdmin }) {
     </div>
   );
 }
+let cachedMohaProducts = null;
+let cachedAssigns = null;
 function CategoryGrid({ branch, onSelectPage }) {
   const [pages, setPages] = useState([]);
   const [pageProducts, setPageProducts] = useState({});
@@ -63,18 +65,22 @@ function CategoryGrid({ branch, onSelectPage }) {
       .eq('is_active', true).order('sort_order');
     if (data) {
       setPages(data);
-      const { data: assigns } = await supabase.from('mohasagor_assignments').select('*');
+    if (!cachedAssigns) {
+        const { data: assigns } = await supabase.from('mohasagor_assignments').select('*');
+        cachedAssigns = assigns || [];
+      }
       let mohaProductsList = [];
-      if (assigns && assigns.length > 0) {
-        const res = await fetch('/api/mohasagor');
-        const mohaData = await res.json();
-        mohaProductsList = mohaData.products || [];
+      if (cachedAssigns.length > 0) {
+        if (!cachedMohaProducts) {
+          const res = await fetch('/api/mohasagor');
+          const mohaData = await res.json();
+          cachedMohaProducts = mohaData.products || [];
+        }
+        mohaProductsList = cachedMohaProducts;
         setMohaProducts(mohaProductsList);
       }
+      const assigns = cachedAssigns;
       data.forEach(page => fetchFirstProduct(page.id, assigns || [], mohaProductsList));
-    }
-  }
-
  async function fetchFirstProduct(pageId, assigns, mohaProductsList) {
     const { data } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
       .eq('page_id', pageId).eq('branch_id', branch.id).eq('is_active', true)
