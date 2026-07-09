@@ -19,7 +19,7 @@ export async function GET(request: Request) {
             'secret-key': process.env.MOHASAGOR_SECRET_KEY || '',
             'Accept': 'application/json',
           },
-          cache: 'no-store',
+          next: { revalidate: 3600 },
         }
       );
 
