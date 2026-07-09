@@ -107,8 +107,9 @@ function CategoryGrid({ branch, onSelectPage }) {
       if (mp) { setPageProducts(prev => ({ ...prev, [pageId]: { image_url: mp.thumbnail_img, name: mp.name, price_per_unit: mp.price, discount_percent: 0 } })); return; }
     }
 
-    if (subPages && subPages.length > 0) {
-      for (const sub of subPages) {
+    const { data: subPagesForAssign } = await supabase.from('pages').select('id').eq('parent_id', pageId);
+    if (subPagesForAssign && subPagesForAssign.length > 0) {
+      for (const sub of subPagesForAssign) {
         const subAssign = (assigns || []).find(a => String(a.page_id) === String(sub.id));
         if (subAssign) {
           const mp = (mohaProductsList || []).find(p => String(p.id) === String(subAssign.mohasagor_product_id));
