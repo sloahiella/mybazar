@@ -890,15 +890,15 @@ if (!selectedBranch) {
         <div style={{
           background: 'linear-gradient(135deg, #a00035 0%, #a5004a 50%, #e11d74 100%)',
           padding: '80px 16px',
-          minHeight: '360px',
+          minHeight: '200px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
         }}>
           <div>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '18px', fontWeight: '500', margin: '0 0 16px 0', letterSpacing: '3px', textTransform: 'uppercase' }}>Bangladesh Online Favorite Shop</p>
-         <p style={{ color: 'white', fontSize: '72px', fontWeight: '900', margin: 0, textTransform: 'uppercase', letterSpacing: '4px', textShadow: '0 4px 24px rgba(0,0,0,0.4)', lineHeight: '1.1' }}>
+            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '14px', fontWeight: '500', margin: '0 0 8px 0', letterSpacing: '2px', textTransform: 'uppercase' }}>Bangladesh Online Favorite Shop</p>
+         <p style={{ color: 'white', fontSize: 'clamp(28px, 8vw, 72px)', fontWeight: '900', margin: 0, textTransform: 'uppercase', letterSpacing: '2px', textShadow: '0 4px 24px rgba(0,0,0,0.4)', lineHeight: '1.1' }}>
               {localStorage.getItem('current_page_name') || ''}
             </p>
           </div>
