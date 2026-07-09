@@ -57,7 +57,9 @@ function CategoryGrid({ branch, onSelectPage }) {
   const [pageProducts, setPageProducts] = useState({});
   const [mohaProducts, setMohaProducts] = useState([]);
 
-  useEffect(() => { fetchPages(); }, [branch]);
+ useEffect(() => { 
+    if (pages.length === 0) fetchPages(); 
+  }, [branch]);
 
  async function fetchPages() {
     const { data } = await supabase.from('pages').select('*')
@@ -81,7 +83,10 @@ function CategoryGrid({ branch, onSelectPage }) {
       }
       const assigns = cachedAssigns;
       data.forEach(page => fetchFirstProduct(page.id, assigns || [], mohaProductsList));
- async function fetchFirstProduct(pageId, assigns, mohaProductsList) {
+    }
+  }
+
+  async function fetchFirstProduct(pageId, assigns, mohaProductsList) {
     const { data } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
       .eq('page_id', pageId).eq('branch_id', branch.id).eq('is_active', true)
       .order('sort_order', { ascending: true }).limit(1).single();
