@@ -1389,7 +1389,7 @@ const isMobile = useIsMobile()
     
     if (search !== '' && !sellerSearch) {
       let allBase = (isAdmin || isEditor) ? baseProducts : baseProducts.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
-      let filtered = allBase.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || (p.name_bn && p.name_bn.toLowerCase().includes(search.toLowerCase())) || (p.product_code && p.product_code.toLowerCase().includes(search.toLowerCase())) || (p.category && p.category.toLowerCase().includes(search.toLowerCase())) || (p.category_bn && p.category_bn.includes(search)));
+      let filtered = allBase.filter(p => String(p.name || '').toLowerCase().includes(search.toLowerCase()) || (p.name_bn && String(p.name_bn).toLowerCase().includes(search.toLowerCase())) || (p.product_code && String(p.product_code).toLowerCase().includes(search.toLowerCase())) || (p.category && String(p.category).toLowerCase().includes(search.toLowerCase())) || (p.category_bn && String(p.category_bn).includes(search)));
       return filtered;
     }
 
