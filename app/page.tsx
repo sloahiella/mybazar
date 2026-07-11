@@ -901,26 +901,27 @@ if (!selectedBranch) {
           <p style={{ color: 'white', fontSize: 'clamp(24px, 6vw, 60px)', fontWeight: '900', margin: '0 0 20px 0', textTransform: 'uppercase', letterSpacing: '2px', textShadow: '0 4px 24px rgba(0,0,0,0.4)', lineHeight: '1.1', wordBreak: 'break-word' }}>
             {localStorage.getItem('current_page_name') || ''}
           </p>
-          <div style={{ display: 'flex', width: '100%', maxWidth: '480px', background: 'white', borderRadius: '30px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: '620px', background: 'white', borderRadius: '30px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.15)', padding: '4px' }}>
+            <span style={{ paddingLeft: '16px', fontSize: '16px', color: '#9ca3af' }}>🔍</span>
             <input
               type="text"
               id="heroSearchInput"
-              placeholder="পণ্যের নাম লিখুন..."
+              placeholder="Search products..."
               onKeyDown={e => {
                 if (e.key === 'Enter') {
                   window.dispatchEvent(new CustomEvent('heroSearch', { detail: e.currentTarget.value }));
                 }
               }}
-              style={{ flex: 1, border: 'none', outline: 'none', padding: '14px 20px', fontSize: '14px', color: '#1f2937' }}
+              style={{ flex: 1, border: 'none', outline: 'none', padding: '12px 12px', fontSize: '14px', color: '#1f2937', background: 'transparent' }}
             />
             <button
               onClick={() => {
                 const input = document.getElementById('heroSearchInput') as HTMLInputElement;
                 window.dispatchEvent(new CustomEvent('heroSearch', { detail: input?.value || '' }));
               }}
-              style={{ background: '#db2777', color: 'white', border: 'none', padding: '0 24px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}
+              style={{ background: '#db2777', color: 'white', border: 'none', padding: '12px 28px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '26px', whiteSpace: 'nowrap' }}
             >
-              🔍 Search
+              Search
             </button>
           </div>
         </div>
