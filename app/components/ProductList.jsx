@@ -1580,41 +1580,49 @@ if (showCart) {
       </div>
 {!selectedPage && (
       <div className="px-4 py-1.5">
-        <input 
-          type="text" 
-          placeholder="🔍 পণ্যের নাম, কোড বা দোকানের নাম লিখুন..." 
-          value={search} 
-          onChange={async e => { 
-            const val = e.target.value; 
-            setSearch(val); 
-            setSelectedCategory(null); 
-            setSelectedName(null); 
-            
-            if (val.trim().length >= 2) { 
-              const { data } = await supabase
-                .from('sellers')
-                .select('id, shop_name, page_id')
-                .eq('branch_id', branch.id)
-                .ilike('shop_name', `%${val.trim()}%`)
-                .limit(1); 
-                
-              if (data && data.length > 0) { 
-                setSellerSearch(data[0]); 
-                const { data: listings } = await supabase.from('product_listings').select('product_id').eq('seller_id', data[0].id).eq('is_active', true);
-                if (listings) setSellerProductIds(listings.map(l => l.product_id));
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%', background: 'white', borderRadius: '30px', overflow: 'hidden', border: '2px solid #fbcfe8', padding: '2px' }}>
+          <span style={{ paddingLeft: '12px', fontSize: '15px', color: '#9ca3af' }}>🔍</span>
+          <input 
+            type="text" 
+            placeholder="পণ্যের নাম, কোড বা দোকানের নাম লিখুন..." 
+            value={search} 
+            onChange={async e => { 
+              const val = e.target.value; 
+              setSearch(val); 
+              setSelectedCategory(null); 
+              setSelectedName(null); 
+              
+              if (val.trim().length >= 2) { 
+                const { data } = await supabase
+                  .from('sellers')
+                  .select('id, shop_name, page_id')
+                  .eq('branch_id', branch.id)
+                  .ilike('shop_name', `%${val.trim()}%`)
+                  .limit(1); 
+                  
+                if (data && data.length > 0) { 
+                  setSellerSearch(data[0]); 
+                  const { data: listings } = await supabase.from('product_listings').select('product_id').eq('seller_id', data[0].id).eq('is_active', true);
+                  if (listings) setSellerProductIds(listings.map(l => l.product_id));
+                } else { 
+                  setSellerSearch(null); 
+                  setSellerProductIds([]);
+                }
               } else { 
                 setSellerSearch(null); 
-                setSellerProductIds([]);
-              }
-            } else { 
-              setSellerSearch(null); 
-            } 
-          }} 
-          style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} 
-        />
+              } 
+            }} 
+            style={{ flex: 1, border: 'none', outline: 'none', padding: '10px 10px', color: '#1f2937', fontSize: '14px', fontWeight: '500', background: 'transparent' }} 
+          />
+          <button
+            onClick={() => {}}
+            style={{ background: '#db2777', color: 'white', border: 'none', padding: '10px 22px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '26px', whiteSpace: 'nowrap' }}
+          >
+            Search
+          </button>
+        </div>
       </div>
       )}
-
       {!selectedPage && !search && !selectedCategory && !selectedName && (
         <>
           <CategoryGrid branch={branch} onSelectPage={handlePageSelect} role={role} />
