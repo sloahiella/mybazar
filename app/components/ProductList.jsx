@@ -135,7 +135,7 @@ function CategoryGrid({ branch, onSelectPage }) {
                 )}
               </div>
             </div>
-            <p style={{ fontSize: '13px', color: '#1f2937', fontWeight: '600', margin: '2px 0 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
+            <p style={{ fontSize: '16px', color: '#1f2937', fontWeight: '700', margin: '2px 0 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
               {page.name_bn || page.name}
             </p>
           </div>
