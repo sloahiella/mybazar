@@ -90,9 +90,9 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
             }}
             style={{ flex: 1, border: 'none', outline: 'none', padding: '9px 16px', fontSize: '13px', color: '#1f2937' }}
           />
-          <button
+         <button
             onClick={() => {
-              const input = document.getElementById('headerSearchInput');
+              const input = document.getElementById('headerSearchInput') as HTMLInputElement;
               window.dispatchEvent(new CustomEvent('heroSearch', { detail: input?.value || '' }));
             }}
             style={{ background: PINK, color: 'white', border: 'none', padding: '9px 20px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}
