@@ -1175,6 +1175,37 @@ const isMobile = useIsMobile()
     return () => window.removeEventListener('showCustomerOrders', handleShowOrders);
   }, []);
 
+  useEffect(() => {
+    async function handleHeroSearch(e) {
+      const val = e.detail || '';
+      setSearch(val);
+      setSelectedCategory(null);
+      setSelectedName(null);
+
+      if (val.trim().length >= 2) {
+        const { data } = await supabase
+          .from('sellers')
+          .select('id, shop_name, page_id')
+          .eq('branch_id', branch.id)
+          .ilike('shop_name', `%${val.trim()}%`)
+          .limit(1);
+
+        if (data && data.length > 0) {
+          setSellerSearch(data[0]);
+          const { data: listings } = await supabase.from('product_listings').select('product_id').eq('seller_id', data[0].id).eq('is_active', true);
+          if (listings) setSellerProductIds(listings.map(l => l.product_id));
+        } else {
+          setSellerSearch(null);
+          setSellerProductIds([]);
+        }
+      } else {
+        setSellerSearch(null);
+      }
+    }
+    window.addEventListener('heroSearch', handleHeroSearch);
+    return () => window.removeEventListener('heroSearch', handleHeroSearch);
+  }, [branch]);
+
   const isAdmin = role === 'admin';
   const isEditor = role === 'editor';
   const editorPageId = isEditor ? localStorage.getItem('editor_page_id') : null;
