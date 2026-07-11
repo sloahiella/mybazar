@@ -76,6 +76,32 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
         </div>
       </div>
 
+      {/* মাঝখানে সার্চ বক্স - শুধু বড় স্ক্রিনে দেখাবে */}
+      {!isMobile && (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', maxWidth: '480px', margin: '0 16px', background: 'white', borderRadius: '24px', overflow: 'hidden' }}>
+          <input
+            type="text"
+            id="headerSearchInput"
+            placeholder="Search products..."
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                window.dispatchEvent(new CustomEvent('heroSearch', { detail: e.currentTarget.value }));
+              }
+            }}
+            style={{ flex: 1, border: 'none', outline: 'none', padding: '9px 16px', fontSize: '13px', color: '#1f2937' }}
+          />
+          <button
+            onClick={() => {
+              const input = document.getElementById('headerSearchInput');
+              window.dispatchEvent(new CustomEvent('heroSearch', { detail: input?.value || '' }));
+            }}
+            style={{ background: PINK, color: 'white', border: 'none', padding: '9px 20px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}
+          >
+            Search
+          </button>
+        </div>
+      )}
+
       {/* ডান দিক (প্রোফাইল, কার্ট ও অন্যান্য বাটন) */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
 
