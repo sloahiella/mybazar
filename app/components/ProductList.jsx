@@ -55,19 +55,27 @@ let cachedAssigns = null;
 function CategoryGrid({ branch, onSelectPage }) {
   const [pages, setPages] = useState([]);
   const [pageProducts, setPageProducts] = useState({});
-  const [mohaProducts, setMohaProducts] = useState([]);
+  const [rotateIndex, setRotateIndex] = useState(0);
 
- useEffect(() => { 
+  useEffect(() => { 
     if (pages.length === 0) fetchPages(); 
   }, [branch]);
 
- async function fetchPages() {
+  // 👑 প্রতি ১ সেকেন্ডে প্রোডাক্ট ঘুরিয়ে দেখানোর জন্য
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setRotateIndex(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  async function fetchPages() {
     const { data } = await supabase.from('pages').select('*')
       .eq('branch_id', branch.id).is('parent_id', null)
       .eq('is_active', true).order('sort_order');
     if (data) {
       setPages(data);
-    if (!cachedAssigns) {
+      if (!cachedAssigns) {
         const { data: assigns } = await supabase.from('mohasagor_assignments').select('*');
         cachedAssigns = assigns || [];
       }
@@ -79,43 +87,47 @@ function CategoryGrid({ branch, onSelectPage }) {
           cachedMohaProducts = mohaData.products || [];
         }
         mohaProductsList = cachedMohaProducts;
-        setMohaProducts(mohaProductsList);
       }
       const assigns = cachedAssigns;
-      data.forEach(page => fetchFirstProduct(page.id, assigns || [], mohaProductsList));
+      data.forEach(page => fetchAllProductsForPage(page.id, assigns || [], mohaProductsList));
     }
   }
 
-  async function fetchFirstProduct(pageId, assigns, mohaProductsList) {
-    const { data } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
-      .eq('page_id', pageId).eq('branch_id', branch.id).eq('is_active', true)
-      .order('sort_order', { ascending: true }).limit(1).single();
-    if (data) { setPageProducts(prev => ({ ...prev, [pageId]: data })); return; }
+  // 👑 পেজের নিজের সব প্রোডাক্ট, তারপর সাব পেজগুলোর সব প্রোডাক্ট ক্রমান্বয়ে সংগ্রহ করার লজিক
+  async function fetchAllProductsForPage(pageId, assigns, mohaProductsList) {
+    let collected = [];
 
-    const { data: subPages } = await supabase.from('pages').select('id').eq('parent_id', pageId);
-    if (subPages && subPages.length > 0) {
-      const ids = subPages.map(p => p.id);
-      const { data: subData } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
-        .in('page_id', ids).eq('branch_id', branch.id).eq('is_active', true)
-        .order('sort_order', { ascending: true }).limit(1).single();
-      if (subData) { setPageProducts(prev => ({ ...prev, [pageId]: subData })); return; }
-    }
+    const { data: ownProducts } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
+      .eq('page_id', pageId).eq('branch_id', branch.id).eq('is_active', true)
+      .order('sort_order', { ascending: true }).limit(20);
+    if (ownProducts && ownProducts.length > 0) collected = collected.concat(ownProducts);
 
     const pageAssign = (assigns || []).find(a => String(a.page_id) === String(pageId));
     if (pageAssign) {
       const mp = (mohaProductsList || []).find(p => String(p.id) === String(pageAssign.mohasagor_product_id));
-      if (mp) { setPageProducts(prev => ({ ...prev, [pageId]: { image_url: mp.thumbnail_img, name: mp.name, price_per_unit: mp.price, discount_percent: 0 } })); return; }
+      if (mp) collected.push({ image_url: mp.thumbnail_img, name: mp.name, price_per_unit: mp.price, discount_percent: 0 });
     }
 
-    const { data: subPagesForAssign } = await supabase.from('pages').select('id').eq('parent_id', pageId);
-    if (subPagesForAssign && subPagesForAssign.length > 0) {
-      for (const sub of subPagesForAssign) {
-        const subAssign = (assigns || []).find(a => String(a.page_id) === String(sub.id));
-        if (subAssign) {
-          const mp = (mohaProductsList || []).find(p => String(p.id) === String(subAssign.mohasagor_product_id));
-          if (mp) { setPageProducts(prev => ({ ...prev, [pageId]: { image_url: mp.thumbnail_img, name: mp.name, price_per_unit: mp.price, discount_percent: 0 } })); return; }
+    if (collected.length === 0) {
+      const { data: subPages } = await supabase.from('pages').select('id').eq('parent_id', pageId).order('sort_order');
+      if (subPages && subPages.length > 0) {
+        for (const sub of subPages) {
+          const { data: subData } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
+            .eq('page_id', sub.id).eq('branch_id', branch.id).eq('is_active', true)
+            .order('sort_order', { ascending: true }).limit(20);
+          if (subData && subData.length > 0) collected = collected.concat(subData);
+
+          const subAssign = (assigns || []).find(a => String(a.page_id) === String(sub.id));
+          if (subAssign) {
+            const mp = (mohaProductsList || []).find(p => String(p.id) === String(subAssign.mohasagor_product_id));
+            if (mp) collected.push({ image_url: mp.thumbnail_img, name: mp.name, price_per_unit: mp.price, discount_percent: 0 });
+          }
         }
       }
+    }
+
+    if (collected.length > 0) {
+      setPageProducts(prev => ({ ...prev, [pageId]: collected }));
     }
   }
 
@@ -124,27 +136,30 @@ function CategoryGrid({ branch, onSelectPage }) {
   return (
     <div style={{ padding: '0 12px 8px' }}>
       <div className="flex flex-wrap gap-2 justify-between">
-        {pages.map(page => (
-          <div key={page.id} onClick={() => onSelectPage(page)} className="w-[calc(50%-4px)] md:w-[calc(25%-6px)] cursor-pointer text-center flex-shrink-0">
-            <div style={{ position: 'relative', width: '100%', paddingBottom: '100%', borderRadius: '12px', overflow: 'hidden', background: '#e0f2fe', marginBottom: '4px' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-                {pageProducts[page.id] ? (
-                  <img src={pageProducts[page.id].image_url} alt={page.name_bn || page.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛍️</div>
-                )}
+        {pages.map(page => {
+          const productList = pageProducts[page.id];
+          const currentProduct = productList && productList.length > 0 ? productList[rotateIndex % productList.length] : null;
+          return (
+            <div key={page.id} onClick={() => onSelectPage(page)} className="w-[calc(50%-4px)] md:w-[calc(25%-6px)] cursor-pointer text-center flex-shrink-0">
+              <div style={{ position: 'relative', width: '100%', paddingBottom: '100%', borderRadius: '12px', overflow: 'hidden', background: '#e0f2fe', marginBottom: '4px' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+                  {currentProduct ? (
+                    <img src={currentProduct.image_url} alt={page.name_bn || page.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛍️</div>
+                  )}
+                </div>
               </div>
+              <p style={{ fontSize: '16px', color: '#1f2937', fontWeight: '700', margin: '2px 0 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
+                {page.name_bn || page.name}
+              </p>
             </div>
-            <p style={{ fontSize: '16px', color: '#1f2937', fontWeight: '700', margin: '2px 0 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
-              {page.name_bn || page.name}
-            </p>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
-
 function CartItem({ item, onUpdate, onRemove }) {
   const [editing, setEditing] = useState(false);
   const [newQty, setNewQty] = useState(item.qty.toString());
