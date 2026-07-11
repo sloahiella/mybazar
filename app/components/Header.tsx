@@ -28,6 +28,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
   const [customerPhone, setCustomerPhone] = useState<string | null>(null)
   const [customerAvatar, setCustomerAvatar] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
   // মোবাইল স্ক্রিন ট্র্যাক করার হুক
   useEffect(() => {
@@ -35,6 +36,14 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
     handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // স্ক্রল ট্র্যাক করার হুক - হিরো ব্যানারের সার্চ বক্স আড়ালে গেলেই হেডার সার্চ দেখাবে
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 220)
+    handleScroll()
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   useEffect(() => {
@@ -76,9 +85,10 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
         </div>
       </div>
 
-      {/* মাঝখানে সার্চ বক্স - শুধু বড় স্ক্রিনে দেখাবে */}
-      {!isMobile && (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', maxWidth: '480px', margin: '0 16px', background: 'white', borderRadius: '24px', overflow: 'hidden' }}>
+      {/* মাঝখানে সার্চ বক্স - স্ক্রল করে হিরো সার্চ আড়ালে গেলে তখনই দেখাবে */}
+      {!isMobile && scrolled && (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', maxWidth: '480px', margin: '0 16px', background: 'white', borderRadius: '30px', overflow: 'hidden', padding: '3px' }}>
+          <span style={{ paddingLeft: '12px', fontSize: '14px', color: '#9ca3af' }}>🔍</span>
           <input
             type="text"
             id="headerSearchInput"
@@ -88,14 +98,14 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
                 window.dispatchEvent(new CustomEvent('heroSearch', { detail: e.currentTarget.value }));
               }
             }}
-            style={{ flex: 1, border: 'none', outline: 'none', padding: '9px 16px', fontSize: '13px', color: '#1f2937' }}
+            style={{ flex: 1, border: 'none', outline: 'none', padding: '8px 10px', fontSize: '13px', color: '#1f2937', background: 'transparent' }}
           />
-         <button
+          <button
             onClick={() => {
               const input = document.getElementById('headerSearchInput') as HTMLInputElement;
               window.dispatchEvent(new CustomEvent('heroSearch', { detail: input?.value || '' }));
             }}
-            style={{ background: PINK, color: 'white', border: 'none', padding: '9px 20px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            style={{ background: PINK, color: 'white', border: 'none', padding: '8px 18px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap', borderRadius: '24px' }}
           >
             Search
           </button>
