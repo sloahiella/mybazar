@@ -404,11 +404,11 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
         const showArrow = !selectedPage;
 
         return (
-          <button key={page.id} onClick={() => onSelectPage(page)}
+         <button key={page.id} onClick={() => onSelectPage(page)}
             style={{ 
               padding: '4px 0', 
-              fontSize: '13px', 
-              fontWeight: '600', 
+              fontSize: '17px', 
+              fontWeight: '700', 
               border: 'none', 
               background: 'none', 
               cursor: 'pointer', 
@@ -423,7 +423,7 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
             onMouseEnter={e => { e.currentTarget.style.color = '#db2777'; }}
             onMouseLeave={e => { e.currentTarget.style.color = '#374151'; }}>
             {page.name_bn || page.name}
-            {showArrow && <span style={{ fontSize: '10px', color: '#9ca3af' }}>▼</span>}
+            {showArrow && <span style={{ fontSize: '12px', color: '#9ca3af' }}>▼</span>}
           </button>
         );
       })}
