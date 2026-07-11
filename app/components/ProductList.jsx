@@ -1546,7 +1546,7 @@ if (showCart) {
         </div>
         <SubPageChips selectedPage={selectedPage} branch={branch} isAdmin={isAdmin} onSelectPage={handlePageSelect} />
       </div>
-
+{!selectedPage && (
       <div className="px-4 py-1.5">
         <input 
           type="text" 
@@ -1559,7 +1559,6 @@ if (showCart) {
             setSelectedName(null); 
             
             if (val.trim().length >= 2) { 
-              // 👑 লুপহোল ফিক্স: কারেন্ট কাস্টমার যে শাখা (branch.id) দেখছে, শুধুমাত্র সেই শাখার সেলারকে ফিল্টার করা হলো ভাই
               const { data } = await supabase
                 .from('sellers')
                 .select('id, shop_name, page_id')
@@ -1582,6 +1581,7 @@ if (showCart) {
           style={{ width: '100%', border: '2px solid #fbcfe8', borderRadius: '12px', padding: '10px 16px', color: '#1f2937', fontSize: '14px', fontWeight: '500', outline: 'none', boxSizing: 'border-box' }} 
         />
       </div>
+      )}
 
       {!selectedPage && !search && !selectedCategory && !selectedName && (
         <>
