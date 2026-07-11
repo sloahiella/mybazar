@@ -837,7 +837,7 @@ if (!selectedBranch) {
     );
   }
   return (
-    <div style={{ minHeight: '100vh', background: '#fdf2f8', overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#fdf2f8' }}>
       {selectedOrder && <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} isAdmin={role === 'admin'} />}
       {showCustomerAuth && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, overflowY: 'auto', background: '#fdf2f8' }}>
