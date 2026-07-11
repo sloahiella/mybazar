@@ -473,9 +473,41 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
     setCurrentImageIndex(0);
     setActiveTab('description');
     setSelectedSize('');
-    async function fetchRelated() {
+   async function fetchRelated() {
       const { data } = await supabase.from('products').select('*, stock(*), product_images(*)').eq('page_id', product.page_id).eq('is_active', true).neq('id', product.id).limit(10);
-      if (data) setRelatedProducts(data);
+      let combined = data || [];
+
+      // 👑 এই পেজে assign করা Mohasagor প্রোডাক্টগুলোও যোগ করা হলো
+      try {
+        const { data: assigns } = await supabase.from('mohasagor_assignments').select('*').eq('page_id', product.page_id);
+        if (assigns && assigns.length > 0) {
+          const res = await fetch('/api/mohasagor');
+          const mohaData = await res.json();
+          const mohaProducts = mohaData.products || [];
+          assigns.forEach(assign => {
+            const mp = mohaProducts.find(p => String(p.id) === String(assign.mohasagor_product_id));
+            const mpFakeId = `moha-${assign.mohasagor_product_id}`;
+            if (mp && mpFakeId !== String(product.id)) {
+              combined.push({
+                id: mpFakeId,
+                name: mp.name,
+                name_bn: mp.name,
+                product_code: mp.product_code,
+                price_per_unit: mp.price,
+                unit: 'pcs',
+                image_url: mp.thumbnail_img,
+                discount_percent: 0,
+                stock: [{ quantity: 100 }],
+                is_mohasagor: true,
+              });
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Related mohasagor fetch error:', e);
+      }
+
+      setRelatedProducts(combined);
     }
     async function fetchReviews() {
       const { data } = await supabase.from('reviews').select('*').eq('product_id', product.id).order('created_at', { ascending: false });
