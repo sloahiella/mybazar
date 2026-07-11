@@ -40,11 +40,21 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
 
   // স্ক্রল ট্র্যাক করার হুক - হিরো ব্যানারের সার্চ বক্স আড়ালে গেলেই হেডার সার্চ দেখাবে
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 220)
-    handleScroll()
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    const target = document.getElementById('heroSearchInput')
+    if (!target) {
+      // হিরো সার্চ বক্স খুঁজে না পেলে (যেমন হোম পেজে), ফলব্যাক হিসেবে scroll ব্যবহার করবে
+      const handleScroll = () => setScrolled(window.scrollY > 150)
+      handleScroll()
+      window.addEventListener('scroll', handleScroll)
+      return () => window.removeEventListener('scroll', handleScroll)
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => setScrolled(!entry.isIntersecting),
+      { threshold: 0 }
+    )
+    observer.observe(target)
+    return () => observer.disconnect()
+  })
 
   useEffect(() => {
     function updateCustomer() {
