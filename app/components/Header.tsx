@@ -103,10 +103,8 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
             type="text"
             id="headerSearchInput"
             placeholder="Search products..."
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                window.dispatchEvent(new CustomEvent('heroSearch', { detail: e.currentTarget.value }));
-              }
+            onChange={e => {
+              window.dispatchEvent(new CustomEvent('heroSearch', { detail: e.currentTarget.value }));
             }}
             style={{ flex: 1, border: 'none', outline: 'none', padding: '8px 10px', fontSize: '13px', color: '#1f2937', background: 'transparent' }}
           />

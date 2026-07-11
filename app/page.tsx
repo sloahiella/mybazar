@@ -903,14 +903,12 @@ if (!selectedBranch) {
           </p>
         <div style={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: '620px', background: 'white', borderRadius: '30px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.15)', padding: '4px' }}>
             <span style={{ paddingLeft: '16px', fontSize: '16px', color: '#9ca3af' }}>🔍</span>
-            <input
+           <input
               type="text"
               id="heroSearchInput"
               placeholder="Search products..."
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  window.dispatchEvent(new CustomEvent('heroSearch', { detail: e.currentTarget.value }));
-                }
+              onChange={e => {
+                window.dispatchEvent(new CustomEvent('heroSearch', { detail: e.currentTarget.value }));
               }}
               style={{ flex: 1, border: 'none', outline: 'none', padding: '12px 12px', fontSize: '14px', color: '#1f2937', background: 'transparent' }}
             />
