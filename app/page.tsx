@@ -889,18 +889,39 @@ if (!selectedBranch) {
       {currentPageId && (
         <div style={{
           background: 'linear-gradient(135deg, #a00035 0%, #a5004a 50%, #e11d74 100%)',
-          padding: '80px 16px',
+          padding: '40px 16px 50px',
           minHeight: '200px',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
         }}>
-          <div>
           <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 'clamp(10px, 3vw, 16px)', fontWeight: '500', margin: '0 0 8px 0', letterSpacing: '2px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Bangladesh Online Favorite Shop</p>
-            <p style={{ color: 'white', fontSize: 'clamp(24px, 6vw, 60px)', fontWeight: '900', margin: 0, textTransform: 'uppercase', letterSpacing: '2px', textShadow: '0 4px 24px rgba(0,0,0,0.4)', lineHeight: '1.1', wordBreak: 'break-word' }}>
-              {localStorage.getItem('current_page_name') || ''}
-            </p>
+          <p style={{ color: 'white', fontSize: 'clamp(24px, 6vw, 60px)', fontWeight: '900', margin: '0 0 20px 0', textTransform: 'uppercase', letterSpacing: '2px', textShadow: '0 4px 24px rgba(0,0,0,0.4)', lineHeight: '1.1', wordBreak: 'break-word' }}>
+            {localStorage.getItem('current_page_name') || ''}
+          </p>
+          <div style={{ display: 'flex', width: '100%', maxWidth: '480px', background: 'white', borderRadius: '30px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+            <input
+              type="text"
+              id="heroSearchInput"
+              placeholder="পণ্যের নাম লিখুন..."
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  window.dispatchEvent(new CustomEvent('heroSearch', { detail: e.currentTarget.value }));
+                }
+              }}
+              style={{ flex: 1, border: 'none', outline: 'none', padding: '14px 20px', fontSize: '14px', color: '#1f2937' }}
+            />
+            <button
+              onClick={() => {
+                const input = document.getElementById('heroSearchInput') as HTMLInputElement;
+                window.dispatchEvent(new CustomEvent('heroSearch', { detail: input?.value || '' }));
+              }}
+              style={{ background: '#db2777', color: 'white', border: 'none', padding: '0 24px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              🔍 Search
+            </button>
           </div>
         </div>
       )}
