@@ -87,9 +87,11 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
    <>
     <div style={{ background: PINK, color: 'white', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '60px', position: 'sticky', top: 0, zIndex: 50, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
 
-      {/* বাম দিক (মেনু ও লোগো) */}
+{/* বাম দিক (মেনু ও লোগো) */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <button onClick={onMenuClick} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer', padding: '4px' }}>☰</button>
+        {!isMobile && (
+          <button onClick={onMenuClick} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer', padding: '4px' }}>☰</button>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
         </div>
