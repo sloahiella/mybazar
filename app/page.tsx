@@ -889,8 +889,8 @@ if (!selectedBranch) {
       {currentPageId && (
         <div style={{
           background: 'linear-gradient(135deg, #a00035 0%, #a5004a 50%, #e11d74 100%)',
-          padding: '40px 16px 50px',
-          minHeight: '200px',
+          padding: 'clamp(20px, 5vw, 40px) 16px clamp(20px, 5vw, 50px)',
+          minHeight: 'clamp(120px, 25vw, 200px)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
