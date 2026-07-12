@@ -901,23 +901,23 @@ if (!selectedBranch) {
           <p style={{ color: 'white', fontSize: 'clamp(24px, 6vw, 60px)', fontWeight: '900', margin: '0 0 20px 0', textTransform: 'uppercase', letterSpacing: '2px', textShadow: '0 4px 24px rgba(0,0,0,0.4)', lineHeight: '1.1', wordBreak: 'break-word' }}>
             {localStorage.getItem('current_page_name') || ''}
           </p>
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: '620px', background: 'white', borderRadius: '30px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.15)', padding: '4px' }}>
-            <span style={{ paddingLeft: '16px', fontSize: '16px', color: '#9ca3af' }}>🔍</span>
-           <input
+      <div style={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: '620px', background: 'white', borderRadius: '30px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.15)', padding: 'clamp(2px, 0.5vw, 4px)' }}>
+            <span style={{ paddingLeft: 'clamp(8px, 2vw, 16px)', fontSize: 'clamp(12px, 3vw, 16px)', color: '#9ca3af' }}>🔍</span>
+            <input
               type="text"
               id="heroSearchInput"
               placeholder="Search products..."
               onChange={e => {
                 window.dispatchEvent(new CustomEvent('heroSearch', { detail: e.currentTarget.value }));
               }}
-              style={{ flex: 1, border: 'none', outline: 'none', padding: '12px 12px', fontSize: '14px', color: '#1f2937', background: 'transparent' }}
+              style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', padding: 'clamp(8px, 2vw, 12px)', fontSize: 'clamp(12px, 3vw, 14px)', color: '#1f2937', background: 'transparent' }}
             />
             <button
               onClick={() => {
                 const input = document.getElementById('heroSearchInput') as HTMLInputElement;
                 window.dispatchEvent(new CustomEvent('heroSearch', { detail: input?.value || '' }));
               }}
-              style={{ background: '#db2777', color: 'white', border: 'none', padding: '12px 28px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '26px', whiteSpace: 'nowrap' }}
+              style={{ background: '#db2777', color: 'white', border: 'none', padding: 'clamp(8px, 2vw, 12px) clamp(12px, 4vw, 28px)', fontSize: 'clamp(12px, 3vw, 14px)', fontWeight: 'bold', cursor: 'pointer', borderRadius: '26px', whiteSpace: 'nowrap', flexShrink: 0 }}
             >
               Search
             </button>
