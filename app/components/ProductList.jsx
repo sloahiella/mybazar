@@ -102,10 +102,12 @@ function CategoryGrid({ branch, onSelectPage }) {
       .order('sort_order', { ascending: true }).limit(20);
     if (ownProducts && ownProducts.length > 0) collected = collected.concat(ownProducts);
 
-    const pageAssign = (assigns || []).find(a => String(a.page_id) === String(pageId));
-    if (pageAssign) {
-      const mp = (mohaProductsList || []).find(p => String(p.id) === String(pageAssign.mohasagor_product_id));
-      if (mp) collected.push({ image_url: mp.thumbnail_img, name: mp.name, price_per_unit: mp.price, discount_percent: 0 });
+  const pageAssigns = (assigns || []).filter(a => String(a.page_id) === String(pageId));
+    if (pageAssigns.length > 0) {
+      pageAssigns.forEach(assign => {
+        const mp = (mohaProductsList || []).find(p => String(p.id) === String(assign.mohasagor_product_id));
+        if (mp) collected.push({ image_url: mp.thumbnail_img, name: mp.name, price_per_unit: mp.price, discount_percent: 0 });
+      });
     }
 
     if (collected.length === 0) {
@@ -117,11 +119,11 @@ function CategoryGrid({ branch, onSelectPage }) {
             .order('sort_order', { ascending: true }).limit(20);
           if (subData && subData.length > 0) collected = collected.concat(subData);
 
-          const subAssign = (assigns || []).find(a => String(a.page_id) === String(sub.id));
-          if (subAssign) {
-            const mp = (mohaProductsList || []).find(p => String(p.id) === String(subAssign.mohasagor_product_id));
+          const subAssigns = (assigns || []).filter(a => String(a.page_id) === String(sub.id));
+          subAssigns.forEach(assign => {
+            const mp = (mohaProductsList || []).find(p => String(p.id) === String(assign.mohasagor_product_id));
             if (mp) collected.push({ image_url: mp.thumbnail_img, name: mp.name, price_per_unit: mp.price, discount_percent: 0 });
-          }
+          });
         }
       }
     }
