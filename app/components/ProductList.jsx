@@ -60,10 +60,9 @@ function CategoryGrid({ branch, onSelectPage, products }) {
   }, [branch]);
 
   useEffect(() => {
-    const timer = setInterval(() => setRotateIndex(prev => prev + 1), 1000);
+    const timer = setInterval(() => setRotateIndex(prev => prev + 1), 60000);
     return () => clearInterval(timer);
   }, []);
-
   async function fetchPages() {
     const { data } = await supabase.from('pages').select('id, name, name_bn, parent_id')
       .eq('branch_id', branch.id).eq('is_active', true).order('sort_order');
