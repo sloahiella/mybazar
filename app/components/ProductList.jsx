@@ -1595,8 +1595,8 @@ if (showCart) {
       </div>
 {!selectedPage && (
       <div className="px-4 py-1.5">
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%', background: 'white', borderRadius: '30px', overflow: 'hidden', border: '2px solid #fbcfe8', padding: '2px' }}>
-          <span style={{ paddingLeft: '12px', fontSize: '15px', color: '#9ca3af' }}>🔍</span>
+    <div style={{ display: 'flex', alignItems: 'center', width: '100%', background: 'white', borderRadius: '30px', overflow: 'hidden', border: '2px solid #fbcfe8', padding: 'clamp(2px, 0.5vw, 4px)' }}>
+          <span style={{ paddingLeft: 'clamp(8px, 2vw, 12px)', fontSize: 'clamp(12px, 3vw, 15px)', color: '#9ca3af' }}>🔍</span>
           <input 
             type="text" 
             placeholder="পণ্যের নাম, কোড বা দোকানের নাম লিখুন..." 
@@ -1627,11 +1627,11 @@ if (showCart) {
                 setSellerSearch(null); 
               } 
             }} 
-            style={{ flex: 1, border: 'none', outline: 'none', padding: '10px 10px', color: '#1f2937', fontSize: '14px', fontWeight: '500', background: 'transparent' }} 
+            style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', padding: 'clamp(8px, 2vw, 10px)', color: '#1f2937', fontSize: 'clamp(12px, 3vw, 14px)', fontWeight: '500', background: 'transparent' }} 
           />
           <button
             onClick={() => {}}
-            style={{ background: '#db2777', color: 'white', border: 'none', padding: '10px 22px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '26px', whiteSpace: 'nowrap' }}
+            style={{ background: '#db2777', color: 'white', border: 'none', padding: 'clamp(8px, 2vw, 10px) clamp(12px, 4vw, 22px)', fontSize: 'clamp(11px, 3vw, 13px)', fontWeight: 'bold', cursor: 'pointer', borderRadius: '26px', whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             Search
           </button>
