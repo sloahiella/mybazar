@@ -888,7 +888,9 @@ if (!selectedBranch) {
  {!currentPageId && <HeroBanner />}
       {currentPageId && (
         <div style={{
-          background: 'linear-gradient(135deg, #a00035 0%, #a5004a 50%, #e11d74 100%)',
+          backgroundImage: 'linear-gradient(135deg, rgba(160,0,53,0.55) 0%, rgba(165,0,74,0.55) 50%, rgba(225,29,116,0.55) 100%), url(https://i.ibb.co.com/1JvzJ4jx/page-hiro-baner.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           padding: 'clamp(20px, 5vw, 40px) 16px clamp(20px, 5vw, 50px)',
           minHeight: 'clamp(120px, 25vw, 200px)',
           display: 'flex',
