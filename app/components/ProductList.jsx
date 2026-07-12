@@ -50,87 +50,38 @@ function StarRating({ productId, isAdmin }) {
     </div>
   );
 }
-let cachedMohaProducts = null;
-let cachedAssigns = null;
-function CategoryGrid({ branch, onSelectPage }) {
+function CategoryGrid({ branch, onSelectPage, products }) {
   const [pages, setPages] = useState([]);
-  const [pageProducts, setPageProducts] = useState({});
+  const [allPages, setAllPages] = useState([]);
   const [rotateIndex, setRotateIndex] = useState(0);
 
   useEffect(() => { 
-    if (pages.length === 0) fetchPages(); 
+    fetchPages(); 
   }, [branch]);
 
-  // 👑 প্রতি ১ সেকেন্ডে প্রোডাক্ট ঘুরিয়ে দেখানোর জন্য
   useEffect(() => {
-    const timer = setInterval(() => {
-      setRotateIndex(prev => prev + 1);
-    }, 1000);
+    const timer = setInterval(() => setRotateIndex(prev => prev + 1), 1000);
     return () => clearInterval(timer);
   }, []);
 
   async function fetchPages() {
-    const { data } = await supabase.from('pages').select('*')
-      .eq('branch_id', branch.id).is('parent_id', null)
-      .eq('is_active', true).order('sort_order');
+    const { data } = await supabase.from('pages').select('id, name, name_bn, parent_id')
+      .eq('branch_id', branch.id).eq('is_active', true).order('sort_order');
     if (data) {
-      setPages(data);
-      if (!cachedAssigns) {
-        const { data: assigns } = await supabase.from('mohasagor_assignments').select('*');
-        cachedAssigns = assigns || [];
-      }
-      let mohaProductsList = [];
-      if (cachedAssigns.length > 0) {
-        if (!cachedMohaProducts) {
-          const res = await fetch('/api/mohasagor');
-          const mohaData = await res.json();
-          cachedMohaProducts = mohaData.products || [];
-        }
-        mohaProductsList = cachedMohaProducts;
-      }
-      const assigns = cachedAssigns;
-      data.forEach(page => fetchAllProductsForPage(page.id, assigns || [], mohaProductsList));
+      setAllPages(data);
+      setPages(data.filter(p => !p.parent_id));
     }
   }
 
-  // 👑 পেজের নিজের সব প্রোডাক্ট, তারপর সাব পেজগুলোর সব প্রোডাক্ট ক্রমান্বয়ে সংগ্রহ করার লজিক
-  async function fetchAllProductsForPage(pageId, assigns, mohaProductsList) {
-    let collected = [];
-
-    const { data: ownProducts } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
-      .eq('page_id', pageId).eq('branch_id', branch.id).eq('is_active', true)
-      .order('sort_order', { ascending: true }).limit(20);
-    if (ownProducts && ownProducts.length > 0) collected = collected.concat(ownProducts);
-
-  const pageAssigns = (assigns || []).filter(a => String(a.page_id) === String(pageId));
-    if (pageAssigns.length > 0) {
-      pageAssigns.forEach(assign => {
-        const mp = (mohaProductsList || []).find(p => String(p.id) === String(assign.mohasagor_product_id));
-        if (mp) collected.push({ image_url: mp.thumbnail_img, name: mp.name, price_per_unit: mp.price, discount_percent: 0 });
-      });
-    }
-
-    if (collected.length === 0) {
-      const { data: subPages } = await supabase.from('pages').select('id').eq('parent_id', pageId).order('sort_order');
-      if (subPages && subPages.length > 0) {
-        for (const sub of subPages) {
-          const { data: subData } = await supabase.from('products').select('image_url, name, price_per_unit, discount_percent')
-            .eq('page_id', sub.id).eq('branch_id', branch.id).eq('is_active', true)
-            .order('sort_order', { ascending: true }).limit(20);
-          if (subData && subData.length > 0) collected = collected.concat(subData);
-
-          const subAssigns = (assigns || []).filter(a => String(a.page_id) === String(sub.id));
-          subAssigns.forEach(assign => {
-            const mp = (mohaProductsList || []).find(p => String(p.id) === String(assign.mohasagor_product_id));
-            if (mp) collected.push({ image_url: mp.thumbnail_img, name: mp.name, price_per_unit: mp.price, discount_percent: 0 });
-          });
-        }
+  function getPageProducts(pageId) {
+    let list = products.filter(p => String(p.page_id) === String(pageId));
+    if (list.length === 0) {
+      const subIds = allPages.filter(p => String(p.parent_id) === String(pageId)).map(p => p.id);
+      if (subIds.length > 0) {
+        list = products.filter(p => subIds.map(String).includes(String(p.page_id)));
       }
     }
-
-    if (collected.length > 0) {
-      setPageProducts(prev => ({ ...prev, [pageId]: collected }));
-    }
+    return list;
   }
 
   if (pages.length === 0) return null;
@@ -139,8 +90,8 @@ function CategoryGrid({ branch, onSelectPage }) {
     <div style={{ padding: '0 12px 8px' }}>
       <div className="flex flex-wrap gap-2 justify-between">
         {pages.map(page => {
-          const productList = pageProducts[page.id];
-          const currentProduct = productList && productList.length > 0 ? productList[rotateIndex % productList.length] : null;
+          const list = getPageProducts(page.id);
+          const currentProduct = list.length > 0 ? list[rotateIndex % list.length] : null;
           return (
             <div key={page.id} onClick={() => onSelectPage(page)} className="w-[calc(50%-4px)] md:w-[calc(25%-6px)] cursor-pointer text-center flex-shrink-0">
               <div style={{ position: 'relative', width: '100%', paddingBottom: '100%', borderRadius: '12px', overflow: 'hidden', background: '#e0f2fe', marginBottom: '4px' }}>
@@ -162,6 +113,7 @@ function CategoryGrid({ branch, onSelectPage }) {
     </div>
   );
 }
+
 function CartItem({ item, onUpdate, onRemove }) {
   const [editing, setEditing] = useState(false);
   const [newQty, setNewQty] = useState(item.qty.toString());
@@ -1642,7 +1594,7 @@ if (showCart) {
       )}
       {!selectedPage && !search && !selectedCategory && !selectedName && (
         <>
-          <CategoryGrid branch={branch} onSelectPage={handlePageSelect} role={role} />
+         <CategoryGrid branch={branch} onSelectPage={handlePageSelect} role={role} products={products} />
         </>
       )}
         
