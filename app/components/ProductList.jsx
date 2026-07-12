@@ -1478,10 +1478,19 @@ if (showCart) {
         <div className="p-4 space-y-3">
           {cart.map(item => <CartItem key={`${item.id}-${item.selectedSize}`} item={item} onUpdate={updateCartQty} onRemove={removeFromCart} />)}
         </div>
-        <div style={{ position: 'fixed', bottom: isMobile ? '60px' : '0', left: 0, right: 0, background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+     <div style={{ position: 'fixed', bottom: isMobile ? '60px' : '0', left: 0, right: 0, background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <span style={{ fontWeight: 'bold', color: '#374151', fontSize: '18px' }}>Total:</span>
-            <span style={{ fontWeight: 'bold', color: '#db2777', fontSize: '20px' }}>{total.toFixed(0)} Tk</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex' }}>
+                {cart.slice(0, 3).map((item, i) => (
+                  item.image_url && (
+                    <img key={i} src={item.image_url} alt={item.name} style={{ width: '28px', height: '28px', objectFit: 'cover', borderRadius: '50%', border: '2px solid white', marginLeft: i === 0 ? 0 : '-10px' }} />
+                  )
+                ))}
+              </div>
+              <span style={{ fontWeight: 'bold', color: '#db2777', fontSize: '20px' }}>{total.toFixed(0)} Tk</span>
+            </div>
           </div>
           <button onClick={() => officeOpen && setShowOrder(true)} style={{ width: '100%', background: officeOpen ? '#db2777' : '#9ca3af', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '18px', fontWeight: 'bold', cursor: officeOpen ? 'pointer' : 'not-allowed' }}>{officeOpen ? 'অর্ডার করুন' : '🔴 অফিস বন্ধ'}</button>
         </div>
@@ -1490,7 +1499,7 @@ if (showCart) {
   }
 
   return (
-    <div className="pb-24">
+    <div className="pb-40">
       {selectedProduct && (
         <ProductDetailModal
           product={selectedProduct} 
