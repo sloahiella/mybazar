@@ -239,19 +239,25 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
           </div>
-          {(order.order_items || []).map((item, i) => (
-            <div key={i} style={{ borderBottom: '1px dashed #d1d5db', padding: '8px 4px' }}>
-              <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center' }}>
-                <div style={{ flex: 1, paddingRight: '8px' }}>
-                  <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{item.products?.name}</p>
-                  <p style={{ fontSize: '11px', color: '#3b82f6', margin: '0 0 2px 0' }}>কোড: {String(item.products?.product_code ?? item?.product_code ?? 'N/A')}</p>
-                  <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>{item.price} Tk/{item.products?.unit} × {item.quantity} {item.products?.unit}</p>
+         {(order.order_items || []).map((item, i) => {
+            const displayName = item.product_name || item.products?.name || 'পণ্য';
+            const displayImage = item.product_image || item.products?.image_url;
+            const displayCode = item.product_code || item.products?.product_code || 'N/A';
+            const displayUnit = item.products?.unit || 'pcs';
+            return (
+              <div key={i} style={{ borderBottom: '1px dashed #d1d5db', padding: '8px 4px' }}>
+                <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ flex: 1, paddingRight: '8px' }}>
+                    <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{displayName}</p>
+                    <p style={{ fontSize: '11px', color: '#3b82f6', margin: '0 0 2px 0' }}>কোড: {String(displayCode)}</p>
+                    <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>{item.price} Tk/{displayUnit} × {item.quantity} {displayUnit}</p>
+                  </div>
+                  {displayImage && <img src={displayImage} alt={displayName} style={{ width: '40px', height: '40px', objectFit: 'contain', borderRadius: '6px', margin: '0 8px', flexShrink: 0 }} />}
+                  <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#db2777', margin: 0, whiteSpace: 'nowrap' }}>{(item.price * item.quantity).toFixed(0)} Tk</p>
                 </div>
-                {item.products?.image_url && <img src={item.products.image_url} alt={item.products.name} style={{ width: '40px', height: '40px', objectFit: 'contain', borderRadius: '6px', margin: '0 8px', flexShrink: 0 }} />}
-                <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#db2777', margin: 0, whiteSpace: 'nowrap' }}>{(item.price * item.quantity).toFixed(0)} Tk</p>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div style={{ borderTop: '2px solid #374151', marginTop: '8px', paddingTop: '8px', display: 'flex', justifycontent: 'space-between' }}>
             <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#374151', margin: 0 }}>সর্বমোট:</p>
             <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#db2777', margin: 0 }}>{order.total_amount} Tk</p>
