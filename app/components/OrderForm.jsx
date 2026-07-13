@@ -116,8 +116,8 @@ const items = cart.map(item => {
     setLoading(false);
     onSuccess(order.id, form.phone);
   }
-  return (
-   <div style={{ minHeight: '100vh', background: PINK_LIGHT, paddingBottom: '160px' }}>
+ return (
+   <div style={{ minHeight: '100vh', background: PINK_LIGHT, display: 'flex', flexDirection: 'column' }}>
       <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>←</button>
         <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>অর্ডার ফর্ম</h2>
@@ -221,10 +221,13 @@ const items = cart.map(item => {
 
         <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <h3 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '8px', fontSize: '15px' }}>অর্ডার সারসংক্ষেপ</h3>
-          {cart.map(item => (
-            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6b7280', padding: '6px 0', borderBottom: '1px dashed #e5e7eb' }}>
+         {cart.map(item => (
+            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: '#6b7280', padding: '6px 0', borderBottom: '1px dashed #e5e7eb' }}>
               <span>{item.name} ({item.qty} {item.unit})</span>
-              <span style={{ fontWeight: 'bold', color: '#374151' }}>{(item.price_per_unit * item.qty).toFixed(0)} Tk</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {item.image_url && <img src={item.image_url} alt={item.name} style={{ width: '28px', height: '28px', objectFit: 'cover', borderRadius: '6px' }} />}
+                <span style={{ fontWeight: 'bold', color: '#374151' }}>{(item.price_per_unit * item.qty).toFixed(0)} Tk</span>
+              </div>
             </div>
           ))}
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: PINK, marginTop: '8px', fontSize: '16px', borderTop: '1px solid #e5e7eb', paddingTop: '8px' }}>
@@ -238,7 +241,7 @@ const items = cart.map(item => {
         )}
       </div>
 
-     <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', padding: '16px', paddingBottom: '80px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
+     <div style={{ background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
         <button onClick={submitOrder} disabled={loading}
           style={{
             width: '100%', background: loading ? '#9ca3af' : PINK, color: 'white',
