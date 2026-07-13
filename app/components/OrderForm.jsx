@@ -97,23 +97,25 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
       return;
     }
 
-const items = cart.map(item => ({
-      order_id: order.id,
-      product_id: item.id,
-      quantity: item.qty,
-      price: item.price_per_unit
-    }));
-    await supabase.from('order_items').insert(items);
+const items = cart.map(item => {
+      const isMoha = typeof item.id === 'string' && item.id.startsWith('moha-');
+      return {
+        order_id: order.id,
+        product_id: isMoha ? null : item.id,
+        quantity: item.qty,
+        price: item.price_per_unit,
+        product_name: item.name || null,
+        product_image: item.image_url || null,
+        product_code: item.product_code || (isMoha ? item.id.replace('moha-', '') : null),
+      };
+    });
+    const { error: itemsError } = await supabase.from('order_items').insert(items);
+    if (itemsError) {
+      console.error('order_items insert error:', JSON.stringify(itemsError));
+    }
     setLoading(false);
     onSuccess(order.id, form.phone);
-    return;
-    if (itemsError) {
-      console.error('order_items error details:', JSON.stringify(itemsError));
-      console.error('items data:', JSON.stringify(items));
-    }
-  
   }
-
   return (
    <div style={{ minHeight: '100vh', background: PINK_LIGHT, paddingBottom: '160px' }}>
       <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
