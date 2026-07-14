@@ -140,10 +140,24 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
 
           <div 
             onClick={() => { onSelectPage(page); closeMenu(); }} 
-            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer', background: selectedPage?.id === page.id ? '#db2777' : 'transparent', color: selectedPage?.id === page.id ? 'white' : '#374151', opacity: page.is_active === false ? 0.5 : 1 }}
+            style={{ 
+              flex: 1, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              padding: '10px 14px', 
+              borderRadius: '8px', 
+              fontSize: depth > 0 ? '13px' : '14px', 
+              fontWeight: depth > 0 ? '600' : '500', 
+              cursor: 'pointer', 
+              background: selectedPage?.id === page.id ? '#db2777' : (depth > 0 ? '#fdf2f8' : 'transparent'), 
+              color: selectedPage?.id === page.id ? 'white' : (depth > 0 ? '#db2777' : '#374151'), 
+              opacity: page.is_active === false ? 0.5 : 1,
+              border: depth > 0 && selectedPage?.id !== page.id ? '1px solid #fbcfe8' : 'none',
+            }}
           >
             <span style={{ display: 'flex', alignItems: 'center' }}>
-              {depth > 0 && !isAdmin && <span style={{ color: '#9ca3af', marginRight: '6px' }}>└─</span>}
+              {depth > 0 && !isAdmin && <span style={{ color: selectedPage?.id === page.id ? 'white' : '#db2777', marginRight: '6px' }}>└─</span>}
               {page.name_bn || page.name}
               {page.is_active === false && <span style={{ fontSize: '10px', color: '#ef4444', marginLeft: '4px' }}>(বন্ধ)</span>}
             </span>
