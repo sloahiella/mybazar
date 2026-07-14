@@ -835,7 +835,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
   );
 }
 
-function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, onDoubleClick, isDragging, onDragStart, onDragOver, onDrop, onNeedLogin }) {
+function ProductCard({ product, index, onAdd, isAdmin, isEditor, editorPageId, onEdit, onDoubleClick, isDragging, onDragHandleDown, onNeedLogin }) {
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -862,10 +862,9 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
     return q;
   };
 
-  return (
+ return (
     <div 
-      onDragOver={e => { e.preventDefault(); onDragOver && onDragOver(); }} 
-      onDrop={e => { e.preventDefault(); onDrop && onDrop(); }}
+      data-product-index={index}
       style={{ 
         background: 'white',
         borderRadius: '12px', 
@@ -886,7 +885,7 @@ function ProductCard({ product, onAdd, isAdmin, isEditor, editorPageId, onEdit, 
       )}
       {canEdit && (
         <div style={{ display: 'flex', justifycontent: 'flex-end', gap: '4px', padding: '6px 6px 0', flexShrink: 0 }}>
-          {isAdmin && <span draggable onDragStart={onDragStart} onMouseDown={onDragStart} onTouchStart={onDragStart} style={{ background: '#e5e7eb', color: '#6b7280', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', cursor: 'grab', userSelect: 'none' }}>⠿</span>}
+          {isAdmin && <span onPointerDown={e => onDragHandleDown && onDragHandleDown(e)} style={{ background: '#e5e7eb', color: '#6b7280', fontSize: '16px', padding: '8px 12px', borderRadius: '4px', cursor: 'grab', userSelect: 'none', touchAction: 'none' }}>⠿</span>}
           <button onClick={() => onEdit(product)} style={{ background: '#facc15', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>✏️</button>
         </div>
       )}
@@ -1399,9 +1398,47 @@ const isMobile = useIsMobile()
 
   const dragItem = useRef(null);
   const dragOverItem = useRef(null);
+  const autoScrollTimer = useRef(null);
 
-  function handleDragStart(index) { dragItem.current = index; setDragIndex(index); }
-  function handleDragOver(index) { dragOverItem.current = index; if (dragIndex !== null && dragIndex !== index) setDragOverIndex(index); }
+  function startDrag(index, e) {
+    e.preventDefault();
+    dragItem.current = index;
+    dragOverItem.current = index;
+    setDragIndex(index);
+    setDragOverIndex(index);
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+  }
+
+  function handlePointerMove(e) {
+    const y = e.clientY;
+    const edge = 90;
+    if (y < edge) {
+      if (!autoScrollTimer.current) autoScrollTimer.current = setInterval(() => window.scrollBy(0, -12), 16);
+    } else if (y > window.innerHeight - edge) {
+      if (!autoScrollTimer.current) autoScrollTimer.current = setInterval(() => window.scrollBy(0, 12), 16);
+    } else if (autoScrollTimer.current) {
+      clearInterval(autoScrollTimer.current);
+      autoScrollTimer.current = null;
+    }
+
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const cardEl = el && el.closest('[data-product-index]');
+    if (cardEl) {
+      const idx = parseInt(cardEl.getAttribute('data-product-index'), 10);
+      if (!isNaN(idx) && idx !== dragOverItem.current) {
+        dragOverItem.current = idx;
+        setDragOverIndex(idx);
+      }
+    }
+  }
+
+  async function handlePointerUp() {
+    window.removeEventListener('pointermove', handlePointerMove);
+    window.removeEventListener('pointerup', handlePointerUp);
+    if (autoScrollTimer.current) { clearInterval(autoScrollTimer.current); autoScrollTimer.current = null; }
+    await handleDrop();
+  }
 
  async function handleDrop() {
     const from = dragItem.current; const to = dragOverItem.current;
@@ -1700,10 +1737,11 @@ if (showCart) {
           <style>{mobileGridStyle}</style>
           {/* 👑 আল্টিমেট পারফেক্ট ফিক্স: w-max এবং max-w-full দিয়ে জোরাজুরি ছাড়াই কার্ড দুটোকে পাশাপাশি আনা হলো ভাই */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-1.5 pt-0">
-            {displayProducts.map((product, index) => (
+{displayProducts.map((product, index) => (
               <ProductCard  
                 key={product.id} 
                 product={product} 
+                index={index}
                 onAdd={addToCart}
                 onNeedLogin={() => setShowCart(true)}
                 isAdmin={isAdmin} 
@@ -1715,9 +1753,7 @@ if (showCart) {
                   window.history.pushState({ productDetail: true }, '', `?product=${p.id}`);
                 }} 
                 isDragging={dragIndex === index} 
-                onDragStart={() => handleDragStart(index)} 
-                onDragOver={() => handleDragOver(index)} 
-                onDrop={() => handleDrop()} 
+                onDragHandleDown={(e) => startDrag(index, e)} 
               />
             ))}
             {!loading && displayProducts.length === 0 && (
