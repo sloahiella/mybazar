@@ -1317,7 +1317,7 @@ const isMobile = useIsMobile()
           assignData.forEach(assign => {
             const mp = mohaProducts.find(p => String(p.id) === String(assign.mohasagor_product_id));
             if (mp) {
-              allProducts.push({
+            allProducts.push({
                 id: `moha-${mp.id}`,
                 name: mp.name,
                 name_bn: mp.name,
@@ -1332,7 +1332,7 @@ const isMobile = useIsMobile()
                 page_id: assign.page_id,
                 discount_percent: 0,
                 sort_order: 999,
-                stock: [{ quantity: 100 }],
+                stock: [{ quantity: mp.stock_status === 'available' ? 100 : 0 }],
                 product_images: (mp.product_images || []).map((img) => ({ image_url: img.product_image, sort_order: 0 })),
                 is_mohasagor: true,
               });
