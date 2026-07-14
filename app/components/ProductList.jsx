@@ -1331,7 +1331,7 @@ const isMobile = useIsMobile()
                 is_active: true,
                 page_id: assign.page_id,
                 discount_percent: 0,
-                sort_order: 999,
+                sort_order: assign.sort_order ?? 999,
                stock: [{ quantity: (mp.stock_status || '').toLowerCase().includes('out') || (mp.stock_status || '').toLowerCase().includes('unavailable') ? 0 : 100 }],
                 product_images: (mp.product_images || []).map((img) => ({ image_url: img.product_image, sort_order: 0 })),
                 is_mohasagor: true,
@@ -1364,10 +1364,17 @@ const isMobile = useIsMobile()
     items.splice(to, 0, removed);
     dragItem.current = null; dragOverItem.current = null;
     setDragIndex(null); setDragOverIndex(null);
-    for (let i = 0; i < items.length; i++) { await supabase.from('products').update({ sort_order: i }).eq('id', items[i].id); }
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.is_mohasagor) {
+        const mohaId = String(item.id).replace('moha-', '');
+        await supabase.from('mohasagor_assignments').update({ sort_order: i }).eq('page_id', item.page_id).eq('mohasagor_product_id', mohaId);
+      } else {
+        await supabase.from('products').update({ sort_order: i }).eq('id', item.id);
+      }
+    }
     fetchProducts();
   }
-
   const getFilteredProductsForMenu = () => {
     if (sellerSearch) {
       return products.filter(p => sellerProductIds.includes(p.id));
