@@ -1332,7 +1332,7 @@ const isMobile = useIsMobile()
                 page_id: assign.page_id,
                 discount_percent: 0,
                 sort_order: 999,
-                stock: [{ quantity: mp.stock_status === 'available' ? 100 : 0 }],
+               stock: [{ quantity: (mp.stock_status || '').toLowerCase().includes('out') || (mp.stock_status || '').toLowerCase().includes('unavailable') ? 0 : 100 }],
                 product_images: (mp.product_images || []).map((img) => ({ image_url: img.product_image, sort_order: 0 })),
                 is_mohasagor: true,
               });
