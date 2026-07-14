@@ -584,9 +584,10 @@ useEffect(() => {
     if (data) {
       let filteredData = data;
       if (activePageId) { filteredData = data.filter((o: any) => o.order_items?.some((item: any) => { const productPageId = item.products?.page_id; if (!productPageId && !activePageId) return true; return String(productPageId) === String(activePageId); })); }
-      setOrders(filteredData); setTotalOrders(filteredData.length);
+     setOrders(filteredData); setTotalOrders(filteredData.length);
       const today = new Date().toDateString();
-      const todayOrders = filteredData.filter((o: any) => new Date(o.created_at).toDateString() === today);
+      const activeOrders = filteredData.filter((o: any) => o.status !== 'cancelled');
+      const todayOrders = activeOrders.filter((o: any) => new Date(o.created_at).toDateString() === today);
       setTodaySales(todayOrders.reduce((a: number, o: any) => a + o.total_amount, 0));
     }
   }
@@ -597,7 +598,13 @@ useEffect(() => {
   }
 
   async function markAllRead() { await supabase.from('notifications').update({ is_read: true }).eq('is_read', false); fetchNotifications(); }
-  async function updateOrderStatus(id: number, status: string) { await supabase.from('orders').update({ status }).eq('id', id); fetchOrders(); }
+  async function updateOrderStatus(id: number, status: string) {
+    await supabase.from('orders').update({ status }).eq('id', id);
+    // 👑 এই অর্ডার সংক্রান্ত নোটিফিকেশন read করে দেওয়া হলো, যাতে ব্যাজ কাউন্ট কমে যায়
+    await supabase.from('notifications').update({ is_read: true }).ilike('body', `%#${id}%`);
+    fetchOrders();
+    fetchNotifications();
+  }
 
   async function handleLogin() {
     if (loginType === 'admin') {
@@ -626,9 +633,10 @@ useEffect(() => {
     });
   };
 
-  const dateFilteredOrders = getFilteredByDate(orders);
-  const filteredSales = dateFilteredOrders.reduce((a: number, o: any) => a + o.total_amount, 0);
-  const filteredOrders2 = dateFilteredOrders.length;
+ const dateFilteredOrders = getFilteredByDate(orders);
+  const activeFilteredOrders = dateFilteredOrders.filter((o: any) => o.status !== 'cancelled');
+  const filteredSales = activeFilteredOrders.reduce((a: number, o: any) => a + o.total_amount, 0);
+  const filteredOrders2 = activeFilteredOrders.length;
 
 if (!selectedBranch) {
     return (
