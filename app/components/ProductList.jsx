@@ -73,16 +73,14 @@ function CategoryGrid({ branch, onSelectPage, products }) {
   }
 
   function getPageProducts(pageId) {
-    let list = products.filter(p => String(p.page_id) === String(pageId));
-    if (list.length === 0) {
-      const subIds = allPages.filter(p => String(p.parent_id) === String(pageId)).map(p => p.id);
-      if (subIds.length > 0) {
-        list = products.filter(p => subIds.map(String).includes(String(p.page_id)));
-      }
+    // 👑 সাব-পেজ থাকলে সাব-পেজের প্রোডাক্ট অগ্রাধিকার পাবে, না থাকলে নিজের প্রোডাক্ট দেখাবে
+    const subIds = allPages.filter(p => String(p.parent_id) === String(pageId)).map(p => p.id);
+    if (subIds.length > 0) {
+      const subList = products.filter(p => subIds.map(String).includes(String(p.page_id)));
+      if (subList.length > 0) return subList;
     }
-    return list;
+    return products.filter(p => String(p.page_id) === String(pageId));
   }
-
   if (pages.length === 0) return null;
 
   return (
