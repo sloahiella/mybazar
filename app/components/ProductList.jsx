@@ -1400,15 +1400,18 @@ const isMobile = useIsMobile()
 
   function startDrag(index, e) {
     e.preventDefault();
+    e.stopPropagation();
     dragItem.current = index;
     dragOverItem.current = index;
     setDragIndex(index);
     setDragOverIndex(index);
-    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointermove', handlePointerMove, { passive: false });
     window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
   }
 
-  function handlePointerMove(e) {
+ function handlePointerMove(e) {
+    e.preventDefault();
     const y = e.clientY;
     const edge = 90;
     if (y < edge) {
