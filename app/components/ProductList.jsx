@@ -1441,12 +1441,14 @@ const isMobile = useIsMobile()
  async function handleDrop() {
     const from = dragItem.current; const to = dragOverItem.current;
     if (from === null || to === null || from === to) { setDragIndex(null); setDragOverIndex(null); return; }
-    const currentProducts = selectedPage
+   const currentProducts = selectedPage
       ? products.filter(p => String(p.page_id) === String(selectedPage.id) || subPageIds.map(String).includes(String(p.page_id)))
       : products;
     const items = Array.from(currentProducts);
-    const [removed] = items.splice(from, 1);
-    items.splice(to, 0, removed);
+    // 👑 Insert-shift এর বদলে সরাসরি swap করা হলো, বাকি সবার পজিশন অপরিবর্তিত থাকবে
+    const temp = items[from];
+    items[from] = items[to];
+    items[to] = temp;
     dragItem.current = null; dragOverItem.current = null;
     setDragIndex(null); setDragOverIndex(null);
     for (let i = 0; i < items.length; i++) {
