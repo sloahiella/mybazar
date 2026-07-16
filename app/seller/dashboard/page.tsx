@@ -81,13 +81,27 @@ export default function SellerDashboard() {
         </button>
       </div>
 
-      {!seller.is_approved && (
+{!seller.is_approved && (
         <div style={{background:'#fef9c3', border:'1px solid #fde047', borderRadius:'12px', padding:'16px', marginBottom:'24px', textAlign:'center'}}>
           <p style={{fontSize:'16px', color:'#854d0e', margin:0}}>
             ⏳ আপনার অ্যাকাউন্ট এখনো অ্যাপ্রুভ হয়নি।
           </p>
         </div>
       )}
+
+      {/* 👑 Telegram নোটিফিকেশন লিংক - রেজিস্ট্রেশনের পরপরই দেখানো হচ্ছে */}
+      <div style={{ padding: '16px', background: seller.telegram_chat_id ? '#dcfce7' : '#fef9c3', borderRadius: '12px', marginBottom: '24px', border: `1px solid ${seller.telegram_chat_id ? '#bbf7d0' : '#fde68a'}`, textAlign: 'center' }}>
+        {seller.telegram_chat_id ? (
+          <p style={{ margin: 0, fontSize: '14px', color: '#15803d', fontWeight: '600' }}>✅ Telegram নোটিফিকেশন চালু আছে</p>
+        ) : (
+          <>
+            <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#854d0e', fontWeight: '600' }}>📱 নতুন অর্ডার হলে সাথে সাথে Telegram-এ জানতে চান?</p>
+            <a href={`https://t.me/sohelmartbot?start=${seller.id}`} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#0088cc', color: 'white', textDecoration: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: 'bold' }}>
+              Telegram এ যুক্ত হন
+            </a>
+          </>
+        )}
+      </div>
 
       {notifications.length > 0 && (
         <div style={{background:'#fff', border:'1px solid #e5e7eb', borderRadius:'12px', padding:'16px', marginBottom:'24px'}}>
