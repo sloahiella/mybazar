@@ -344,11 +344,24 @@ export default function SellerPanel({ seller, onClose, isAdmin }: { seller: any;
     <div style={{ position: 'fixed', right: 0, top: 0, height: '100%', width: '400px', background: '#ffffff', zIndex: 9999, boxShadow: '-5px 0 15px rgba(0,0,0,0.2)', padding: '20px', overflowY: 'auto', color: '#000000' }}>
 
       {/* হেডার */}
-      <div style={{ background: '#db2777', padding: '15px', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderRadius: '8px' }}>
+      <div style={{ background: '#db2777', padding: '15px', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderRadius: '8px' }}>
         <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, color: '#ffffff' }}>🏪 {seller.shop_name}</h2>
         {!isAdmin && <button onClick={onClose} style={{ border: 'none', background: 'rgba(255,255,255,0.2)', color: '#ffffff', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>✕</button>}
       </div>
 
+      {/* 👑 Telegram নোটিফিকেশন লিংক */}
+      <div style={{ padding: '12px', background: seller.telegram_chat_id ? '#dcfce7' : '#fef9c3', borderRadius: '8px', marginBottom: '20px', border: `1px solid ${seller.telegram_chat_id ? '#bbf7d0' : '#fde68a'}` }}>
+        {seller.telegram_chat_id ? (
+          <p style={{ margin: 0, fontSize: '13px', color: '#15803d', fontWeight: '600' }}>✅ Telegram নোটিফিকেশন চালু আছে</p>
+        ) : (
+          <>
+     <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#854d0e', fontWeight: '600' }}>📱 নতুন অর্ডার হলে সাথে সাথে জানতে চান?</p>
+            <a href={`https://t.me/sohelmartbot?start=${seller.id}`} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#0088cc', color: 'white', textDecoration: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold' }}>
+              Telegram এ যুক্ত হন
+            </a>
+          </>
+        )}
+      </div>
       {/* তারিখ ফিল্টার */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '15px', overflowX: 'auto' }}>
         {[{ key: 'today', label: 'আজকে' }, { key: 'yesterday', label: 'গতকাল' }, { key: 'week', label: 'এই সপ্তাহ' }, { key: 'month', label: 'এই মাস' }].map(d => (
