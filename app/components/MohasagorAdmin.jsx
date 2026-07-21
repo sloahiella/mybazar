@@ -103,16 +103,15 @@ export default function MohasagorAdmin({ branchId = 1, onAssign }) {
   async function assignProduct(productId, pageId) {
     const pid = String(productId);
     setSaving(prev => ({ ...prev, [pid]: true }));
-    const existing = assignments[pid];
     if (pageId === '') {
       await supabase.from('mohasagor_assignments').delete().eq('mohasagor_product_id', productId);
       setAssignments(prev => { const n = { ...prev }; delete n[pid]; return n; });
-    } else if (existing) {
-      await supabase.from('mohasagor_assignments').update({ page_id: pageId }).eq('mohasagor_product_id', productId);
-      setAssignments(prev => ({ ...prev, [pid]: { ...prev[pid], page_id: pageId } }));
     } else {
-      const { error } = await supabase.from('mohasagor_assignments').insert({ mohasagor_product_id: productId, page_id: parseInt(pageId) });
-      if (error) console.error('Insert error:', error);
+      // 👑 insert/update আলাদা না করে সরাসরি upsert ব্যবহার করা হলো, যাতে duplicate key error না আসে
+      const { error } = await supabase
+        .from('mohasagor_assignments')
+        .upsert({ mohasagor_product_id: productId, page_id: parseInt(pageId) }, { onConflict: 'mohasagor_product_id' });
+      if (error) console.error('Upsert error:', error);
       setAssignments(prev => ({ ...prev, [pid]: { mohasagor_product_id: productId, page_id: pageId } }));
     }
     setSaving(prev => ({ ...prev, [pid]: false }));
