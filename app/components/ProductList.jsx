@@ -1352,9 +1352,10 @@ const isMobile = useIsMobile()
    // 👑 Mohasagor products আনার লজিক
     if (branch.id === 1) {
       try {
-        const { data: assignData } = await supabase
+       const { data: assignData } = await supabase
           .from('mohasagor_assignments')
-          .select('*');
+          .select('*')
+          .range(0, 9999);
         
         if (assignData && assignData.length > 0) {
           const res = await fetch('/api/mohasagor');

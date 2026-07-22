@@ -93,7 +93,7 @@ export default function MohasagorAdmin({ branchId = 1, onAssign }) {
       .from('pages').select('id, name, name_bn, parent_id').eq('branch_id', branchId).order('sort_order');
     setPages(pagesData || []);
 
-    const { data: assignData } = await supabase.from('mohasagor_assignments').select('*');
+    const { data: assignData } = await supabase.from('mohasagor_assignments').select('*').range(0, 9999);
   const map = {};
     (assignData || []).forEach(a => { map[String(a.mohasagor_product_id)] = a; });
     setAssignments(map);
