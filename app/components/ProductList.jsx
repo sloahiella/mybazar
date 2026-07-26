@@ -842,7 +842,7 @@ function ProductCard({ product, index, onAdd, isAdmin, isEditor, editorPageId, o
   const isKg = u === 'kg';
   const isLiter = u === 'liter' || u === 'l';
   const isPiece = !isKg && !isLiter;
-  const canEdit = isAdmin || (isEditor && String(product.page_id) === String(editorPageId));
+  const canEdit = isAdmin || (isEditor && String(product.page_id) === String(editorPageId)) || (isSeller && String(product.seller_id) === String(sellerId));
 
   const allImages = [];
   if (product.image_url) allImages.push(product.image_url);
@@ -1266,7 +1266,9 @@ const isMobile = useIsMobile()
 
   const isAdmin = role === 'admin';
   const isEditor = role === 'editor';
+  const isSeller = role === 'seller';
   const editorPageId = isEditor ? localStorage.getItem('editor_page_id') : null;
+  const sellerId = isSeller ? localStorage.getItem('seller_id') : null;
 
   useEffect(() => { fetchProducts(); }, [branch]);
   useEffect(() => {
@@ -1345,7 +1347,9 @@ const isMobile = useIsMobile()
 
   async function fetchProducts() {
     setLoading(true);
-    const { data } = await supabase.from('products').select('*, stock(*), product_images(*)').eq('branch_id', branch.id).eq('is_active', true).order('sort_order', { ascending: true });
+    let query = supabase.from('products').select('*, stock(*), product_images(*)').eq('branch_id', branch.id).eq('is_active', true).order('sort_order', { ascending: true });
+    if (isSeller && sellerId) query = query.eq('seller_id', sellerId);
+    const { data } = await query;
     
     let allProducts = data || [];
 
@@ -1489,7 +1493,7 @@ const isMobile = useIsMobile()
 
     // 👑 আপনার মেইন শর্ত: সাধারণ কাস্টমার হলে স্টক ০ হলে হাইড হবে, কিন্তু এডমিন/সেলার হলে হাইড হবে না—সব দেখবে ভাই!
     // 👑 ১00% সেফ ফিল্টার: ডাটাবেজ অবজেক্ট নাল (Null) থাকলেও সাইট ক্র্যাশ করবে না ভাই
-    if (!isAdmin && !isEditor) { 
+   if (!isAdmin && !isEditor && !isSeller) { 
       baseProducts = baseProducts.filter(p => {
         const productStock = p.stock && p.stock[0] ? parseFloat(p.stock[0].quantity) : 0;
         return productStock > 0;
@@ -1508,7 +1512,7 @@ const isMobile = useIsMobile()
     
     if (selectedCategory) baseProducts = baseProducts.filter(p => p.category === selectedCategory);
     
-    if (!isAdmin && !isEditor) {
+  if (!isAdmin && !isEditor && !isSeller) {
       const seen = new Set();
       return baseProducts.filter(p => { if (seen.has(p.name)) return false; seen.add(p.name); return true; });
     }
