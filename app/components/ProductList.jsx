@@ -833,7 +833,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
   );
 }
 
-function ProductCard({ product, index, onAdd, isAdmin, isEditor, editorPageId, onEdit, onDoubleClick, isDragging, onDragHandleDown, onNeedLogin }) {
+function ProductCard({ product, index, onAdd, isAdmin, isEditor, editorPageId, isSeller, sellerId, onEdit, onDoubleClick, isDragging, onDragHandleDown, onNeedLogin }) {
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -1746,7 +1746,7 @@ if (showCart) {
           {/* 👑 আল্টিমেট পারফেক্ট ফিক্স: w-max এবং max-w-full দিয়ে জোরাজুরি ছাড়াই কার্ড দুটোকে পাশাপাশি আনা হলো ভাই */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-1.5 pt-0">
 {displayProducts.map((product, index) => (
-              <ProductCard  
+             <ProductCard  
                 key={product.id} 
                 product={product} 
                 index={index}
@@ -1755,7 +1755,9 @@ if (showCart) {
                 isAdmin={isAdmin} 
                 isEditor={isEditor} 
                 editorPageId={editorPageId} 
-                onEdit={setEditingProduct} 
+                isSeller={isSeller}
+                sellerId={sellerId}
+                onEdit={setEditingProduct}
                 onDoubleClick={(p) => {
                   setSelectedProduct(p);
                   window.history.pushState({ productDetail: true }, '', `?product=${p.id}`);
