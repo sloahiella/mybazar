@@ -101,6 +101,7 @@ export default function MohasagorAdmin({ branchId = 1, onAssign }) {
   }
 
   async function assignProduct(productId, pageId) {
+    console.log('DEBUG productId:', productId, typeof productId, 'pageId:', pageId);
     const pid = String(productId);
     setSaving(prev => ({ ...prev, [pid]: true }));
     if (pageId === '') {
