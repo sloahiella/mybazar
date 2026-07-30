@@ -101,23 +101,27 @@ export default function MohasagorAdmin({ branchId = 1, onAssign }) {
   }
 
   async function assignProduct(productId, pageId) {
+    console.log('DEBUG productId:', productId, typeof productId, 'pageId:', pageId);
     const pid = String(productId);
     setSaving(prev => ({ ...prev, [pid]: true }));
     if (pageId === '') {
-      await supabase.from('mohasagor_assignments').delete().eq('mohasagor_product_id', productId);
+      const { error } = await supabase.from('mohasagor_assignments').delete().eq('mohasagor_product_id', productId);
+      if (error) { alert('মুছতে সমস্যা: ' + error.message); console.error('Delete error:', error); }
       setAssignments(prev => { const n = { ...prev }; delete n[pid]; return n; });
     } else {
-      // 👑 insert/update আলাদা না করে সরাসরি upsert ব্যবহার করা হলো, যাতে duplicate key error না আসে
       const { error } = await supabase
         .from('mohasagor_assignments')
-        .upsert({ mohasagor_product_id: productId, page_id: parseInt(pageId) }, { onConflict: 'mohasagor_product_id' });
-      if (error) console.error('Upsert error:', error);
-      setAssignments(prev => ({ ...prev, [pid]: { mohasagor_product_id: productId, page_id: pageId } }));
+        .upsert({ mohasagor_product_id: parseInt(productId), page_id: parseInt(pageId) }, { onConflict: 'mohasagor_product_id' });
+      if (error) {
+        alert('সেভ করতে সমস্যা হয়েছে: ' + error.message + ' (কোড: ' + error.code + ')');
+        console.error('Upsert error:', error);
+      } else {
+        setAssignments(prev => ({ ...prev, [pid]: { mohasagor_product_id: productId, page_id: pageId } }));
+      }
     }
     setSaving(prev => ({ ...prev, [pid]: false }));
     if (onAssign) onAssign();
   }
-
   const filtered = products.filter(p =>
     p.name?.toLowerCase().includes(search.toLowerCase()) ||
     p.category?.toLowerCase().includes(search.toLowerCase())
