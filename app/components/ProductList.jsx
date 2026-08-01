@@ -1379,6 +1379,7 @@ const isMobile = useIsMobile()
                 name_bn: mp.name,
                 product_code: mp.product_code,
                 price_per_unit: mp.price,
+                cost_price: mp.sale_price || null,
                 unit: 'pcs',
                 category: mp.category,
                 category_bn: mp.category,
