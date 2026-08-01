@@ -844,7 +844,6 @@ function ProductCard({ product, index, onAdd, isAdmin, isEditor, editorPageId, i
   const isLiter = u === 'liter' || u === 'l';
   const isPiece = !isKg && !isLiter;
   const canEdit = isAdmin || (isEditor && String(product.page_id) === String(editorPageId)) || (isSeller && String(product.seller_id) === String(sellerId));
-console.log('DEBUG product:', product.name, 'cost_price:', product.cost_price, 'isAdmin:', isAdmin);
   const allImages = [];
   if (product.image_url) allImages.push(product.image_url);
   if (product.product_images) {
@@ -1585,7 +1584,6 @@ const isMobile = useIsMobile()
     );
   }
 if (showCart) {
-    if (onCartOpenChange) onCartOpenChange(true);
     return (
       <div style={{ position: 'fixed', inset: 0, background: '#fdf2f8', zIndex: 999, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
      <div style={{ background: '#df1d75', color: 'white', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '12px', height: '60px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.2)', flexShrink: 0 }}>
