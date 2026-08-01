@@ -93,10 +93,18 @@ export default function MohasagorAdmin({ branchId = 1, onAssign }) {
       .from('pages').select('id, name, name_bn, parent_id').eq('branch_id', branchId).order('sort_order');
     setPages(pagesData || []);
 
-    const { data: assignData } = await supabase.from('mohasagor_assignments').select('*').range(0, 9999);
+const { data: assignData } = await supabase.from('mohasagor_assignments').select('*').range(0, 9999);
   const map = {};
     (assignData || []).forEach(a => { map[String(a.mohasagor_product_id)] = a; });
     setAssignments(map);
+
+    // 👑 ডিবাগ: রিফ্রেশের পর pages ও assignments ঠিকমতো এসেছে কিনা যাচাই
+    console.log('DEBUG: pages count =', (pagesData || []).length);
+    console.log('DEBUG: page 42 exists in pages? =', (pagesData || []).find(p => String(p.id) === '42'));
+    console.log('DEBUG: total assignData length =', (assignData || []).length);
+console.log('DEBUG: assignment for product 226 =', map['226']);
+    console.log('DEBUG: assignment for product 226 =', map['226']);
+
     setLoading(false);
   }
 
