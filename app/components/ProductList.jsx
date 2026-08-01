@@ -521,6 +521,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
                 name_bn: mp.name,
                 product_code: mp.product_code,
                 price_per_unit: mp.price,
+                cost_price: mp.sale_price || null,
                 unit: 'pcs',
                 image_url: mp.thumbnail_img,
                 discount_percent: 0,
@@ -919,6 +920,9 @@ function ProductCard({ product, index, onAdd, isAdmin, isEditor, editorPageId, i
             </div>
         ) : (
           <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
+        )}
+        {isAdmin && product.cost_price && (
+          <p style={{ color: '#9333ea', fontSize: '12px', fontWeight: '600', margin: '0 0 4px 0' }}>💰 পাইকারি দাম: {product.cost_price} Tk</p>
         )}
         
         <div style={{ marginTop: '4px' }}>
