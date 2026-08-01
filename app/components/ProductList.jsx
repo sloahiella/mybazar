@@ -844,7 +844,7 @@ function ProductCard({ product, index, onAdd, isAdmin, isEditor, editorPageId, i
   const isLiter = u === 'liter' || u === 'l';
   const isPiece = !isKg && !isLiter;
   const canEdit = isAdmin || (isEditor && String(product.page_id) === String(editorPageId)) || (isSeller && String(product.seller_id) === String(sellerId));
-
+console.log('DEBUG product:', product.name, 'cost_price:', product.cost_price, 'isAdmin:', isAdmin);
   const allImages = [];
   if (product.image_url) allImages.push(product.image_url);
   if (product.product_images) {
