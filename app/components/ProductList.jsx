@@ -884,6 +884,14 @@ function ProductCard({ product, index, onAdd, isAdmin, isEditor, editorPageId, i
       {canEdit && (
         <div style={{ display: 'flex', justifycontent: 'flex-end', gap: '4px', padding: '6px 6px 0', flexShrink: 0 }}>
           {isAdmin && <span onPointerDown={e => onDragHandleDown && onDragHandleDown(e)} style={{ background: '#e5e7eb', color: '#6b7280', fontSize: '16px', padding: '8px 12px', borderRadius: '4px', cursor: 'grab', userSelect: 'none', touchAction: 'none' }}>⠿</span>}
+          <button
+            onClick={() => {
+              const url = `https://sohelmart.com?product=${product.id}`;
+              navigator.clipboard.writeText(url);
+              alert('✅ Link copy হয়েছে!');
+            }}
+            style={{ background: '#3b82f6', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
+          >🔗</button>
           <button onClick={() => onEdit(product)} style={{ background: '#facc15', color: 'white', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>✏️</button>
         </div>
       )}
