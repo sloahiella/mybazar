@@ -6,62 +6,81 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
 
+// CORS হেডার - অন্য সার্ভার (Make.com) থেকে রিকোয়েস্ট আসলে যেন ব্লক না হয়
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+// Make.com কখনো কখনো আগে একটা OPTIONS রিকোয়েস্ট পাঠায় যাচাই করার জন্য - সেটার জবাব
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
-    const customerMessage = body.message || body.text || '';
+    const productCode = (body.product_code || body.code || '').toString().trim();
 
-    if (!customerMessage) {
-      return NextResponse.json({ success: false, error: 'কোনো মেসেজ পাওয়া যায়নি' }, { status: 400 });
+    if (!productCode) {
+      return NextResponse.json(
+        { success: false, message: 'product_code দেওয়া হয়নি' },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
-    // ধাপ ১: কাস্টমারের মেসেজ থেকে সম্ভাব্য প্রোডাক্ট নাম দিয়ে ডাটাবেজে খোঁজা
-    const { data: products } = await supabase
+    // ধাপ ১: নিজের products টেবিলে খোঁজা
+    const { data: ownProduct } = await supabase
       .from('products')
       .select('name, name_bn, price_per_unit, description, category, category_bn')
-      .or(`name.ilike.%${customerMessage}%,name_bn.ilike.%${customerMessage}%,category.ilike.%${customerMessage}%`)
+      .eq('product_code', productCode)
       .eq('is_active', true)
-      .limit(5);
+      .single();
 
-    // ধাপ ২: প্রোডাক্ট তথ্য দিয়ে Gemini-কে প্রম্পট বানানো
-    let productContext = 'কোনো মিলে যাওয়া প্রোডাক্ট পাওয়া যায়নি।';
-    if (products && products.length > 0) {
-      productContext = products.map(p =>
-        `নাম: ${p.name_bn || p.name}, দাম: ${p.price_per_unit} টাকা, বিবরণ: ${p.description || 'নেই'}`
-      ).join('\n');
+    if (ownProduct) {
+      return NextResponse.json(
+        {
+          success: true,
+          found: true,
+          product_name: ownProduct.name_bn || ownProduct.name,
+          retail_price: ownProduct.price_per_unit,
+          category: ownProduct.category_bn || ownProduct.category,
+        },
+        { headers: corsHeaders }
+      );
     }
 
-    const prompt = `তুমি SohelMart নামের একটি বাংলাদেশি অনলাইন শপের কাস্টমার সাপোর্ট সহকারী। কাস্টমার জিজ্ঞেস করেছে: "${customerMessage}"
-
-আমাদের স্টোরে পাওয়া সম্ভাব্য প্রোডাক্ট তথ্য:
-${productContext}
-
-উপরের তথ্য ব্যবহার করে কাস্টমারকে বাংলায়, বন্ধুত্বপূর্ণ ও সংক্ষিপ্তভাবে উত্তর দাও। প্রোডাক্ট না পাওয়া গেলে সেটা জানিয়ে সাহায্যের জন্য বলো।`;
-
-    // ধাপ ৩: Gemini API কল করা
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-        }),
-      }
+    // ধাপ ২: Mohasagor প্রোডাক্টে খোঁজা (product_code দিয়ে)
+    const res = await fetch(new URL('/api/mohasagor', request.url));
+    const mohaData = await res.json();
+    const mohaProduct = (mohaData.products || []).find(
+      (p) => String(p.product_code) === String(productCode)
     );
 
-    const geminiData = await geminiResponse.json();
-    const aiAnswer = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || 'দুঃখিত, উত্তর তৈরি করা যায়নি।';
+    if (mohaProduct) {
+      return NextResponse.json(
+        {
+          success: true,
+          found: true,
+          product_name: mohaProduct.name,
+          retail_price: mohaProduct.price, // 👑 শুধু খুচরা দাম, পাইকারি (sale_price) কখনো পাঠানো হবে না
+          category: mohaProduct.category,
+        },
+        { headers: corsHeaders }
+      );
+    }
 
-    // ধাপ ৪: Make.com এ উত্তর ফেরত পাঠানো
-    return NextResponse.json({
-      success: true,
-      answer: aiAnswer,
-      matchedProducts: products?.length || 0,
-    });
-
+    // কোথাও পাওয়া না গেলে
+    return NextResponse.json(
+      { success: true, found: false, message: 'এই কোডে কোনো পণ্য পাওয়া যায়নি' },
+      { headers: corsHeaders }
+    );
   } catch (error) {
-    console.error('AI chat error:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('AI chat product lookup error:', error);
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
