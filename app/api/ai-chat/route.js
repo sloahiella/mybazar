@@ -122,3 +122,65 @@ export async function POST(request) {
     );
   }
 }
+// 👑 GET রিকোয়েস্ট - Make.com থেকে র‍্যান্ডম প্রোডাক্ট অটো-পোস্ট করার জন্য
+export async function GET(request) {
+  try {
+    // ধাপ ১: নিজের products টেবিল থেকে সব সক্রিয় প্রোডাক্ট আনা
+    const { data: ownProducts } = await supabase
+      .from('products')
+      .select('id, name, name_bn, price_per_unit, description, image_url, product_images(image_url)')
+      .eq('is_active', true);
+
+    // ধাপ ২: Mohasagor প্রোডাক্টও আনা
+    const mohaRes = await fetch(new URL('/api/mohasagor', request.url));
+    const mohaData = await mohaRes.json();
+    const mohaProducts = (mohaData.products || []).map((p) => ({
+      id: `moha-${p.id}`,
+      name: p.name,
+      price_per_unit: p.price,
+      description: p.details ? p.details.replace(/<[^>]*>/g, '').slice(0, 200) : '',
+      image_url: p.thumbnail_img,
+      product_images: (p.product_images || []).map((img) => ({ image_url: img.product_image })),
+    }));
+
+    const allProducts = [...(ownProducts || []), ...mohaProducts];
+
+    if (allProducts.length === 0) {
+      return NextResponse.json(
+        { success: false, message: 'কোনো পণ্য পাওয়া যায়নি' },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    // ধাপ ৩: লটারির মতো একটা র‍্যান্ডম প্রোডাক্ট বাছাই করা
+    const randomProduct = allProducts[Math.floor(Math.random() * allProducts.length)];
+
+    // ধাপ ৪: সব ছবি একসাথে জড়ো করা (মূল ছবি + অতিরিক্ত ছবি)
+    const imageList = [];
+    if (randomProduct.image_url) imageList.push(randomProduct.image_url);
+    if (randomProduct.product_images) {
+      randomProduct.product_images.forEach((img) => {
+        if (img.image_url && !imageList.includes(img.image_url)) imageList.push(img.image_url);
+      });
+    }
+
+    // ধাপ ৫: সাজানো JSON রেসপন্স যেটা Gemini সহজে পড়তে পারবে
+    return NextResponse.json(
+      {
+        success: true,
+        product_name: randomProduct.name_bn || randomProduct.name,
+        price: randomProduct.price_per_unit,
+        description: (randomProduct.description || '').slice(0, 200),
+        images: imageList,
+        buy_link: `https://sohelmart.com/?product=${randomProduct.id}`,
+      },
+      { headers: corsHeaders }
+    );
+  } catch (error) {
+    console.error('Random product fetch error:', error);
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
