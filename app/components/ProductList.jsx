@@ -1283,6 +1283,19 @@ const isMobile = useIsMobile()
 
   useEffect(() => { fetchProducts(); }, [branch]);
   useEffect(() => {
+    async function loadProductFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const productId = urlParams.get('product');
+      if (!productId || products.length === 0) return;
+
+      const found = products.find(p => String(p.id) === String(productId));
+      if (found) {
+        setSelectedProduct(found);
+      }
+    }
+    loadProductFromUrl();
+  }, [products]);
+  useEffect(() => {
     async function loadInitialPage() {
       if (initialPageLoaded) return;
       const savedPageId = localStorage.getItem('current_page_id');

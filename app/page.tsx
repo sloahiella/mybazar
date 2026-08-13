@@ -473,6 +473,25 @@ useEffect(() => {
       }
     }
     checkUrlPage();
+
+    async function checkUrlProduct() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const productId = urlParams.get('product');
+      if (productId) {
+        // 👑 সরাসরি প্রোডাক্ট লিংকে এলে, সেই প্রোডাক্টের page_id বের করে branch/page সেট করা হলো
+        const isMoha = productId.startsWith('moha-');
+        if (!isMoha) {
+          const { data: product } = await supabase.from('products').select('page_id, branch_id').eq('id', productId).single();
+          if (product?.branch_id) {
+            const { data: branch } = await supabase.from('branches').select('*').eq('id', product.branch_id).single();
+            if (branch) setSelectedBranch(branch);
+          }
+        }
+        // ProductList কম্পোনেন্ট নিজেই URL এর ?product= প্যারামিটার পড়ে ডিটেইল মডাল খুলবে
+      }
+    }
+    checkUrlProduct();
+
     async function checkSellerLogin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
