@@ -478,7 +478,6 @@ useEffect(() => {
       const urlParams = new URLSearchParams(window.location.search);
       const productId = urlParams.get('product');
       if (productId) {
-        // 👑 সরাসরি প্রোডাক্ট লিংকে এলে, সেই প্রোডাক্টের page_id বের করে branch/page সেট করা হলো
         const isMoha = productId.startsWith('moha-');
         if (!isMoha) {
           const { data: product } = await supabase.from('products').select('page_id, branch_id').eq('id', productId).single();
@@ -486,8 +485,18 @@ useEffect(() => {
             const { data: branch } = await supabase.from('branches').select('*').eq('id', product.branch_id).single();
             if (branch) setSelectedBranch(branch);
           }
+        } else {
+          // 👑 Mohasagor প্রোডাক্টের জন্য: mohasagor_assignments থেকে page_id বের করে, সেই page এর branch খুঁজে বের করা হলো
+          const mohaId = productId.replace('moha-', '');
+          const { data: assign } = await supabase.from('mohasagor_assignments').select('page_id').eq('mohasagor_product_id', mohaId).single();
+          if (assign?.page_id) {
+            const { data: page } = await supabase.from('pages').select('branch_id').eq('id', assign.page_id).single();
+            if (page?.branch_id) {
+              const { data: branch } = await supabase.from('branches').select('*').eq('id', page.branch_id).single();
+              if (branch) setSelectedBranch(branch);
+            }
+          }
         }
-        // ProductList কম্পোনেন্ট নিজেই URL এর ?product= প্যারামিটার পড়ে ডিটেইল মডাল খুলবে
       }
     }
     checkUrlProduct();
