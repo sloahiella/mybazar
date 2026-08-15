@@ -462,7 +462,8 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
 function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin, onNeedLogin }) {
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+ const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [selectedSize, setSelectedSize] = useState('');
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [activeTab, setActiveTab] = useState('description');
   const [reviews, setReviews] = useState([]);
@@ -471,7 +472,6 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
   const [editingSpec, setEditingSpec] = useState(false);
   const [newSpec, setNewSpec] = useState('');
   
-  const [selectedSize, setSelectedSize] = useState('');
   const [listings, setListings] = useState([]);
   const [showOtherSellers, setShowOtherSellers] = useState(false);
 
@@ -849,6 +849,12 @@ function ProductCard({ product, index, onAdd, isAdmin, isEditor, editorPageId, i
   const isLiter = u === 'liter' || u === 'l';
   const isPiece = !isKg && !isLiter;
   const canEdit = isAdmin || (isEditor && String(product.page_id) === String(editorPageId)) || (isSeller && String(product.seller_id) === String(sellerId));
+  const allValidSizes = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
+  const descriptionSizes = product.description && product.description.includes('Size:')
+    ? product.description.split('Size:')[1].split('\n')[0].split(',').map(s => s.trim()).filter(size => allValidSizes.includes(size))
+    : [];
+  const mohaSizes = product.available_sizes || [];
+  const availableSizes = descriptionSizes.length > 0 ? descriptionSizes : mohaSizes;
   const allImages = [];
   if (product.image_url) allImages.push(product.image_url);
   if (product.product_images) {
@@ -949,7 +955,20 @@ function ProductCard({ product, index, onAdd, isAdmin, isEditor, editorPageId, i
             {isPiece && <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', color: '#6b7280', background: '#f9fafb', flexShrink: 0 }}>pcs</span>}
           </div>
           {qty && parseFloat(qty) > 0 && <p style={{ fontSize: '11px', color: '#db2777', fontWeight: 'bold', background: '#fdf2f8', padding: '3px 6px', borderRadius: '6px', border: '1px solid #fbcfe8', margin: '0 0 4px 0' }}>= {(getActualQty() * product.price_per_unit).toFixed(0)} Tk</p>}
-          <button onClick={() => { const savedPhone = localStorage.getItem('customer_phone'); if (!savedPhone) { onNeedLogin(); return; } const a = getActualQty(); if (a > 0) onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart' }, a); else onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart' }, 1); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '7px 4px', fontSize: '12px', width: '100%', cursor: 'pointer', fontWeight: '500' }}>🛒 ঝুড়িতে রাখুন</button>
+         {availableSizes.length > 0 && (
+            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' }}>
+              {availableSizes.map(size => (
+                <button
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  style={{ minWidth: '30px', height: '26px', padding: '0 6px', fontSize: '10px', fontWeight: 'bold', borderRadius: '5px', border: selectedSize === size ? '2px solid #db2777' : '1px solid #d1d5db', background: selectedSize === size ? '#fdf2f8' : 'white', color: selectedSize === size ? '#db2777' : '#374151', cursor: 'pointer' }}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          )}
+          <button onClick={() => { const savedPhone = localStorage.getItem('customer_phone'); if (!savedPhone) { onNeedLogin(); return; } if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে আগে একটি সাইজ সিলেক্ট করুন!'); return; } const a = getActualQty(); if (a > 0) onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, a); else onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, 1); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '7px 4px', fontSize: '12px', width: '100%', cursor: 'pointer', fontWeight: '500' }}>🛒 ঝুড়িতে রাখুন</button>
         </div>
       </div>
     </div>
