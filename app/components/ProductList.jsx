@@ -247,6 +247,7 @@ function OrderReceiptModal({ order, onClose, isAdmin = false }) {
                 <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center' }}>
                   <div style={{ flex: 1, paddingRight: '8px' }}>
                     <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{displayName}</p>
+                    {item.selected_size && <p style={{ fontSize: '11px', color: '#db2777', fontWeight: 'bold', margin: '0 0 2px 0' }}>সাইজ: {item.selected_size}</p>}
                     <p style={{ fontSize: '11px', color: '#3b82f6', margin: '0 0 2px 0' }}>কোড: {String(displayCode)}</p>
                     <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>{item.price} Tk/{displayUnit} × {item.quantity} {displayUnit}</p>
                   </div>

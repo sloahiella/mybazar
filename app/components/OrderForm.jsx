@@ -107,6 +107,7 @@ const items = cart.map(item => {
         product_name: item.name || null,
         product_image: item.image_url || null,
         product_code: item.product_code || (isMoha ? item.id.replace('moha-', '') : null),
+        selected_size: item.selectedSize || null,
       };
     });
     const { error: itemsError } = await supabase.from('order_items').insert(items);
