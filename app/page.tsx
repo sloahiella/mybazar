@@ -95,7 +95,7 @@ function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => 
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>পণ্য</p>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#374151', margin: 0 }}>টাকা</p>
           </div>
-          {(order.order_items || []).map((item: any, i: number) => {
+        {(order.order_items || []).map((item: any, i: number) => {
             const displayName = item.product_name || item.products?.name || 'পণ্য';
             const displayImage = item.product_image || item.products?.image_url;
             const displayCode = item.product_code || item.products?.product_code;
@@ -105,6 +105,7 @@ function OrderReceipt({ order, onClose, isAdmin }: { order: any; onClose: () => 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ flex: 1, paddingRight: '8px' }}>
                     <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>{displayName}</p>
+                    {item.selected_size && <p style={{ fontSize: '11px', color: '#db2777', fontWeight: 'bold', margin: '0 0 2px 0' }}>সাইজ: {item.selected_size}</p>}
                     {displayCode && <p style={{ fontSize: '11px', color: '#3b82f6', margin: '0 0 2px 0' }}>কোড: {displayCode}</p>}
                     <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>{item.price} Tk/{displayUnit} × {item.quantity} {displayUnit}</p>
                   </div>

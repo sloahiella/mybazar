@@ -222,15 +222,15 @@ const items = cart.map(item => {
 
         <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <h3 style={{ fontWeight: 'bold', color: '#374151', marginBottom: '8px', fontSize: '15px' }}>অর্ডার সারসংক্ষেপ</h3>
-         {cart.map(item => (
-            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: '#6b7280', padding: '6px 0', borderBottom: '1px dashed #e5e7eb' }}>
-              <span>{item.name} ({item.qty} {item.unit})</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {item.image_url && <img src={item.image_url} alt={item.name} style={{ width: '28px', height: '28px', objectFit: 'cover', borderRadius: '6px' }} />}
-                <span style={{ fontWeight: 'bold', color: '#374151' }}>{(item.price_per_unit * item.qty).toFixed(0)} Tk</span>
-              </div>
-            </div>
-          ))}
+{cart.map(item => (
+  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: '#6b7280', padding: '6px 0', borderBottom: '1px dashed #e5e7eb' }}>
+    <span>{item.name} ({item.qty} {item.unit}){item.selectedSize ? ` - সাইজ: ${item.selectedSize}` : ''}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      {item.image_url && <img src={item.image_url} alt={item.name} style={{ width: '28px', height: '28px', objectFit: 'cover', borderRadius: '6px' }} />}
+      <span style={{ fontWeight: 'bold', color: '#374151' }}>{(item.price_per_unit * item.qty).toFixed(0)} Tk</span>
+    </div>
+  </div>
+))}
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: PINK, marginTop: '8px', fontSize: '16px', borderTop: '1px solid #e5e7eb', paddingTop: '8px' }}>
             <span>সর্বমোট:</span>
             <span>{total.toFixed(0)} Tk</span>
