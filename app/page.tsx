@@ -440,6 +440,8 @@ export default function Home() {
   const [dateFilter, setDateFilter] = useState('today');
 const [showSettings, setShowSettings] = useState(false);
 const [showEmailForm, setShowEmailForm] = useState(false);  
+const [showMohasagorAdmin, setShowMohasagorAdmin] = useState(false);
+const [settingsSearch, setSettingsSearch] = useState('');
 const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
@@ -1012,12 +1014,30 @@ if (!selectedBranch) {
               <button onClick={() => setShowSettings(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
         <div style={{ padding: '16px' }}>
-              {!showEmailForm && (
-                <button onClick={() => setShowEmailForm(true)} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600', color: '#1f2937', textAlign: 'left' }}>
+              {!showEmailForm && !showMohasagorAdmin && (
+                <input
+                  value={settingsSearch}
+                  onChange={e => setSettingsSearch(e.target.value)}
+                  placeholder="🔍 সেটিংস খুঁজুন..."
+                  style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', marginBottom: '12px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }}
+                />
+              )}
+              {!showEmailForm && !showMohasagorAdmin && 'email send'.includes(settingsSearch.toLowerCase()) && (
+                <button onClick={() => setShowEmailForm(true)} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600', color: '#1f2937', textAlign: 'left', marginBottom: '8px' }}>
                   <span style={{ fontSize: '20px' }}>📧</span> Email Send
                 </button>
               )}
-            <MohasagorAdmin branchId={1} onAssign={() => setMohasagorRefresh(r => r + 1)} />
+              {!showEmailForm && !showMohasagorAdmin && 'মহাসাগর প্রোডাক্ট অ্যাসাইন'.includes(settingsSearch) && (
+                <button onClick={() => setShowMohasagorAdmin(true)} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600', color: '#1f2937', textAlign: 'left', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '20px' }}>🏷️</span> মহাসাগর প্রোডাক্ট অ্যাসাইন
+                </button>
+              )}
+              {showMohasagorAdmin && (
+                <div>
+                  <button onClick={() => setShowMohasagorAdmin(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', marginBottom: '8px', padding: 0 }}>← ব্যাক</button>
+                  <MohasagorAdmin branchId={1} onAssign={() => setMohasagorRefresh(r => r + 1)} />
+                </div>
+              )}
               {showEmailForm && (
               <div style={{ background: '#fdf2f8', border: `1px solid ${PINK_BORDER}`, borderRadius: '12px', padding: '16px' }}>
                 <button onClick={() => setShowEmailForm(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', marginBottom: '8px', padding: 0 }}>← ব্যাক</button>
