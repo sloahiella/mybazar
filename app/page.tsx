@@ -603,7 +603,7 @@ useEffect(() => {
   }
 
     async function fetchBranches() {
-    const { data } = await supabase.from('branches').select('*');
+     const { data } = await supabase.from('branches').select('*').order('id', { ascending: true });
     if (data) {
       const activeBranches = data.filter((b: any) => b.is_active !== false);
       setBranches(activeBranches as Branch[]);
