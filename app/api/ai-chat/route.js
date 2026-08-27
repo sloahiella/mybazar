@@ -1,6 +1,22 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+// 👑 Mohasagor প্রোডাক্ট ক্যাশ - বারবার তাদের সার্ভার থেকে টানার বদলে ১০ মিনিট মেমোরিতে রাখা হবে
+let mohaCache = null;
+let mohaCacheTime = 0;
+const CACHE_DURATION = 10 * 60 * 1000; // ১০ মিনিট
+
+async function getMohaProducts(request) {
+  const now = Date.now();
+  if (mohaCache && now - mohaCacheTime < CACHE_DURATION) {
+    return mohaCache;
+  }
+  const res = await fetch(new URL('/api/mohasagor', request.url));
+  const data = await res.json();
+  mohaCache = data.products || [];
+  mohaCacheTime = now;
+  return mohaCache;
+}
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
