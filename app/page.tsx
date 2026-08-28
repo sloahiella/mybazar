@@ -414,6 +414,7 @@ function WithdrawalManagement() {
 export const dynamic = 'force-dynamic';
 export default function Home() {
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [allBranches, setAllBranches] = useState<any[]>([]);
   const [branchesLoading, setBranchesLoading] = useState(true);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -1056,7 +1057,7 @@ if (!selectedBranch) {
                 <div>
                   <button onClick={() => setShowBranchControl(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', marginBottom: '8px', padding: 0 }}>← ব্যাক</button>
                   <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 12px 0' }}>একটা শাখা বন্ধ করলে কাস্টমার সরাসরি অন্য শাখায় ঢুকে যাবে।</p>
-                  {branches.map((b: any) => (
+                                    {allBranches.map((b: any) => (
                     <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px 14px', marginBottom: '8px' }}>
                       <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>{b.name_bn || b.name}</span>
                       <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px' }}>
@@ -1065,6 +1066,14 @@ if (!selectedBranch) {
                           checked={b.is_active !== false}
                           onChange={async (e) => {
                             const newVal = e.target.checked;
+                            // 👑 সেফটি চেক: বন্ধ করার চেষ্টা করলে, এটাই যদি একমাত্র active branch হয়, তাহলে বন্ধ করতে দেওয়া হবে না
+                            if (!newVal) {
+                              const activeCount = allBranches.filter((x: any) => x.is_active !== false).length;
+                              if (activeCount <= 1) {
+                                alert('⚠️ সব শাখা বন্ধ করা যাবে না! অন্তত একটা শাখা সবসময় চালু থাকতে হবে।');
+                                return;
+                              }
+                            }
                             await supabase.from('branches').update({ is_active: newVal }).eq('id', b.id);
                             fetchBranches();
                           }}
