@@ -414,6 +414,7 @@ function WithdrawalManagement() {
 export const dynamic = 'force-dynamic';
 export default function Home() {
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [branchesLoading, setBranchesLoading] = useState(true);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [password, setPassword] = useState('');
@@ -603,16 +604,16 @@ useEffect(() => {
     } catch (e) {}
   }
 
-    async function fetchBranches() {
-     const { data } = await supabase.from('branches').select('*').order('id', { ascending: true });
+      async function fetchBranches() {
+    const { data } = await supabase.from('branches').select('*').order('created_at', { ascending: true });
     if (data) {
       const activeBranches = data.filter((b: any) => b.is_active !== false);
       setBranches(activeBranches as Branch[]);
-      // 👑 যদি মাত্র একটাই সক্রিয় ব্রাঞ্চ থাকে, সরাসরি সেটাই সিলেক্ট করে দেওয়া হলো, বাছাই screen দেখানো হবে না
       if (activeBranches.length === 1 && !selectedBranch) {
         setSelectedBranch(activeBranches[0] as Branch);
       }
     }
+    setBranchesLoading(false);
   }
 
   async function fetchOrders(filterPageId?: string) {
