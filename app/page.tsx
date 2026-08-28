@@ -441,6 +441,7 @@ export default function Home() {
 const [showSettings, setShowSettings] = useState(false);
 const [showEmailForm, setShowEmailForm] = useState(false);  
 const [showMohasagorAdmin, setShowMohasagorAdmin] = useState(false);
+const [showBranchControl, setShowBranchControl] = useState(false);
 const [settingsSearch, setSettingsSearch] = useState('');
 const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
@@ -1034,15 +1035,46 @@ if (!selectedBranch) {
                   <span style={{ fontSize: '20px' }}>📧</span> Email Send
                 </button>
               )}
-              {!showEmailForm && !showMohasagorAdmin && 'মহাসাগর প্রোডাক্ট অ্যাসাইন'.includes(settingsSearch) && (
+                          {!showEmailForm && !showMohasagorAdmin && !showBranchControl && 'মহাসাগর প্রোডাক্ট অ্যাসাইন'.includes(settingsSearch) && (
                 <button onClick={() => setShowMohasagorAdmin(true)} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600', color: '#1f2937', textAlign: 'left', marginBottom: '8px' }}>
                   <span style={{ fontSize: '20px' }}>🏷️</span> মহাসাগর প্রোডাক্ট অ্যাসাইন
+                </button>
+              )}
+              {!showEmailForm && !showMohasagorAdmin && !showBranchControl && 'শাখা নিয়ন্ত্রণ'.includes(settingsSearch) && (
+                <button onClick={() => setShowBranchControl(true)} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600', color: '#1f2937', textAlign: 'left', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '20px' }}>🏢</span> শাখা নিয়ন্ত্রণ
                 </button>
               )}
               {showMohasagorAdmin && (
                 <div>
                   <button onClick={() => setShowMohasagorAdmin(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', marginBottom: '8px', padding: 0 }}>← ব্যাক</button>
                   <MohasagorAdmin branchId={1} onAssign={() => setMohasagorRefresh(r => r + 1)} />
+                </div>
+              )}
+              {showBranchControl && (
+                <div>
+                  <button onClick={() => setShowBranchControl(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', marginBottom: '8px', padding: 0 }}>← ব্যাক</button>
+                  <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 12px 0' }}>একটা শাখা বন্ধ করলে কাস্টমার সরাসরি অন্য শাখায় ঢুকে যাবে।</p>
+                  {branches.map((b: any) => (
+                    <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px 14px', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>{b.name_bn || b.name}</span>
+                      <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px' }}>
+                        <input
+                          type="checkbox"
+                          checked={b.is_active !== false}
+                          onChange={async (e) => {
+                            const newVal = e.target.checked;
+                            await supabase.from('branches').update({ is_active: newVal }).eq('id', b.id);
+                            fetchBranches();
+                          }}
+                          style={{ opacity: 0, width: 0, height: 0 }}
+                        />
+                        <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, background: b.is_active !== false ? PINK : '#d1d5db', borderRadius: '24px', transition: '0.2s' }}>
+                          <span style={{ position: 'absolute', height: '18px', width: '18px', left: b.is_active !== false ? '23px' : '3px', bottom: '3px', background: 'white', borderRadius: '50%', transition: '0.2s' }} />
+                        </span>
+                      </label>
+                    </div>
+                  ))}
                 </div>
               )}
               {showEmailForm && (
