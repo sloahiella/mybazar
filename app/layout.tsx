@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   title: "Sohelmart | মাই বাজার",
   description: "অনলাইনে কেনাকাটা করুন সহজেই",
   icons: {
-    icon: "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/LOGO%20.jpeg?v=2",
-    apple: "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/LOGO%20.jpeg?v=2",
+    icon: "https://i.ibb.co.com/KjRBVJxC/logo.jpg",
+    apple: "https://i.ibb.co.com/KjRBVJxC/logo.jpg",
   },
 };
 
@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="bn">
       <head>
-        <link rel="icon" href="https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/LOGO%20.jpeg?v=2" />
+         <link rel="icon" href="https://i.ibb.co.com/KjRBVJxC/logo.jpg" />
         <meta name="google-site-verification" content="BRcTy6WhGMh4Rz1jVP26FrGjxRHuxILqUgsXqCtKqaU" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
 

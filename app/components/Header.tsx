@@ -7,7 +7,7 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 )
 
-const LOGO_URL = 'https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/Untitled%20folder/logo.jpg'
+const LOGO_URL = 'https://i.ibb.co.com/Y7kNKLtt/Chat-GPT-Image-Aug-28-2026-10-19-19-PM.png'
 const PINK = '#be185d' 
 
 export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, onAdminClick, onSettingsClick, sellerUser, onSellerClick, onOrdersClick, hideHeader = false, notificationCount = 0 }: {
