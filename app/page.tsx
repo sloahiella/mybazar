@@ -21,7 +21,7 @@ const supabase = createClient(
 );
 
 const ADMIN_PASSWORD = 'sloahiella@admin';
-const LOGO_URL = 'https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/Untitled%20folder/logo.jpg';
+const LOGO_URL = 'https://i.ibb.co.com/Y7kNKLtt/Chat-GPT-Image-Aug-28-2026-10-19-19-PM.png';
 const PINK = '#db2777';
 const PINK_DARK = '#be185d';
 const PINK_LIGHT = '#fdf2f8';

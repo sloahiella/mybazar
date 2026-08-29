@@ -93,7 +93,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
           <button onClick={onMenuClick} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer', padding: '4px' }}>☰</button>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <img src={LOGO_URL} alt="লোগো" style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
+         <img src={LOGO_URL} alt="লোগো" style={{ height: '48px', width: 'auto', borderRadius: '6px' }} />
         </div>
       </div>
 
