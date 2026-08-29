@@ -608,6 +608,7 @@ useEffect(() => {
       async function fetchBranches() {
     const { data } = await supabase.from('branches').select('*').order('created_at', { ascending: true });
     if (data) {
+      setAllBranches(data);
       const activeBranches = data.filter((b: any) => b.is_active !== false);
       setBranches(activeBranches as Branch[]);
       if (activeBranches.length === 1 && !selectedBranch) {
@@ -616,7 +617,6 @@ useEffect(() => {
     }
     setBranchesLoading(false);
   }
-
   async function fetchOrders(filterPageId?: string) {
     const editorPageId = localStorage.getItem('editor_page_id');
     const currentPageId = filterPageId !== undefined ? filterPageId : localStorage.getItem('current_page_id');
