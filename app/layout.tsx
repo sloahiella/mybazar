@@ -30,10 +30,26 @@ export default function RootLayout({
   return (
     <html lang="bn">
       <head>
-         <link rel="icon" href="https://i.ibb.co.com/KjRBVJxC/logo.jpg" />
+        <link rel="icon" href="https://i.ibb.co.com/KjRBVJxC/logo.jpg" />
         <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#db2777" />
         <meta name="google-site-verification" content="BRcTy6WhGMh4Rz1jVP26FrGjxRHuxILqUgsXqCtKqaU" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
+
+        {/* 🛠️ Service Worker Registration for PWA */}
+        <Script id="register-sw" strategy="afterInteractive">
+          {`
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                  console.log('Service Worker Registered!', reg);
+                }).catch(function(err) {
+                  console.log('Service Worker Failed!', err);
+                });
+              });
+            }
+          `}
+        </Script>
 
         {/* 🔔 OneSignal Push Notification Scripts */}
         <Script 
@@ -96,9 +112,7 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>
     </html>
