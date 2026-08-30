@@ -31,6 +31,7 @@ export default function RootLayout({
     <html lang="bn">
       <head>
          <link rel="icon" href="https://i.ibb.co.com/KjRBVJxC/logo.jpg" />
+        <link rel="manifest" href="/manifest.json" />
         <meta name="google-site-verification" content="BRcTy6WhGMh4Rz1jVP26FrGjxRHuxILqUgsXqCtKqaU" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
 

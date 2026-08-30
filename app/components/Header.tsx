@@ -27,9 +27,10 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
   const [customerName, setCustomerName] = useState<string | null>(null)
   const [customerPhone, setCustomerPhone] = useState<string | null>(null)
   const [customerAvatar, setCustomerAvatar] = useState<string | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
+    const [isMobile, setIsMobile] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-
+  const [installPrompt, setInstallPrompt] = useState<any>(null)
+  const [showInstallBtn, setShowInstallBtn] = useState(false)
   // মোবাইল স্ক্রিন ট্র্যাক করার হুক
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -37,6 +38,24 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+  // 👑 PWA Install prompt ধরে রাখার হুক
+  useEffect(() => {
+    function handler(e: any) {
+      e.preventDefault()
+      setInstallPrompt(e)
+      setShowInstallBtn(true)
+    }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  async function handleInstallClick() {
+    if (!installPrompt) return
+    installPrompt.prompt()
+    const { outcome } = await installPrompt.userChoice
+    if (outcome === 'accepted') setShowInstallBtn(false)
+    setInstallPrompt(null)
+  }
 
   // স্ক্রল ট্র্যাক করার হুক - হিরো ব্যানারের সার্চ বক্স আড়ালে গেলেই হেডার সার্চ দেখাবে
   useEffect(() => {
@@ -95,6 +114,11 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
          <img src={LOGO_URL} alt="লোগো" style={{ height: '48px', width: 'auto', borderRadius: '6px' }} />
         </div>
+        {!isMobile && showInstallBtn && !role && !sellerUser && (
+          <button onClick={handleInstallClick} style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)', color: 'white', fontSize: '13px', fontWeight: 'bold', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            📲 Install App
+          </button>
+        )}
       </div>
 
       {/* মাঝখানে সার্চ বক্স - স্ক্রল করে হিরো সার্চ আড়ালে গেলে তখনই দেখাবে */}
@@ -122,8 +146,16 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
         </div>
       )}
 
-      {/* ডান দিক (প্রোফাইল, কার্ট ও অন্যান্য বাটন) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+           {/* ডান দিক (প্রোফাইল, কার্ট ও অন্যান্য বাটন) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexDirection: (role || sellerUser) ? 'column' : 'row' }}>
+
+        {!isMobile && showInstallBtn && (role || sellerUser) && (
+          <button onClick={handleInstallClick} style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '3px 10px', borderRadius: '14px', cursor: 'pointer', marginBottom: '2px' }}>
+            📲 Install
+          </button>
+        )}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
 
         {sellerUser && (
           <button onClick={onSellerClick} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
