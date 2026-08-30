@@ -298,8 +298,9 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
       </div>
 
     {showProfile && <div onClick={() => setShowProfile(false)} style={{ position: 'fixed', inset: 0, zIndex: 998 }} />}
-    </div>
-
+          </div>
+      </div>
+  
     {/* Mobile + Desktop Sidebar */}
     {showProfile && (
       <div style={{ position: 'fixed', inset: 0, zIndex: 999, display: 'flex', justifyContent: 'flex-end' }}>
