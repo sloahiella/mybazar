@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
+import InstallButton from "@/components/InstallButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +43,7 @@ export default function RootLayout({
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js').then(function(reg) {
-                  console.log('Service Worker Registered!', reg);
+                  console.log('Service Worker Registered!');
                 }).catch(function(err) {
                   console.log('Service Worker Failed!', err);
                 });
@@ -112,7 +113,10 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <InstallButton />  {/* এখানে আপনার কাঙ্ক্ষিত অ্যাপ বাটনটি থাকবে */}
         {children}
       </body>
     </html>
