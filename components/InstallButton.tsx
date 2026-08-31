@@ -16,12 +16,7 @@ export default function InstallButton() {
   const handleInstall = () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult: any) => {
-        if (choiceResult.outcome === 'accepted') {
-          setIsVisible(false);
-        }
-        setDeferredPrompt(null);
-      });
+      deferredPrompt.userChoice.then(() => { setDeferredPrompt(null); setIsVisible(false); });
     }
   };
 
@@ -31,20 +26,19 @@ export default function InstallButton() {
     <button 
       onClick={handleInstall}
       style={{
-        background: '#db2777', // গোলাপি কালার
-        color: 'white',
+        background: '#fff',
+        color: '#be185d',
         border: 'none',
-        borderRadius: '50px', // রাউন্ড ডিজাইন
+        borderRadius: '20px',
         padding: '5px 12px',
-        fontSize: '12px',
+        fontSize: '11px',
         fontWeight: 'bold',
         cursor: 'pointer',
         boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-        display: 'inline-block',
-        marginLeft: '10px' // লোগো থেকে একটু দূরে সরাতে
+        whiteSpace: 'nowrap'
       }}
     >
-      অ্যাপ ইনস্টল 📲
+      Install App 📲
     </button>
   );
 }

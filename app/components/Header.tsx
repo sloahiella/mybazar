@@ -111,20 +111,15 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
         {!isMobile && (
           <button onClick={onMenuClick} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer', padding: '4px' }}>☰</button>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-  <img src={LOGO_URL} alt="লোগো" style={{ height: '40px', width: 'auto', borderRadius: '6px' }} />
-  {/* 📲 মোবাইলে লোগোর ডানে ছোট করে ইনস্টল বাটন (শুধু কাস্টমারদের জন্য) */}
-  {isMobile && showInstallBtn && !role && !sellerUser && (
-    <button onClick={handleInstallClick} style={{ background: 'white', color: PINK, border: 'none', fontSize: '9px', fontWeight: 'bold', padding: '4px 8px', borderRadius: '20px', whiteSpace: 'nowrap' }}>
-      অ্যাপটি নিন
-    </button>
-  )}
-</div>
-        {!isMobile && showInstallBtn && !role && !sellerUser && (
-          <button onClick={handleInstallClick} style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)', color: 'white', fontSize: '13px', fontWeight: 'bold', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            📲 Install App
-          </button>
-        )}
+       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src={LOGO_URL} alt="Logo" style={{ height: '40px', width: 'auto', borderRadius: '6px' }} />
+          {/* ✅ মোবাইলে কাস্টমারের জন্য ছোট ইংরেজি বাটন */}
+          {isMobile && showInstallBtn && !role && !sellerUser && (
+            <button onClick={handleInstallClick} style={{ background: 'white', color: PINK, border: 'none', fontSize: '10px', fontWeight: 'bold', padding: '4px 8px', borderRadius: '20px', whiteSpace: 'nowrap' }}>
+              Install App
+            </button>
+          )}
+        </div>
       </div>
 
       {/* মাঝখানে সার্চ বক্স - স্ক্রল করে হিরো সার্চ আড়ালে গেলে তখনই দেখাবে */}
@@ -155,13 +150,11 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
            {/* ডান দিক (প্রোফাইল, কার্ট ও অন্যান্য বাটন) */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexDirection: (role || sellerUser) ? 'column' : 'row' }}>
 
-        {showInstallBtn && (role || sellerUser) && (
-  <div style={{ position: 'absolute', top: '-18px', width: '100%', textAlign: 'center' }}>
-     <button onClick={handleInstallClick} style={{ background: 'rgba(255,255,255,0.3)', border: 'none', color: 'white', fontSize: '8px', padding: '1px 5px', borderRadius: '4px', textTransform: 'uppercase' }}>
-        Install
-     </button>
-  </div>
-)}
+       {showInstallBtn && (role || sellerUser) && (
+            <button onClick={handleInstallClick} style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid white', color: 'white', fontSize: '9px', padding: '3px 8px', borderRadius: '15px', whiteSpace: 'nowrap', marginRight: '5px' }}>
+              Install
+            </button>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
 
         {sellerUser && (
