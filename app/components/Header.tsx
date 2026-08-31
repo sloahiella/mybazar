@@ -112,11 +112,11 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
           <button onClick={onMenuClick} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer', padding: '4px' }}>☰</button>
         )}
        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <img src={LOGO_URL} alt="Logo" style={{ height: '40px', width: 'auto', borderRadius: '6px' }} />
-          {/* ✅ মোবাইলে কাস্টমারের জন্য ছোট ইংরেজি বাটন */}
+          <img src={LOGO_URL} alt="Logo" style={{ height: '32px', width: 'auto', borderRadius: '4px' }} />
+          {/* ✅ মোবাইলে লোগোর ঠিক ডান পাশে বাটন (কাস্টমার ভিউ) */}
           {isMobile && showInstallBtn && !role && !sellerUser && (
-            <button onClick={handleInstallClick} style={{ background: 'white', color: PINK, border: 'none', fontSize: '10px', fontWeight: 'bold', padding: '4px 8px', borderRadius: '20px', whiteSpace: 'nowrap' }}>
-              Install App
+            <button onClick={handleInstallClick} style={{ background: 'white', color: PINK, border: 'none', fontSize: '9px', fontWeight: 'bold', padding: '4px 8px', borderRadius: '15px' }}>
+              INSTALL APP
             </button>
           )}
         </div>
@@ -150,10 +150,13 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
            {/* ডান দিক (প্রোফাইল, কার্ট ও অন্যান্য বাটন) */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexDirection: (role || sellerUser) ? 'column' : 'row' }}>
 
-       {showInstallBtn && (role || sellerUser) && (
-            <button onClick={handleInstallClick} style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid white', color: 'white', fontSize: '9px', padding: '3px 8px', borderRadius: '15px', whiteSpace: 'nowrap', marginRight: '5px' }}>
-              Install
-            </button>
+{/* ✅ আপনার (অ্যাডমিন) জন্য মোবাইলে আলাদা করে ছোট বাটন যা আইকন ঢেকে দিবে না */}
+        {isMobile && showInstallBtn && (role || sellerUser) && (
+          <div style={{ marginRight: '5px' }}>
+             <button onClick={handleInstallClick} style={{ background: 'white', color: PINK, border: 'none', fontSize: '8px', padding: '2px 5px', borderRadius: '4px' }}>
+               APP
+             </button>
+          </div>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
 
