@@ -60,10 +60,9 @@ export async function POST(request) {
         .limit(1);
       if (ownByCode && ownByCode.length > 0) results = ownByCode;
 
-      if (results.length === 0) {
-        const res = await fetch(new URL('/api/mohasagor', request.url));
-        const mohaData = await res.json();
-        const mohaMatch = (mohaData.products || []).filter(
+           if (results.length === 0) {
+        const mohaProductsList = await getMohaProducts(request);
+        const mohaMatch = mohaProductsList.filter(
           (p) => String(p.product_code) === String(extractedCode)
         );
         results = mohaMatch.map((p) => ({
@@ -89,11 +88,10 @@ export async function POST(request) {
     }
 
     // 👑 ধাপ ৪: এখনো না পেলে Mohasagor প্রোডাক্টেও নাম দিয়ে খোঁজা
-    if (results.length === 0) {
-      const res = await fetch(new URL('/api/mohasagor', request.url));
-      const mohaData = await res.json();
+        if (results.length === 0) {
+      const mohaProductsList = await getMohaProducts(request);
       const lowerText = rawText.toLowerCase();
-      const mohaMatch = (mohaData.products || [])
+      const mohaMatch = mohaProductsList
         .filter((p) => p.name?.toLowerCase().includes(lowerText) || p.category?.toLowerCase().includes(lowerText))
         .slice(0, 5);
       results = mohaMatch.map((p) => ({
@@ -147,10 +145,9 @@ export async function GET(request) {
       .select('id, name, name_bn, price_per_unit, description, image_url, product_images(image_url)')
       .eq('is_active', true);
 
-    // ধাপ ২: Mohasagor প্রোডাক্টও আনা
-    const mohaRes = await fetch(new URL('/api/mohasagor', request.url));
-    const mohaData = await mohaRes.json();
-    const mohaProducts = (mohaData.products || []).map((p) => ({
+        // ধাপ ২: Mohasagor প্রোডাক্টও আনা (cache থেকে, দ্রুত)
+    const mohaProductsList = await getMohaProducts(request);
+    const mohaProducts = mohaProductsList.map((p) => ({
       id: `moha-${p.id}`,
       name: p.name,
       price_per_unit: p.price,
