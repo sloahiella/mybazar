@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
-import InstallButton from "@/components/InstallButton";
+// @ts-ignore
+import InstallButton from "./components/InstallButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,6 +15,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// ✅ ওয়েবসাইটের নাম এবং তথ্য
 export const metadata: Metadata = {
   title: "Sohelmart | মাই বাজার",
   description: "অনলাইনে কেনাকাটা করুন সহজেই",
@@ -31,28 +33,29 @@ export default function RootLayout({
   return (
     <html lang="bn">
       <head>
+        {/* 🛒 PWA & App Settings */}
         <link rel="icon" href="https://i.ibb.co.com/KjRBVJxC/logo.jpg" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#db2777" />
         <meta name="google-site-verification" content="BRcTy6WhGMh4Rz1jVP26FrGjxRHuxILqUgsXqCtKqaU" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
 
-        {/* 🛠️ Service Worker Registration for PWA */}
+        {/* 🛠️ Service Worker Registration (অ্যাপ হিসেবে চলার জন্য) */}
         <Script id="register-sw" strategy="afterInteractive">
           {`
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js').then(function(reg) {
-                  console.log('Service Worker Registered!');
+                  console.log('সোহেল ভাই, আপনার অ্যাপ রেডি!');
                 }).catch(function(err) {
-                  console.log('Service Worker Failed!', err);
+                  console.log('সেটিংস একটু ভুল হয়েছে মনে হয়:', err);
                 });
               });
             }
           `}
         </Script>
 
-        {/* 🔔 OneSignal Push Notification Scripts */}
+        {/* 🔔 OneSignal Push Notification (নোটিফিকেশন এর জন্য) */}
         <Script 
           src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
           defer
@@ -72,7 +75,7 @@ export default function RootLayout({
           `}
         </Script>
 
-        {/* 📱 Facebook Browser Font Fix */}
+        {/* 📱 Facebook Browser Fix (ফেসবুক থেকে ইউজারের সুবিধা) */}
         <Script id="fix-font-size" strategy="afterInteractive">
           {`
             document.addEventListener('DOMContentLoaded', function() {
@@ -81,14 +84,12 @@ export default function RootLayout({
                 if (meta) {
                   meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no');
                 }
-                document.documentElement.style.webkitTextSizeAdjust = '100%';
-                document.documentElement.style.textSizeAdjust = '100%';
               }
             });
           `}
         </Script>
 
-        {/* 🎬 Microsoft Clarity */}
+        {/* 🎬 Microsoft Clarity (ইউজাররা কী দেখছে তা বোঝার জন্য) */}
         <Script id="microsoft-clarity" strategy="afterInteractive">
           {`
             (function(c,l,a,r,i,t,y){
@@ -99,7 +100,7 @@ export default function RootLayout({
           `}
         </Script>
 
-        {/* 📊 Google Analytics GA4 */}
+        {/* 📊 Google Analytics GA4 (রিপোর্ট দেখার জন্য) */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-587K38L62P"
           strategy="afterInteractive"
@@ -113,10 +114,9 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <InstallButton />  {/* এখানে আপনার কাঙ্ক্ষিত অ্যাপ বাটনটি থাকবে */}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {/* ✨ অ্যাপ ইনস্টল করার জন্য আপনার নতুন বাটন ✨ */}
+        <InstallButton />
         {children}
       </body>
     </html>
