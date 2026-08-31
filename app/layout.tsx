@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 // @ts-ignore
 import "./globals.css";
-import "./globals.css";
 import Script from "next/script";
 // @ts-ignore
-import InstallButton from "./components/InstallButton";
+import InstallButton from "../components/InstallButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
