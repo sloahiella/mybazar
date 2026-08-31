@@ -114,11 +114,7 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <img src={LOGO_URL} alt="Logo" style={{ height: '32px', width: 'auto', borderRadius: '4px' }} />
           {/* ✅ মোবাইলে লোগোর ঠিক ডান পাশে বাটন (কাস্টমার ভিউ) */}
-          {isMobile && showInstallBtn && !role && !sellerUser && (
-            <button onClick={handleInstallClick} style={{ background: 'white', color: PINK, border: 'none', fontSize: '9px', fontWeight: 'bold', padding: '4px 8px', borderRadius: '15px' }}>
-              INSTALL APP
-            </button>
-          )}
+         
         </div>
       </div>
 
@@ -157,6 +153,12 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
                APP
              </button>
           </div>
+        )}
+        {/* ✅ মোবাইলে কাস্টমারের জন্য এখন বাটনটি ডান পাশে থাকবে */}
+        {isMobile && showInstallBtn && !role && !sellerUser && (
+          <button onClick={handleInstallClick} style={{ background: 'white', color: PINK, border: 'none', fontSize: '9px', fontWeight: 'bold', padding: '5px 10px', borderRadius: '20px', whiteSpace: 'nowrap', marginRight: '5px' }}>
+            INSTALL APP
+          </button>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
 
