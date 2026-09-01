@@ -639,10 +639,13 @@ useEffect(() => {
   }
 
   async function markAllRead() { await supabase.from('notifications').update({ is_read: true }).eq('is_read', false); fetchNotifications(); }
-  async function updateOrderStatus(id: number, status: string) {
+    async function updateOrderStatus(id: number, status: string, customerPhone?: string) {
     await supabase.from('orders').update({ status }).eq('id', id);
-    // 👑 এই অর্ডার সংক্রান্ত নোটিফিকেশন read করে দেওয়া হলো, যাতে ব্যাজ কাউন্ট কমে যায়
     await supabase.from('notifications').update({ is_read: true }).ilike('body', `%#${id}%`);
+    // 👑 Confirm করার সাথে সাথে WhatsApp এ মেসেজ পাঠানোর জন্য নতুন ট্যাব খোলা হলো
+    if (status === 'confirmed' && customerPhone) {
+      sendWhatsAppConfirmation(customerPhone);
+    }
     fetchOrders();
     fetchNotifications();
   }
@@ -1228,4 +1231,22 @@ if (!selectedBranch) {
       )}
     </div>
   );
+}
+function formatBDPhone(phone: string): string {
+  // 👑 সব ধরনের ফরম্যাট (01xxxxxxxxx, +8801xxxxxxxxx, 8801xxxxxxxxx) থেকে সঠিক 88 কোড বসানো
+  let cleaned = phone.replace(/[^0-9]/g, ''); // শুধু সংখ্যা রাখা
+  if (cleaned.startsWith('01')) {
+    cleaned = '88' + cleaned;
+  } else if (cleaned.startsWith('1') && cleaned.length === 10) {
+    cleaned = '88' + '0' + cleaned;
+  }
+  // যদি ইতিমধ্যে 880 দিয়ে শুরু হয়, তাহলে ঠিকই আছে
+  return cleaned;
+}
+
+function sendWhatsAppConfirmation(phone: string) {
+  const formattedPhone = formatBDPhone(phone);
+  const message = `আসসালামু আলাইকুম! Sohel Mart-এ আপনার অর্ডারটি কনফার্ম হয়েছে। আমাদের ওপর ভরসা রাখার জন্য ধন্যবাদ। খুব শিগগিরই আমরা আপনার সেরা ও তাজা বাজার আপনার ঠিকানায় পৌঁছে দেবো! - সোহেল মার্ট টিম`;
+  const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+  window.open(url, '_blank');
 }
