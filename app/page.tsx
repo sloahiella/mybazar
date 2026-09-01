@@ -1245,7 +1245,7 @@ function formatBDPhone(phone: string): string {
 
 function sendWhatsAppConfirmation(phone: string) {
   const formattedPhone = formatBDPhone(phone);
-  const message = `আসসালামু আলাইকুম! Sohel Mart-এ আপনার অর্ডারটি কনফার্ম হয়েছে। আমাদের ওপর ভরসা রাখার জন্য ধন্যবাদ। খুব শিগগিরই আমরা আপনার সেরা ও তাজা বাজার আপনার ঠিকানায় পৌঁছে দেবো! - সোহেল মার্ট টিম`;
+  const message = `আসসালামু আলাইকুম! Sohel Mart-এ আপনার অর্ডারটি কনফার্ম হয়েছে। আমাদের ওপর ভরসা রাখার জন্য আপনাকে ধন্যবাদ। `;
   const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
   window.open(url, '_blank');
 }
