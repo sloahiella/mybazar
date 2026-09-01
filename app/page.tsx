@@ -639,10 +639,9 @@ useEffect(() => {
   }
 
   async function markAllRead() { await supabase.from('notifications').update({ is_read: true }).eq('is_read', false); fetchNotifications(); }
-    async function updateOrderStatus(id: number, status: string, customerPhone?: string) {
+      async function updateOrderStatus(id: number, status: string, customerPhone?: string) {
     await supabase.from('orders').update({ status }).eq('id', id);
     await supabase.from('notifications').update({ is_read: true }).ilike('body', `%#${id}%`);
-    // 👑 Confirm করার সাথে সাথে WhatsApp এ মেসেজ পাঠানোর জন্য নতুন ট্যাব খোলা হলো
     if (status === 'confirmed' && customerPhone) {
       sendWhatsAppConfirmation(customerPhone);
     }
@@ -1192,7 +1191,7 @@ if (!selectedBranch) {
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                         <p style={{ fontWeight: 'bold', color: PINK, margin: 0 }}>{order.total_amount} Tk</p>
-                        <select value={order.status} onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value); }} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer' }}>
+                       <select value={order.status} onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value, order.customer_phone); }} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer' }}>
                           <option value="pending">Pending</option>
                           <option value="confirmed">Confirmed</option>
                           <option value="shipped">🚚 Shipped</option>
