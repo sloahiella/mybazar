@@ -35,7 +35,7 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
     email: '',
     district: localStorage.getItem('customer_district') || '',
     upazila: localStorage.getItem('customer_upazila') || '',
-    address: '',
+        address: localStorage.getItem('customer_address') || '',
     payment: 'cod',
     transaction_id: '',
   });

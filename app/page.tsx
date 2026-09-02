@@ -914,7 +914,7 @@ if (!selectedBranch) {
 <Header
         role={role}
         sellerUser={sellerUser}
-        hideHeader={cartOpen}
+                hideHeader={cartOpen || showOrder}
        notificationCount={unreadCount}
         onSellerClick={() => setShowSellerDrawer(true)}
         onAdminClick={() => {
