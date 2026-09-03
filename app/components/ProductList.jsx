@@ -4,7 +4,9 @@ import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import OrderForm from './OrderForm';
 import PageMenu from './PageMenu';
-
+  useEffect(() => {
+    if (onOrderFormOpenChange) onOrderFormOpenChange(showOrder);
+  }, [showOrder]);
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
@@ -1236,11 +1238,12 @@ function AddProductModal({ branch, defaultPage, onClose, onSave }) {
 }
 
 
-export default function ProductList({ branch, role, onOrderSuccess, onPageChange, openMenu, onMenuClose, openCart, onCartClose, onCartOpenChange }) {
+export default function ProductList({ branch, role, onOrderSuccess, onPageChange, openMenu, onMenuClose, openCart, onCartClose, onCartOpenChange, onOrderFormOpenChange }) {
 const isMobile = useIsMobile()
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState([]);
+  const [orderFormOpen, setOrderFormOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showCart, setShowCart] = useState(false);
   const [showOrder, setShowOrder] = useState(false);
