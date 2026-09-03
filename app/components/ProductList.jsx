@@ -4,10 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import OrderForm from './OrderForm';
 import PageMenu from './PageMenu';
-  useEffect(() => {
-    if (onOrderFormOpenChange) onOrderFormOpenChange(showOrder);
-  }, [showOrder]);
-const supabase = createClient(
+ const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
