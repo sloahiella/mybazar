@@ -1240,6 +1240,7 @@ const isMobile = useIsMobile()
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState([]);
+  const [orderId, setOrderId] = useState(null);
   const [orderFormOpen, setOrderFormOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showCart, setShowCart] = useState(false);
