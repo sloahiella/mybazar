@@ -464,7 +464,7 @@ useEffect(() => {
     async function checkUrlPage() {
       const urlParams = new URLSearchParams(window.location.search);
       const pageId = urlParams.get('page');
-      if (pageId) {
+           if (pageId) {
         const { data: page } = await supabase.from('pages').select('branch_id, name, name_bn, mohasagor_category').eq('id', pageId).single();
         if (page?.branch_id) {
           const { data: branch } = await supabase.from('branches').select('*').eq('id', page.branch_id).single();
@@ -993,6 +993,7 @@ if (!selectedBranch) {
         openCart={openCart}
         onCartClose={() => setOpenCart(false)}
         onCartOpenChange={(val: boolean) => setCartOpen(val)}
+        onOrderFormOpenChange={(val: boolean) => {}}
         onOrderSuccess={(orderId: number, phone: string) => {
           localStorage.setItem('customer_phone', phone);
         }}
@@ -1007,8 +1008,6 @@ if (!selectedBranch) {
             setMohasagorCategory(null);
           }
           if (role === 'admin') fetchOrders(pageId || undefined);
-          
-          // ব্রাউজারের ব্যাক বাটন ট্র্যাকিংয়ের জন্য হিস্ট্রি কুয়েরি পুশ
           if (pageId) {
             window.history.pushState({ page: pageId }, '', `?page=${pageId}`);
           } else {
@@ -1016,7 +1015,6 @@ if (!selectedBranch) {
           }
         }}
       />
-
 {showSettings && (
        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowSettings(false)} />

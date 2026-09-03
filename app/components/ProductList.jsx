@@ -1244,7 +1244,6 @@ const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true);
   const [showCart, setShowCart] = useState(false);
   const [showOrder, setShowOrder] = useState(false);
-  const [orderId, setOrderId] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [officeOpen] = useState(isOfficeOpen());
   const [editingProduct, setEditingProduct] = useState(null);
