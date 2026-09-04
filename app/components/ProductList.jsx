@@ -1617,18 +1617,6 @@ const isMobile = useIsMobile()
     return <OrderForm cart={cart} branch={branch} total={total} onBack={() => setShowOrder(false)} onSuccess={(id, phone) => { setOrderId(id); setShowOrder(false); setCart([]); setShowCart(false); if (onOrderSuccess) onOrderSuccess(id, phone); }} />;
   }
 
-  if (orderId) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifycontent: 'center', padding: '16px' }}>
-        <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)', padding: '32px', maxWidth: '400px', width: '100%', textAlign: 'center' }}>
-          <div style={{ fontSize: '64px', marginBottom: '16px' }}>🎉</div>
-          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#db2777', marginBottom: '8px' }}>অর্ডার সফল!</h2>
-          <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#db2777', marginBottom: '24px' }}>#{orderId}</p>
-          <button onClick={() => { setOrderId(null); setShowCart(false); }} style={{ width: '100%', background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}>আবার কেনাকাটা করুন</button>
-        </div>
-      </div>
-    );
-  }
 if (orderId) {
     return (
       <div style={{ minHeight: '100vh', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
@@ -1751,7 +1739,7 @@ if (orderId) {
       )}
         
       {sellerSearch && (
-        <div style={{ margin: '0 16px 8px', background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifycontent: 'space-between', alignItems: 'center' }}>
+        <div style={{ margin: '0 16px 8px', background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '14px' }}>🏪 {sellerSearch.shop_name} এর দোকান</span>
           <button onClick={() => { setSellerSearch(null); setSearch(''); }} style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '18px', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
         </div>
