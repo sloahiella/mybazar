@@ -1353,7 +1353,7 @@ const isMobile = useIsMobile()
     else setSubPageIds([]);
   }
 
-  useEffect(() => {
+     useEffect(() => {
     const handlePopState = (event) => {
       if (selectedProduct) {
         setSelectedProduct(null);
@@ -1363,32 +1363,7 @@ const isMobile = useIsMobile()
         setShowCart(false);
         return;
       }
-        useEffect(() => {
-    if (onOrderFormOpenChange) onOrderFormOpenChange(showOrder);
-  }, [showOrder]);
-
-  if (showCart) {
-    return (
-      <div style={{ position: 'fixed', inset: 0, background: '#fdf2f8', zIndex: 999, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-     <div style={{ background: '#df1d75', color: 'white', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '12px', height: '60px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.2)', flexShrink: 0 }}>
-          <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>←</button>
-          <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>🛒 আপনার ঝুড়ি</h2>
-          <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '20px', fontSize: '13px' }}>{cart.length} টি</span>
-        </div>
-<div className="p-4 space-y-3" style={{ flex: 1 }}>
-          {cart.map(item => <CartItem key={`${item.id}-${item.selectedSize}`} item={item} onUpdate={updateCartQty} onRemove={removeFromCart} />)}
-        </div>
-    <div style={{ background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <span style={{ fontWeight: 'bold', color: '#374151', fontSize: '18px' }}>Total:</span>
-            <span style={{ fontWeight: 'bold', color: '#db2777', fontSize: '20px' }}>{total.toFixed(0)} Tk</span>
-          </div>
-          <button onClick={() => officeOpen && setShowOrder(true)} style={{ width: '100%', background: officeOpen ? '#db2777' : '#9ca3af', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '18px', fontWeight: 'bold', cursor: officeOpen ? 'pointer' : 'not-allowed' }}>{officeOpen ? 'অর্ডার করুন' : '🔴 অফিস বন্ধ'}</button>
-        </div>
-      </div>
-    );
-  }
-    if (showOrder) {
+      if (showOrder) {
         setShowOrder(false);
         return;
       }
@@ -1419,6 +1394,31 @@ const isMobile = useIsMobile()
     }
   }, [editingProduct, showAddModal, showOrder, showOrders]);
 
+  useEffect(() => {
+    if (onOrderFormOpenChange) onOrderFormOpenChange(showOrder);
+  }, [showOrder]);
+
+  if (showCart) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: '#fdf2f8', zIndex: 999, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+     <div style={{ background: '#df1d75', color: 'white', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '12px', height: '60px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.2)', flexShrink: 0 }}>
+          <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>←</button>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>🛒 আপনার ঝুড়ি</h2>
+          <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '20px', fontSize: '13px' }}>{cart.length} টি</span>
+        </div>
+<div className="p-4 space-y-3" style={{ flex: 1 }}>
+          {cart.map(item => <CartItem key={`${item.id}-${item.selectedSize}`} item={item} onUpdate={updateCartQty} onRemove={removeFromCart} />)}
+        </div>
+    <div style={{ background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <span style={{ fontWeight: 'bold', color: '#374151', fontSize: '18px' }}>Total:</span>
+            <span style={{ fontWeight: 'bold', color: '#db2777', fontSize: '20px' }}>{total.toFixed(0)} Tk</span>
+          </div>
+          <button onClick={() => officeOpen && setShowOrder(true)} style={{ width: '100%', background: officeOpen ? '#db2777' : '#9ca3af', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '18px', fontWeight: 'bold', cursor: officeOpen ? 'pointer' : 'not-allowed' }}>{officeOpen ? 'অর্ডার করুন' : '🔴 অফিস বন্ধ'}</button>
+        </div>
+      </div>
+    );
+  }
   async function fetchProducts() {
     setLoading(true);
     let query = supabase.from('products').select('*, stock(*), product_images(*)').eq('branch_id', branch.id).eq('is_active', true).order('sort_order', { ascending: true });
