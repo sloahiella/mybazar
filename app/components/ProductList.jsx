@@ -1664,7 +1664,7 @@ if (orderId) {
           onAdd={addToCart} 
           onSelectProduct={(p) => setSelectedProduct(p)} 
           isAdmin={isAdmin}
-          onNeedLogin={() => { setSelectedProduct(null); setShowCart(true); }}
+         onNeedLogin={() => { setSelectedProduct(null); const event = new CustomEvent('needCustomerAuth'); window.dispatchEvent(event); }}
         />
       )}
       {showOrders && <OrdersModal onClose={() => setShowOrders(false)} isAdmin={isAdmin || isEditor} />}
@@ -1804,7 +1804,7 @@ if (orderId) {
                 product={product} 
                 index={index}
                 onAdd={addToCart}
-                onNeedLogin={() => setShowCart(true)}
+                onNeedLogin={() => { const event = new CustomEvent('needCustomerAuth'); window.dispatchEvent(event); }}
                 isAdmin={isAdmin} 
                 isEditor={isEditor} 
                 editorPageId={editorPageId} 

@@ -543,8 +543,14 @@ useEffect(() => {
     const savedRole = localStorage.getItem('role');
     if (savedRole) setRole(savedRole);
     if (localStorage.getItem('autoPrint') === 'true') setAutoPrint(true);
-    const savedPhone = localStorage.getItem('customer_phone');
+       const savedPhone = localStorage.getItem('customer_phone');
     if (savedPhone) setCustomer({ phone: savedPhone });
+  }, []);
+
+  useEffect(() => {
+    function handleNeedAuth() { setShowCustomerAuth(true); }
+    window.addEventListener('needCustomerAuth', handleNeedAuth);
+    return () => window.removeEventListener('needCustomerAuth', handleNeedAuth);
   }, []);
 
   // 👑 ব্রাঞ্চ না হারিয়ে ধাপে ধাপে ব্যাক আসার জন্য একদম নিখুঁত লিসেনার
