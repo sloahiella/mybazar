@@ -439,6 +439,7 @@ export default function Home() {
   const [openCart, setOpenCart] = useState(false);
   const [showCustomerAuth, setShowCustomerAuth] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [orderFormOpen, setOrderFormOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState('today');
 const [showSettings, setShowSettings] = useState(false);
 const [showEmailForm, setShowEmailForm] = useState(false);  
@@ -920,7 +921,7 @@ if (!selectedBranch) {
 <Header
         role={role}
         sellerUser={sellerUser}
-       hideHeader={cartOpen}
+       hideHeader={cartOpen || orderFormOpen}
        notificationCount={unreadCount}
         onSellerClick={() => setShowSellerDrawer(true)}
         onAdminClick={() => {
@@ -999,7 +1000,7 @@ if (!selectedBranch) {
         openCart={openCart}
         onCartClose={() => setOpenCart(false)}
         onCartOpenChange={(val: boolean) => setCartOpen(val)}
-        onOrderFormOpenChange={(val: boolean) => {}} // 👑 এই সেই জাদুকরী লাইন ভাই যা দিয়ে সব ঠিক হবে
+       onOrderFormOpenChange={(val: boolean) => setOrderFormOpen(val)}
         onOrderSuccess={(orderId: number, phone: string) => {
           localStorage.setItem('customer_phone', phone);
         }}
