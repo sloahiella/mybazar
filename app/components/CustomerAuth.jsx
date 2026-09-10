@@ -73,7 +73,27 @@ const districtUpazilas = {
   'জামালপুর': ['বকশীগঞ্জ', 'দেওয়ানগঞ্জ', 'ইসলামপুর', 'জামালপুর সদর', 'মাদারগঞ্জ', 'মেলান্দহ', 'সরিষাবাড়ী'],
   'শেরপুর': ['ঝিনাইগাতী', 'নকলা', 'নালিতাবাড়ী', 'শেরপুর সদর', 'শ্রীবরদী'],
 };
+// 👑 জেলার ইংরেজি নাম - বাংলা বা ইংরেজি দুটো দিয়েই সার্চ করা যাবে
+const districtEnNames = {
+  'ঢাকা': 'Dhaka', 'চট্টগ্রাম': 'Chattogram', 'রাজশাহী': 'Rajshahi', 'খুলনা': 'Khulna',
+  'বরিশাল': 'Barishal', 'সিলেট': 'Sylhet', 'রংপুর': 'Rangpur', 'ময়মনসিংহ': 'Mymensingh',
+  'কুমিল্লা': 'Cumilla', 'ফেনী': 'Feni', 'ব্রাহ্মণবাড়িয়া': 'Brahmanbaria', 'রাঙ্গামাটি': 'Rangamati',
+  'নোয়াখালী': 'Noakhali', 'চাঁদপুর': 'Chandpur', 'লক্ষ্মীপুর': 'Lakshmipur', 'কক্সবাজার': 'Cox\'s Bazar',
+  'খাগড়াছড়ি': 'Khagrachhari', 'বান্দরবান': 'Bandarban', 'নরসিংদী': 'Narsingdi', 'গাজীপুর': 'Gazipur',
+  'শরীয়তপুর': 'Shariatpur', 'নারায়ণগঞ্জ': 'Narayanganj', 'টাঙ্গাইল': 'Tangail', 'কিশোরগঞ্জ': 'Kishoreganj',
+  'মানিকগঞ্জ': 'Manikganj', 'মুন্সিগঞ্জ': 'Munshiganj', 'রাজবাড়ী': 'Rajbari', 'মাদারীপুর': 'Madaripur',
+  'গোপালগঞ্জ': 'Gopalganj', 'ফরিদপুর': 'Faridpur', 'পঞ্চগড়': 'Panchagarh', 'দিনাজপুর': 'Dinajpur',
+  'লালমনিরহাট': 'Lalmonirhat', 'নীলফামারী': 'Nilphamari', 'গাইবান্ধা': 'Gaibandha', 'ঠাকুরগাঁও': 'Thakurgaon',
+  'কুড়িগ্রাম': 'Kurigram', 'সিরাজগঞ্জ': 'Sirajganj', 'পাবনা': 'Pabna', 'বগুড়া': 'Bogura',
+  'নাটোর': 'Natore', 'জয়পুরহাট': 'Joypurhat', 'চাঁপাইনবাবগঞ্জ': 'Chapainawabganj', 'নওগাঁ': 'Naogaon',
+  'যশোর': 'Jashore', 'সাতক্ষীরা': 'Satkhira', 'মেহেরপুর': 'Meherpur', 'নড়াইল': 'Narail',
+  'চুয়াডাঙ্গা': 'Chuadanga', 'কুষ্টিয়া': 'Kushtia', 'মাগুরা': 'Magura', 'বাগেরহাট': 'Bagerhat',
+  'ঝিনাইদহ': 'Jhenaidah', 'ঝালকাঠি': 'Jhalokati', 'পটুয়াখালী': 'Patuakhali', 'পিরোজপুর': 'Pirojpur',
+  'ভোলা': 'Bhola', 'বরগুনা': 'Barguna', 'মৌলভীবাজার': 'Moulvibazar', 'হবিগঞ্জ': 'Habiganj',
+  'সুনামগঞ্জ': 'Sunamganj', 'নেত্রকোনা': 'Netrokona', 'জামালপুর': 'Jamalpur', 'শেরপুর': 'Sherpur',
+};
 
+const districtEntries = Object.keys(districtUpazilas).map(d => ({ bn: d, en: districtEnNames[d] || d }));
 export default function CustomerAuth({ onSuccess }) {
  const [isLogin, setIsLogin] = useState(true);
   const [phone, setPhone] = useState('');
@@ -193,16 +213,16 @@ export default function CustomerAuth({ onSuccess }) {
                   placeholder="জেলা লিখুন বা সিলেক্ট করুন..."
                   style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#1f2937' }}
                 />
-                {district && !districtUpazilas[district] && (
+              {district && !districtUpazilas[district] && (
                   <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '2px solid #fbcfe8', borderRadius: '10px', maxHeight: '200px', overflowY: 'auto', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                    {Object.keys(districtUpazilas).filter(d => d.includes(district)).map(d => (
-                      <div key={d} onClick={() => { setDistrict(d); setUpazila(''); }} style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '14px', color: '#1f2937', borderBottom: '1px solid #f3f4f6' }}
+                    {districtEntries.filter(d => d.bn.includes(district) || d.en.toLowerCase().includes(district.toLowerCase())).map(d => (
+                      <div key={d.bn} onClick={() => { setDistrict(d.bn); setUpazila(''); }} style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '14px', color: '#1f2937', borderBottom: '1px solid #f3f4f6' }}
                         onMouseEnter={e => e.currentTarget.style.background = '#fdf2f8'}
                         onMouseLeave={e => e.currentTarget.style.background = 'white'}>
-                        {d}
+                        {d.bn} <span style={{ color: '#9ca3af', fontSize: '12px' }}>({d.en})</span>
                       </div>
                     ))}
-                    {Object.keys(districtUpazilas).filter(d => d.includes(district)).length === 0 && (
+                    {districtEntries.filter(d => d.bn.includes(district) || d.en.toLowerCase().includes(district.toLowerCase())).length === 0 && (
                       <div style={{ padding: '10px 14px', fontSize: '13px', color: '#9ca3af' }}>কোনো জেলা পাওয়া যায়নি</div>
                     )}
                   </div>
