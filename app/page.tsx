@@ -678,12 +678,17 @@ useEffect(() => {
       if (dateFilter === 'today') return orderDate.toDateString() === now.toDateString();
       if (dateFilter === 'yesterday') { const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1); return orderDate.toDateString() === yesterday.toDateString(); }
       if (dateFilter === 'week') { const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7); return orderDate >= weekAgo; }
-      if (dateFilter === 'month') return orderDate.getMonth() === now.getMonth() && orderDate.getFullYear() === now.getFullYear();
+        if (dateFilter === 'month') return orderDate.getMonth() === now.getMonth() && orderDate.getFullYear() === now.getFullYear();
+      if (dateFilter === 'all') return true;
       return true;
     });
   };
 
- const dateFilteredOrders = getFilteredByDate(orders);
+ const dateFilteredOrders = getFilteredByDate(orders).sort((a: any, b: any) => {
+    const aPending = a.status === 'pending' ? 0 : 1;
+    const bPending = b.status === 'pending' ? 0 : 1;
+    return aPending - bPending;
+  });
   const activeFilteredOrders = dateFilteredOrders.filter((o: any) => o.status !== 'cancelled');
   const filteredSales = activeFilteredOrders.reduce((a: number, o: any) => a + o.total_amount, 0);
   const filteredOrders2 = activeFilteredOrders.length;
@@ -1154,7 +1159,7 @@ if (!selectedBranch) {
             </div>
             <div style={{ padding: '16px' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', overflowX: 'auto' }}>
-                {[{ key: 'today', label: 'আজকে' }, { key: 'yesterday', label: 'গতকাল' }, { key: 'week', label: 'এই সপ্তাহ' }, { key: 'month', label: 'এই মাস' }].map(d => (<button key={d.key} onClick={() => { setDateFilter(d.key); setOrderSearch(''); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', border: '2px solid', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, borderColor: dateFilter === d.key ? PINK : '#e5e7eb', background: dateFilter === d.key ? PINK : 'white', color: dateFilter === d.key ? 'white' : '#374151' }}>{d.label}</button>))}
+               {[{ key: 'today', label: 'আজকে' }, { key: 'yesterday', label: 'গতকাল' }, { key: 'week', label: 'এই সপ্তাহ' }, { key: 'month', label: 'এই মাস' }, { key: 'all', label: 'সব অর্ডার' }].map(d => (<button key={d.key} onClick={() => { setDateFilter(d.key); setOrderSearch(''); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', border: '2px solid', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, borderColor: dateFilter === d.key ? PINK : '#e5e7eb', background: dateFilter === d.key ? PINK : 'white', color: dateFilter === d.key ? 'white' : '#374151' }}>{d.label}</button>))}
               </div>
               <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)} placeholder="🔍 তারিখ, নাম, ফোন বা অর্ডার নম্বর..." style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '10px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: '#1f2937' }} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
