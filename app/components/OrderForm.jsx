@@ -91,11 +91,14 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
       .select()
       .single();
 
-    if (orderError) {
+       if (orderError) {
       setError('অর্ডার করতে সমস্যা হয়েছে! আবার চেষ্টা করুন।');
       setLoading(false);
       return;
     }
+
+    // 👑 বিস্তারিত ঠিকানা সেভ করা হলো, পরের বার অর্ডার করার সময় auto-fill হবে
+    localStorage.setItem('customer_address', form.address);
 
 const items = cart.map(item => {
       const isMoha = typeof item.id === 'string' && item.id.startsWith('moha-');
