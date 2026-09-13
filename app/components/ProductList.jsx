@@ -379,24 +379,6 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
 
   const pages = selectedPage ? subPages : rootPages;
 
-  // 👑 অটো-স্ক্রল অ্যানিমেশন - hover/drag করলে থেমে যাবে
-  useEffect(() => {
-    if (pages.length === 0) return;
-    let rafId;
-    function step() {
-      const el = scrollRef.current;
-      if (el && !isPaused.current && !isDragging.current) {
-        el.scrollLeft += 0.6;
-        if (el.scrollLeft >= el.scrollWidth - el.clientWidth) {
-          el.scrollLeft = 0;
-        }
-      }
-      rafId = requestAnimationFrame(step);
-    }
-    rafId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(rafId);
-  }, [pages.length]);
-
   if (pages.length === 0) return null;
 
   return (
@@ -417,15 +399,13 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
       }}
       onTouchStart={() => { isPaused.current = true; }}
       onTouchEnd={() => { isPaused.current = false; }}
-      style={{
+            style={{
         display: 'flex',
         gap: '12px',
         overflowX: 'auto',
         padding: '4px 2px',
         scrollbarWidth: 'none',
         cursor: 'grab',
-        maskImage: 'linear-gradient(to right, transparent 0, black 24px, black calc(100% - 24px), transparent 100%)',
-        WebkitMaskImage: 'linear-gradient(to right, transparent 0, black 24px, black calc(100% - 24px), transparent 100%)',
       }}
     >
       {pages.map(page => {
