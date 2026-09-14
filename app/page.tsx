@@ -672,7 +672,7 @@ useEffect(() => {
 
   const getFilteredByDate = (data: any[]) => {
     const now = new Date();
-    if (orderSearch) { return data.filter((o: any) => { const dateStr = new Date(o.created_at).toLocaleDateString('bn-BD'); const dateStrEn = new Date(o.created_at).toLocaleDateString('en-US'); return String(o.id).includes(orderSearch) || dateStr.includes(orderSearch) || dateStrEn.toLowerCase().includes(orderSearch.toLowerCase()) || (o.customer_name && o.customer_name.toLowerCase().includes(orderSearch.toLowerCase())) || (o.customer_phone && o.customer_phone.includes(orderSearch)); }); }
+    if (orderSearch) { return data.filter((o: any) => { const dateStr = new Date(o.created_at).toLocaleDateString('bn-BD'); const dateStrEn = new Date(o.created_at).toLocaleDateString('en-US'); return String(o.id).includes(orderSearch) || dateStr.includes(orderSearch) || dateStrEn.toLowerCase().includes(orderSearch.toLowerCase()) || (o.customer_name && o.customer_name.toLowerCase().includes(orderSearch.toLowerCase())) || (o.customer_phone && o.customer_phone.includes(orderSearch)) || (o.address && o.address.toLowerCase().includes(orderSearch.toLowerCase())); }); }
     return data.filter((o: any) => {
       const orderDate = new Date(o.created_at);
       if (dateFilter === 'today') return orderDate.toDateString() === now.toDateString();
@@ -888,10 +888,11 @@ if (!selectedBranch) {
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
             <div style={{ background: 'white', borderRadius: '20px', padding: '24px', maxWidth: '340px', width: '100%', margin: '0 16px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: PINK, textAlign: 'center', marginBottom: '16px' }}>🔐 লগইন</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
                 <button onClick={() => setLoginType('admin')} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: loginType === 'admin' ? PINK : '#e5e7eb', background: loginType === 'admin' ? PINK : 'white', color: loginType === 'admin' ? 'white' : '#374151' }}>👑 Admin</button>
                 <button onClick={() => setLoginType('editor')} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: loginType === 'editor' ? PINK : '#e5e7eb', background: loginType === 'editor' ? PINK : 'white', color: loginType === 'editor' ? 'white' : '#374151' }}>✏️ Editor</button>
                 <button onClick={() => { setShowLoginModal(false); window.location.href = '/seller/login'; }} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid #16a34a', cursor: 'pointer', background: 'white', color: '#16a34a' }}>🏪 Seller</button>
+                <button onClick={() => setLoginType('rider')} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: loginType === 'rider' ? '#f97316' : '#e5e7eb', background: loginType === 'rider' ? '#f97316' : 'white', color: loginType === 'rider' ? 'white' : '#374151' }}>🏍️ Rider</button>
               </div>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} placeholder={loginType === 'admin' ? 'Admin পাসওয়ার্ড' : 'Editor পাসওয়ার্ড'} style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginBottom: '8px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} autoFocus />
               {loginError && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '8px' }}>{loginError}</p>}
