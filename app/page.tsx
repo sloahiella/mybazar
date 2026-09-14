@@ -656,10 +656,13 @@ useEffect(() => {
     fetchNotifications();
   }
 
-  async function handleLogin() {
+   async function handleLogin() {
     if (loginType === 'admin') {
       if (password === ADMIN_PASSWORD) { setRole('admin'); localStorage.setItem('role', 'admin'); setShowLoginModal(false); setPassword(''); setLoginError(''); }
       else { setLoginError('Admin পাসওয়ার্ড ভুল!'); }
+    } else if (loginType === 'rider') {
+      if (password === RIDER_PASSWORD) { setRole('rider'); localStorage.setItem('role', 'rider'); setShowLoginModal(false); setPassword(''); setLoginError(''); }
+      else { setLoginError('Rider পাসওয়ার্ড ভুল!'); }
     } else {
       const { data } = await supabase.from('pages').select('*').eq('vendor_password', password).single();
       if (data) { setRole('editor'); localStorage.setItem('role', 'editor'); localStorage.setItem('editor_page_id', String(data.id)); localStorage.setItem('editor_page_name', data.name_bn || data.name); setShowLoginModal(false); setPassword(''); setLoginError(''); }
