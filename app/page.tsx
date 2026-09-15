@@ -21,6 +21,7 @@ const supabase = createClient(
 );
 
 const ADMIN_PASSWORD = 'sloahiella@admin';
+const RIDER_PASSWORD = 'sloahiella@rider';
 const LOGO_URL = 'https://i.ibb.co.com/Y7kNKLtt/Chat-GPT-Image-Aug-28-2026-10-19-19-PM.png';
 const PINK = '#db2777';
 const PINK_DARK = '#be185d';
@@ -656,7 +657,7 @@ useEffect(() => {
     fetchNotifications();
   }
 
-   async function handleLogin() {
+    async function handleLogin() {
     if (loginType === 'admin') {
       if (password === ADMIN_PASSWORD) { setRole('admin'); localStorage.setItem('role', 'admin'); setShowLoginModal(false); setPassword(''); setLoginError(''); }
       else { setLoginError('Admin পাসওয়ার্ড ভুল!'); }
@@ -933,11 +934,15 @@ if (!selectedBranch) {
        hideHeader={cartOpen || orderFormOpen}
        notificationCount={unreadCount}
         onSellerClick={() => setShowSellerDrawer(true)}
-        onAdminClick={() => {
+               onAdminClick={() => {
           setShowAdminDrawer(true);
-          const pageId = localStorage.getItem('current_page_id');
-          fetchOrders(pageId || undefined);
-          fetchNotifications();
+          if (role !== 'rider') {
+            const pageId = localStorage.getItem('current_page_id');
+            fetchOrders(pageId || undefined);
+            fetchNotifications();
+          } else {
+            fetchOrders();
+          }
         }}
         onSettingsClick={() => setShowSettings(true)}
         onMenuClick={() => setShowPageMenu(true)}
