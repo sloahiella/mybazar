@@ -1163,18 +1163,25 @@ if (!selectedBranch) {
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowAdminDrawer(false)} />
           <div style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: '380px', background: 'white', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
             <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>{role === 'editor' ? `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel` : localStorage.getItem('current_page_id') ? `📋 ${localStorage.getItem('current_page_name') || 'Admin'} Panel` : '👑 Admin Panel'}</h2>
+              <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>{role === 'rider' ? '🏍️ Rider Panel' : role === 'editor' ? `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel` : localStorage.getItem('current_page_id') ? `📋 ${localStorage.getItem('current_page_name') || 'Admin'} Panel` : '👑 Admin Panel'}</h2>
               <button onClick={() => setShowAdminDrawer(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
             <div style={{ padding: '16px' }}>
+                           {role !== 'rider' && (
               <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', overflowX: 'auto' }}>
-               {[{ key: 'today', label: 'আজকে' }, { key: 'yesterday', label: 'গতকাল' }, { key: 'week', label: 'এই সপ্তাহ' }, { key: 'month', label: 'এই মাস' }, { key: 'all', label: 'সব অর্ডার' }].map(d => (<button key={d.key} onClick={() => { setDateFilter(d.key); setOrderSearch(''); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', border: '2px solid', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, borderColor: dateFilter === d.key ? PINK : '#e5e7eb', background: dateFilter === d.key ? PINK : 'white', color: dateFilter === d.key ? 'white' : '#374151' }}>{d.label}</button>))}
+                {[{ key: 'today', label: 'আজকে' }, { key: 'yesterday', label: 'গতকাল' }, { key: 'week', label: 'এই সপ্তাহ' }, { key: 'month', label: 'এই মাস' }, { key: 'all', label: 'সব অর্ডার' }].map(d => (<button key={d.key} onClick={() => { setDateFilter(d.key); setOrderSearch(''); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', border: '2px solid', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, borderColor: dateFilter === d.key ? PINK : '#e5e7eb', background: dateFilter === d.key ? PINK : 'white', color: dateFilter === d.key ? 'white' : '#374151' }}>{d.label}</button>))}
               </div>
-              <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)} placeholder="🔍 তারিখ, নাম, ফোন বা অর্ডার নম্বর..." style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '10px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: '#1f2937' }} />
+              )}
+              {role === 'rider' && (
+                <p style={{ fontSize: '13px', color: '#6b7280', textAlign: 'center', margin: '0 0 12px 0' }}>ডেলিভারির জন্য প্রস্তুত অর্ডার (Confirmed)</p>
+              )}
+                  <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)} placeholder={role === 'rider' ? '🔍 ওয়ার্ড নং, বাড়ির নাম বা কাস্টমারের নাম...' : '🔍 তারিখ, নাম, ফোন বা অর্ডার নম্বর...'} style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '10px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: '#1f2937' }} />
+                         {role !== 'rider' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div style={{ background: PINK_LIGHT, borderRadius: '12px', padding: '12px', textAlign: 'center', border: `1px solid ${PINK_BORDER}` }}><p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>💰 Sales</p><p style={{ fontSize: '22px', fontWeight: 'bold', color: PINK, margin: 0 }}>{filteredSales} Tk</p></div>
                 <div style={{ background: '#eff6ff', borderRadius: '12px', padding: '12px', textAlign: 'center', border: '1px solid #bfdbfe' }}><p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>📦 Orders</p><p style={{ fontSize: '22px', fontWeight: 'bold', color: '#1d4ed8', margin: 0 }}>{filteredOrders2} টি</p></div>
               </div>
+              )}
             </div>
             {role === 'admin' && (
               <div style={{ padding: '0 16px 12px' }}>
