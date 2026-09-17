@@ -1649,8 +1649,8 @@ if (orderId) {
       )}
       {showOrders && <OrdersModal onClose={() => setShowOrders(false)} isAdmin={isAdmin || isEditor} />}
       {showCustomerOrders && <OrdersModal onClose={() => setShowCustomerOrders(false)} isAdmin={false} />}
-      {editingProduct && <EditProductModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={fetchProducts} />}
-      {showAddModal && <AddProductModal branch={branch} defaultPage={addModalPage} onClose={() => setShowAddModal(false)} onSave={fetchProducts} />}
+     {editingProduct && <EditProductModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={fetchProducts} isAdmin={isAdmin} />}
+     {showAddModal && <AddProductModal branch={branch} defaultPage={addModalPage} onClose={() => setShowAddModal(false)} onSave={fetchProducts} isAdmin={isAdmin} />}
 
      <PageMenu
         branch={branch}
