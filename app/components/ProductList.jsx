@@ -1381,11 +1381,16 @@ const isMobile = useIsMobile()
   }, [showOrder]);
   async function fetchProducts() {
     setLoading(true);
-    let query = supabase.from('products').select('*, stock(*), product_images(*)').eq('branch_id', branch.id).eq('is_active', true).order('sort_order', { ascending: true });
+      let query = supabase.from('products').select('*, stock(*), product_images(*)').eq('branch_id', branch.id).eq('is_active', true).order('sort_order', { ascending: true });
     if (isSeller && sellerId) query = query.eq('seller_id', sellerId);
     const { data } = await query;
     
     let allProducts = data || [];
+
+    // 👑 কাঁচা বাজারের পেজগুলো বের করে প্রতিটা প্রোডাক্টে is_kacha_bazar ফ্ল্যাগ বসানো হলো
+    const { data: kachaPages } = await supabase.from('pages').select('id').eq('is_kacha_bazar', true);
+    const kachaPageIds = new Set((kachaPages || []).map(p => String(p.id)));
+    allProducts = allProducts.map(p => ({ ...p, is_kacha_bazar: kachaPageIds.has(String(p.page_id)) }));
 
    // 👑 Mohasagor products আনার লজিক
     if (branch.id === 1) {
