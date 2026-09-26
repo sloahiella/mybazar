@@ -647,8 +647,10 @@ useEffect(() => {
   }
 
   async function markAllRead() { await supabase.from('notifications').update({ is_read: true }).eq('is_read', false); fetchNotifications(); }
-      async function updateOrderStatus(id: number, status: string, customerPhone?: string) {
-    await supabase.from('orders').update({ status }).eq('id', id);
+      async function updateOrderStatus(id: number, status: string, customerPhone?: string, deliveryCharge?: number) {
+    const updateData: any = { status };
+    if (deliveryCharge !== undefined) updateData.delivery_charge = deliveryCharge;
+    await supabase.from('orders').update(updateData).eq('id', id);
     await supabase.from('notifications').update({ is_read: true }).ilike('body', `%#${id}%`);
     if (status === 'confirmed' && customerPhone) {
       sendWhatsAppConfirmation(customerPhone);
@@ -1204,8 +1206,8 @@ if (!selectedBranch) {
             </div>
             {adminTab === 'orders' && (
               <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                             {(role === 'rider' ? dateFilteredOrders.filter((o: any) => o.status === 'confirmed') : dateFilteredOrders).length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার নেই</p>}
-                {(role === 'rider' ? dateFilteredOrders.filter((o: any) => o.status === 'confirmed') : dateFilteredOrders).map((order: any) => (
+                            {(role === 'rider' ? dateFilteredOrders.filter((o: any) => o.status === 'confirmed' || o.status === 'delivered').sort((a: any, b: any) => (a.status === 'delivered' ? 1 : 0) - (b.status === 'delivered' ? 1 : 0)) : dateFilteredOrders).length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার নেই</p>}
+{(role === 'rider' ? dateFilteredOrders.filter((o: any) => o.status === 'confirmed' || o.status === 'delivered').sort((a: any, b: any) => (a.status === 'delivered' ? 1 : 0) - (b.status === 'delivered' ? 1 : 0)) : dateFilteredOrders).map((order: any) => (
                   <div key={order.id} onDoubleClick={() => setSelectedOrder(order)} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
@@ -1217,8 +1219,23 @@ if (!selectedBranch) {
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                         <p style={{ fontWeight: 'bold', color: PINK, margin: 0 }}>{order.total_amount} Tk</p>
-                                            {role === 'rider' ? (
-                          <button onClick={e => { e.stopPropagation(); updateOrderStatus(order.id, 'delivered'); }} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}>✅ ডেলিভারি সম্পন্ন</button>
+                                               {role === 'rider' ? (
+                          order.status === 'delivered' ? (
+                            <span style={{ background: '#dcfce7', color: '#15803d', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', fontWeight: 'bold' }}>✅ ডেলিভারি হয়েছে</span>
+                          ) : (
+                            <button onClick={e => {
+                              e.stopPropagation();
+                              const kachaBazarTotal = (order.order_items || []).filter((it: any) => it.is_kacha_bazar).reduce((sum: number, it: any) => sum + (it.price * it.quantity), 0);
+                              if (kachaBazarTotal >= 50) {
+                                updateOrderStatus(order.id, 'delivered');
+                              } else {
+                                const chargeStr = prompt('মুদি বাজারের ডেলিভারি চার্জ কত টাকা নিয়েছেন?');
+                                if (chargeStr === null) return;
+                                const charge = parseFloat(chargeStr) || 0;
+                                updateOrderStatus(order.id, 'delivered', undefined, charge);
+                              }
+                            }} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}>✅ ডেলিভারি সম্পন্ন</button>
+                          )
                         ) : (
                         <select value={order.status} onChange={e => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value, order.customer_phone); }} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px 6px', fontSize: '12px', cursor: 'pointer' }}>
                           <option value="pending">Pending</option>
