@@ -695,6 +695,23 @@ useEffect(() => {
     const bPending = b.status === 'pending' ? 0 : 1;
     return aPending - bPending;
   });
+
+  // 👑 রাইডারের দৈনিক হিসাব - কাঁচা বাজারের লাভ + মুদি বাজারের ডেলিভারি চার্জ
+  const riderDeliveredOrders = dateFilteredOrders.filter((o: any) => o.status === 'delivered');
+  let riderKachaSale = 0;
+  let riderKachaCost = 0;
+  let riderDeliveryCharge = 0;
+  riderDeliveredOrders.forEach((order: any) => {
+    (order.order_items || []).forEach((item: any) => {
+      if (item.is_kacha_bazar) {
+        riderKachaSale += item.price * item.quantity;
+        riderKachaCost += (item.products?.cost_price || 0) * item.quantity;
+      }
+    });
+    riderDeliveryCharge += order.delivery_charge || 0;
+  });
+  const riderKachaProfit = riderKachaSale - riderKachaCost;
+  const riderTotalEarning = riderKachaProfit + riderDeliveryCharge;
   const activeFilteredOrders = dateFilteredOrders.filter((o: any) => o.status !== 'cancelled');
   const filteredSales = activeFilteredOrders.reduce((a: number, o: any) => a + o.total_amount, 0);
   const filteredOrders2 = activeFilteredOrders.length;
@@ -1174,8 +1191,24 @@ if (!selectedBranch) {
                 {[{ key: 'today', label: 'আজকে' }, { key: 'yesterday', label: 'গতকাল' }, { key: 'week', label: 'এই সপ্তাহ' }, { key: 'month', label: 'এই মাস' }, { key: 'all', label: 'সব অর্ডার' }].map(d => (<button key={d.key} onClick={() => { setDateFilter(d.key); setOrderSearch(''); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', border: '2px solid', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, borderColor: dateFilter === d.key ? PINK : '#e5e7eb', background: dateFilter === d.key ? PINK : 'white', color: dateFilter === d.key ? 'white' : '#374151' }}>{d.label}</button>))}
               </div>
               )}
-              {role === 'rider' && (
+                {role === 'rider' && (
+                <>
                 <p style={{ fontSize: '13px', color: '#6b7280', textAlign: 'center', margin: '0 0 12px 0' }}>ডেলিভারির জন্য প্রস্তুত অর্ডার (Confirmed)</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                  <div style={{ background: '#f0fdf4', borderRadius: '10px', padding: '10px', textAlign: 'center', border: '1px solid #bbf7d0' }}>
+                    <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 2px 0' }}>🥦 কাঁচা বাজার লাভ</p>
+                    <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#15803d', margin: 0 }}>{riderKachaProfit.toFixed(0)} Tk</p>
+                  </div>
+                  <div style={{ background: '#fff7ed', borderRadius: '10px', padding: '10px', textAlign: 'center', border: '1px solid #fed7aa' }}>
+                    <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 2px 0' }}>🛒 মুদি ডেলিভারি চার্জ</p>
+                    <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#ea580c', margin: 0 }}>{riderDeliveryCharge.toFixed(0)} Tk</p>
+                  </div>
+                </div>
+                <div style={{ background: PINK_LIGHT, borderRadius: '10px', padding: '12px', textAlign: 'center', border: `1px solid ${PINK_BORDER}`, marginBottom: '12px' }}>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px 0' }}>💰 আজকের মোট আয়</p>
+                  <p style={{ fontSize: '22px', fontWeight: 'bold', color: PINK, margin: 0 }}>{riderTotalEarning.toFixed(0)} Tk</p>
+                </div>
+                </>
               )}
                   <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)} placeholder={role === 'rider' ? '🔍 ওয়ার্ড নং, বাড়ির নাম বা কাস্টমারের নাম...' : '🔍 তারিখ, নাম, ফোন বা অর্ডার নম্বর...'} style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '10px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: '#1f2937' }} />
                          {role !== 'rider' && (
