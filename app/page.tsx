@@ -446,6 +446,7 @@ const [showSettings, setShowSettings] = useState(false);
 const [showEmailForm, setShowEmailForm] = useState(false);  
 const [showMohasagorAdmin, setShowMohasagorAdmin] = useState(false);
 const [showBranchControl, setShowBranchControl] = useState(false);
+const [adminViewingAsRider, setAdminViewingAsRider] = useState(false);
 const [settingsSearch, setSettingsSearch] = useState('');
 const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
@@ -690,7 +691,8 @@ useEffect(() => {
     });
   };
 
- const dateFilteredOrders = getFilteredByDate(orders).sort((a: any, b: any) => {
+   const effectiveRole = adminViewingAsRider ? 'rider' : role;
+  const dateFilteredOrders = getFilteredByDate(orders).sort((a: any, b: any) => {
     const aPending = a.status === 'pending' ? 0 : 1;
     const bPending = b.status === 'pending' ? 0 : 1;
     return aPending - bPending;
@@ -1087,6 +1089,11 @@ if (!selectedBranch) {
                   <span style={{ fontSize: '20px' }}>🏢</span> শাখা নিয়ন্ত্রণ
                 </button>
               )}
+                            {!showEmailForm && !showMohasagorAdmin && !showBranchControl && role === 'admin' && 'রাইডার প্যানেল'.includes(settingsSearch) && (
+                <button onClick={() => { setAdminViewingAsRider(true); setShowSettings(false); setShowAdminDrawer(true); fetchOrders(); }} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600', color: '#1f2937', textAlign: 'left', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '20px' }}>🏍️</span> রাইডার প্যানেল দেখুন
+                </button>
+              )}
               {showMohasagorAdmin && (
                 <div>
                   <button onClick={() => setShowMohasagorAdmin(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', marginBottom: '8px', padding: 0 }}>← ব্যাক</button>
@@ -1182,8 +1189,8 @@ if (!selectedBranch) {
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowAdminDrawer(false)} />
           <div style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: '380px', background: 'white', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
             <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>{role === 'rider' ? '🏍️ Rider Panel' : role === 'editor' ? `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel` : localStorage.getItem('current_page_id') ? `📋 ${localStorage.getItem('current_page_name') || 'Admin'} Panel` : '👑 Admin Panel'}</h2>
-              <button onClick={() => setShowAdminDrawer(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
+              <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>{effectiveRole === 'rider' ? '🏍️ Rider Panel' : role === 'editor' ? `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel` : localStorage.getItem('current_page_id') ? `📋 ${localStorage.getItem('current_page_name') || 'Admin'} Panel` : '👑 Admin Panel'}</h2>
+            <button onClick={() => { setShowAdminDrawer(false); setAdminViewingAsRider(false); }} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
             <div style={{ padding: '16px' }}>
                            {role !== 'rider' && (
@@ -1191,7 +1198,7 @@ if (!selectedBranch) {
                 {[{ key: 'today', label: 'আজকে' }, { key: 'yesterday', label: 'গতকাল' }, { key: 'week', label: 'এই সপ্তাহ' }, { key: 'month', label: 'এই মাস' }, { key: 'all', label: 'সব অর্ডার' }].map(d => (<button key={d.key} onClick={() => { setDateFilter(d.key); setOrderSearch(''); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', border: '2px solid', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, borderColor: dateFilter === d.key ? PINK : '#e5e7eb', background: dateFilter === d.key ? PINK : 'white', color: dateFilter === d.key ? 'white' : '#374151' }}>{d.label}</button>))}
               </div>
               )}
-                {role === 'rider' && (
+                {effectiveRole === 'rider' && (
                 <>
                 <p style={{ fontSize: '13px', color: '#6b7280', textAlign: 'center', margin: '0 0 12px 0' }}>ডেলিভারির জন্য প্রস্তুত অর্ডার (Confirmed)</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
@@ -1210,7 +1217,7 @@ if (!selectedBranch) {
                 </div>
                 </>
               )}
-                  <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)} placeholder={role === 'rider' ? '🔍 ওয়ার্ড নং, বাড়ির নাম বা কাস্টমারের নাম...' : '🔍 তারিখ, নাম, ফোন বা অর্ডার নম্বর...'} style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '10px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: '#1f2937' }} />
+                  <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)} placeholder={effectiveRole === 'rider' ? '🔍 ওয়ার্ড নং, বাড়ির নাম বা কাস্টমারের নাম...' : '🔍 তারিখ, নাম, ফোন বা অর্ডার নম্বর...'} style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '10px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: '#1f2937' }} />
                          {role !== 'rider' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div style={{ background: PINK_LIGHT, borderRadius: '12px', padding: '12px', textAlign: 'center', border: `1px solid ${PINK_BORDER}` }}><p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>💰 Sales</p><p style={{ fontSize: '22px', fontWeight: 'bold', color: PINK, margin: 0 }}>{filteredSales} Tk</p></div>
@@ -1239,8 +1246,8 @@ if (!selectedBranch) {
             </div>
             {adminTab === 'orders' && (
               <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            {(role === 'rider' ? dateFilteredOrders.filter((o: any) => o.status === 'confirmed' || o.status === 'delivered').sort((a: any, b: any) => (a.status === 'delivered' ? 1 : 0) - (b.status === 'delivered' ? 1 : 0)) : dateFilteredOrders).length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার নেই</p>}
-{(role === 'rider' ? dateFilteredOrders.filter((o: any) => o.status === 'confirmed' || o.status === 'delivered').sort((a: any, b: any) => (a.status === 'delivered' ? 1 : 0) - (b.status === 'delivered' ? 1 : 0)) : dateFilteredOrders).map((order: any) => (
+                            {(effectiveRole === 'rider' ? dateFilteredOrders.filter((o: any) => o.status === 'confirmed' || o.status === 'delivered').sort((a: any, b: any) => (a.status === 'delivered' ? 1 : 0) - (b.status === 'delivered' ? 1 : 0)) : dateFilteredOrders).length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার নেই</p>}
+{(effectiveRole === 'rider' ? dateFilteredOrders.filter((o: any) => o.status === 'confirmed' || o.status === 'delivered').sort((a: any, b: any) => (a.status === 'delivered' ? 1 : 0) - (b.status === 'delivered' ? 1 : 0)) : dateFilteredOrders).map((order: any) => (
                   <div key={order.id} onDoubleClick={() => setSelectedOrder(order)} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
@@ -1252,7 +1259,7 @@ if (!selectedBranch) {
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                         <p style={{ fontWeight: 'bold', color: PINK, margin: 0 }}>{order.total_amount} Tk</p>
-                                               {role === 'rider' ? (
+                                               {effectiveRole === 'rider' ? (
                           order.status === 'delivered' ? (
                             <span style={{ background: '#dcfce7', color: '#15803d', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', fontWeight: 'bold' }}>✅ ডেলিভারি হয়েছে</span>
                           ) : (
