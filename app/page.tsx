@@ -1193,7 +1193,7 @@ if (!selectedBranch) {
             <button onClick={() => { setShowAdminDrawer(false); setAdminViewingAsRider(false); }} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
             <div style={{ padding: '16px' }}>
-                           {role !== 'rider' && (
+                                        {(
               <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', overflowX: 'auto' }}>
                 {[{ key: 'today', label: 'আজকে' }, { key: 'yesterday', label: 'গতকাল' }, { key: 'week', label: 'এই সপ্তাহ' }, { key: 'month', label: 'এই মাস' }, { key: 'all', label: 'সব অর্ডার' }].map(d => (<button key={d.key} onClick={() => { setDateFilter(d.key); setOrderSearch(''); }} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '500', border: '2px solid', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, borderColor: dateFilter === d.key ? PINK : '#e5e7eb', background: dateFilter === d.key ? PINK : 'white', color: dateFilter === d.key ? 'white' : '#374151' }}>{d.label}</button>))}
               </div>
@@ -1217,7 +1217,7 @@ if (!selectedBranch) {
                 </div>
                 </>
               )}
-                  <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)} placeholder={effectiveRole === 'rider' ? '🔍 ওয়ার্ড নং, বাড়ির নাম বা কাস্টমারের নাম...' : '🔍 তারিখ, নাম, ফোন বা অর্ডার নম্বর...'} style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '10px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: '#1f2937' }} />
+                  <input type="text" value={orderSearch} onChange={e => setOrderSearch(e.target.value)} placeholder={effectiveRole === 'rider' ? '🔍 অর্ডার নং, নাম, ওয়ার্ড/বাড়ির নাম বা তারিখ...' : '🔍 তারিখ, নাম, ফোন বা অর্ডার নম্বর...'} style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '10px', padding: '8px 12px', width: '100%', fontSize: '13px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: '#1f2937' }} />
                          {role !== 'rider' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div style={{ background: PINK_LIGHT, borderRadius: '12px', padding: '12px', textAlign: 'center', border: `1px solid ${PINK_BORDER}` }}><p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>💰 Sales</p><p style={{ fontSize: '22px', fontWeight: 'bold', color: PINK, margin: 0 }}>{filteredSales} Tk</p></div>
