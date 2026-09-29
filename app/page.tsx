@@ -273,6 +273,53 @@ function AdminSellerView({ seller, onBack }: { seller: any; onBack: () => void }
   )
 }
 
+function RiderManagement() {
+  const [riders, setRiders] = useState<any[]>([])
+
+  useEffect(() => { fetchRiders() }, [])
+
+  async function fetchRiders() {
+    const { data } = await supabase.from('riders').select('*').order('created_at', { ascending: false })
+    if (data) setRiders(data)
+  }
+
+  async function approveRider(id: number) {
+    await supabase.from('riders').update({ is_approved: true }).eq('id', id)
+    fetchRiders()
+  }
+
+  async function rejectRider(id: number) {
+    if (!confirm('এই রাইডার মুছে দেবেন?')) return
+    await supabase.from('riders').delete().eq('id', id)
+    fetchRiders()
+  }
+
+  return (
+    <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {riders.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো রাইডার নেই</p>}
+      {riders.map((rider) => (
+        <div key={rider.id} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '0 0 2px 0' }}>🏍️ {rider.name}</p>
+              <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>📱 {rider.phone}</p>
+              <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>🚗 গাড়ি নম্বর: {rider.vehicle_number}</p>
+              <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '20px', display: 'inline-block', marginTop: '4px', background: rider.is_approved ? '#dcfce7' : '#fef9c3', color: rider.is_approved ? '#15803d' : '#854d0e' }}>
+                {rider.is_approved ? '✅ অ্যাপ্রুভড' : '⏳ অপেক্ষমান'}
+              </span>
+            </div>
+            {!rider.is_approved && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <button onClick={() => approveRider(rider.id)} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>✅ Approve</button>
+                <button onClick={() => rejectRider(rider.id)} style={{ background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>❌ Reject</button>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
 function SellerManagement() {
   const [sellers, setSellers] = useState<any[]>([])
   const [selectedSeller, setSelectedSeller] = useState<any>(null)
@@ -1234,7 +1281,7 @@ if (!selectedBranch) {
               </div>
             )}
             <div style={{ display: 'flex', gap: '8px', padding: '0 16px 12px', overflowX: 'auto' }}>
-             {[{ key: 'orders', label: '📋 Orders' }, ...(role === 'admin' ? [{ key: 'sellers', label: '🏪 Sellers' }, { key: 'withdrawals', label: '💰 Withdraw' }] : [])].map(t => (
+            {[{ key: 'orders', label: '📋 Orders' }, ...(role === 'admin' ? [{ key: 'sellers', label: '🏪 Sellers' }, { key: 'riders', label: '🏍️ Riders' }, { key: 'withdrawals', label: '💰 Withdraw' }] : [])].map(t => (
   <button key={t.key} onClick={() => { setAdminTab(t.key); if (t.key === 'orders') markAllRead(); }} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: adminTab === t.key ? PINK : '#f3f4f6', color: adminTab === t.key ? 'white' : '#374151', position: 'relative' }}>
     {t.label}
     {t.key === 'orders' && unreadCount > 0 && (
@@ -1311,6 +1358,8 @@ if (!selectedBranch) {
               </div>
             )}
             {adminTab === 'sellers' && role === 'admin' && <SellerManagement />}
+           {adminTab === 'sellers' && role === 'admin' && <SellerManagement />}
+           {adminTab === 'riders' && role === 'admin' && <RiderManagement />}
             {adminTab === 'withdrawals' && role === 'admin' && <WithdrawalManagement />}
           </div>
         </div>
