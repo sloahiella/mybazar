@@ -35,7 +35,8 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
     email: '',
     district: localStorage.getItem('customer_district') || '',
     upazila: localStorage.getItem('customer_upazila') || '',
-        address: localStorage.getItem('customer_address') || '',
+          address: localStorage.getItem('customer_address') || '',
+    vehicle_number: localStorage.getItem('customer_vehicle') || '',
     payment: 'cod',
     transaction_id: '',
   });
@@ -62,8 +63,8 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   async function submitOrder() {
-    if (!form.name || !form.phone || !form.address) {
-      setError('নাম, ফোন নম্বর এবং ঠিকানা আবশ্যক!');
+       if (!form.name || !form.phone || !form.address || !form.vehicle_number) {
+      setError('নাম, ফোন নম্বর, ঠিকানা এবং গাড়ি নম্বর আবশ্যক!');
       return;
     }
     if ((form.payment === 'bkash' || form.payment === 'nagad') && !form.transaction_id) {
@@ -80,9 +81,10 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
         customer_name: form.name,
         customer_email: form.email,
         customer_phone: form.phone,
-        district: form.district,
+         district: form.district,
         upazila: form.upazila,
         address: form.address,
+        vehicle_number: form.vehicle_number,
         payment_method: form.payment,
         transaction_id: form.transaction_id || null,
         total_amount: total,
@@ -99,6 +101,8 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
 
     // 👑 বিস্তারিত ঠিকানা সেভ করা হলো, পরের বার অর্ডার করার সময় auto-fill হবে
     localStorage.setItem('customer_address', form.address);
+        localStorage.setItem('customer_address', form.address);
+    localStorage.setItem('customer_vehicle', form.vehicle_number);
 
 const items = cart.map(item => {
       const isMoha = typeof item.id === 'string' && item.id.startsWith('moha-');
@@ -160,12 +164,18 @@ const items = cart.map(item => {
                 readOnly={!!localStorage.getItem('customer_upazila')}
                 style={{ ...inputStyle, background: localStorage.getItem('customer_upazila') ? '#fdf2f8' : 'white' }} />
             </div>
-            <div>
+             <div>
               <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>বিস্তারিত ঠিকানা *</label>
               <textarea name="address" value={form.address} onChange={handle}
                 placeholder="গ্রাম/মহল্লা, বাড়ির নাম/নম্বর"
                 rows={2}
                 style={{ ...inputStyle, resize: 'none' }} />
+            </div>
+            <div>
+              <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>গাড়ি নম্বর *</label>
+              <input name="vehicle_number" value={form.vehicle_number} onChange={handle}
+                placeholder="আপনার এলাকার গাড়ি নম্বর লিখুন"
+                style={inputStyle} />
             </div>
           </div>
         </div>
