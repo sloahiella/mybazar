@@ -494,6 +494,7 @@ const [showEmailForm, setShowEmailForm] = useState(false);
 const [showMohasagorAdmin, setShowMohasagorAdmin] = useState(false);
 const [showBranchControl, setShowBranchControl] = useState(false);
 const [adminViewingAsRider, setAdminViewingAsRider] = useState(false);
+const [riderVehicle, setRiderVehicle] = useState<string | null>(null);
 const [settingsSearch, setSettingsSearch] = useState('');
 const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
@@ -590,8 +591,9 @@ useEffect(() => {
     }
     checkGoogleLogin()
     checkSellerLogin()
-    const savedRole = localStorage.getItem('role');
+       const savedRole = localStorage.getItem('role');
     if (savedRole) setRole(savedRole);
+    if (savedRole === 'rider') setRiderVehicle(localStorage.getItem('rider_vehicle'));
     if (localStorage.getItem('autoPrint') === 'true') setAutoPrint(true);
        const savedPhone = localStorage.getItem('customer_phone');
     if (savedPhone) setCustomer({ phone: savedPhone });
@@ -746,7 +748,7 @@ useEffect(() => {
   });
 
   // 👑 রাইডারের দৈনিক হিসাব - কাঁচা বাজারের লাভ + মুদি বাজারের ডেলিভারি চার্জ
-  const riderDeliveredOrders = dateFilteredOrders.filter((o: any) => o.status === 'delivered');
+ const riderDeliveredOrders = dateFilteredOrders.filter((o: any) => o.status === 'delivered' && (!riderVehicle || o.vehicle_number === riderVehicle));
   let riderKachaSale = 0;
   let riderKachaCost = 0;
   let riderDeliveryCharge = 0;
