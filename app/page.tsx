@@ -1295,9 +1295,9 @@ if (!selectedBranch) {
             </div>
             {adminTab === 'orders' && (
               <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            {(effectiveRole === 'rider' ? dateFilteredOrders.filter((o: any) => o.status === 'confirmed' || o.status === 'delivered').sort((a: any, b: any) => (a.status === 'delivered' ? 1 : 0) - (b.status === 'delivered' ? 1 : 0)) : dateFilteredOrders).length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার নেই</p>}
-{(effectiveRole === 'rider' ? dateFilteredOrders.filter((o: any) => o.status === 'confirmed' || o.status === 'delivered').sort((a: any, b: any) => (a.status === 'delivered' ? 1 : 0) - (b.status === 'delivered' ? 1 : 0)) : dateFilteredOrders).map((order: any) => (
-                  <div key={order.id} onDoubleClick={() => setSelectedOrder(order)} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+         {(effectiveRole === 'rider' ? dateFilteredOrders.filter((o: any) => (o.status === 'confirmed' || o.status === 'delivered') && (!riderVehicle || o.vehicle_number === riderVehicle)).sort((a: any, b: any) => (a.status === 'delivered' ? 1 : 0) - (b.status === 'delivered' ? 1 : 0)) : dateFilteredOrders).length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো অর্ডার নেই</p>}
+{(effectiveRole === 'rider' ? dateFilteredOrders.filter((o: any) => (o.status === 'confirmed' || o.status === 'delivered') && (!riderVehicle || o.vehicle_number === riderVehicle)).sort((a: any, b: any) => (a.status === 'delivered' ? 1 : 0) - (b.status === 'delivered' ? 1 : 0)) : dateFilteredOrders).map((order: any) => (
+     <div key={order.id} onDoubleClick={() => setSelectedOrder(order)} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
                         <h3 style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '14px', margin: '0 0 2px 0' }}>#{order.id} - {order.customer_name}</h3>
