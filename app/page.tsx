@@ -1004,15 +1004,15 @@ if (!selectedBranch) {
        hideHeader={cartOpen || orderFormOpen}
        notificationCount={unreadCount}
         onSellerClick={() => setShowSellerDrawer(true)}
-               onAdminClick={() => {
+                 onAdminClick={() => {
           setShowAdminDrawer(true);
-          if (role !== 'rider') {
+          if (role === 'editor') {
             const pageId = localStorage.getItem('current_page_id');
             fetchOrders(pageId || undefined);
-            fetchNotifications();
           } else {
             fetchOrders();
           }
+          fetchNotifications();
         }}
         onSettingsClick={() => setShowSettings(true)}
         onMenuClick={() => setShowPageMenu(true)}
@@ -1238,7 +1238,7 @@ if (!selectedBranch) {
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowAdminDrawer(false)} />
           <div style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: '380px', background: 'white', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
             <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>{effectiveRole === 'rider' ? '🏍️ Rider Panel' : role === 'editor' ? `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel` : localStorage.getItem('current_page_id') ? `📋 ${localStorage.getItem('current_page_name') || 'Admin'} Panel` : '👑 Admin Panel'}</h2>
+          <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>{effectiveRole === 'rider' ? '🏍️ Rider Panel' : role === 'editor' ? `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel` : role === 'admin' ? '👑 Admin Panel' : '📋 Panel'}</h2>
             <button onClick={() => { setShowAdminDrawer(false); setAdminViewingAsRider(false); }} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
             <div style={{ padding: '16px' }}>
