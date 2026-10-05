@@ -94,6 +94,75 @@ const districtEnNames = {
 };
 
 const districtEntries = Object.keys(districtUpazilas).map(d => ({ bn: d, en: districtEnNames[d] || d }));
+// 👑 উপজেলার ইংরেজি নাম - জেলা নির্বিশেষে একটা ফ্ল্যাট ডিকশনারি
+const upazilaEnNames = {
+  'ধামরাই': 'Dhamrai', 'দোহার': 'Dohar', 'কেরানীগঞ্জ': 'Keraniganj', 'নবাবগঞ্জ': 'Nawabganj', 'সাভার': 'Savar', 'ঢাকা সদর': 'Dhaka Sadar',
+  'আনোয়ারা': 'Anwara', 'বাঁশখালী': 'Banshkhali', 'বোয়ালখালী': 'Boalkhali', 'চন্দনাইশ': 'Chandanaish', 'ফটিকছড়ি': 'Fatikchhari', 'হাটহাজারী': 'Hathazari', 'কর্ণফুলী': 'Karnaphuli', 'লোহাগাড়া': 'Lohagara', 'মীরসরাই': 'Mirsharai', 'পটিয়া': 'Patiya', 'রাঙ্গুনিয়া': 'Rangunia', 'রাউজান': 'Raozan', 'সন্দ্বীপ': 'Sandwip', 'সাতকানিয়া': 'Satkania', 'সীতাকুণ্ড': 'Sitakunda', 'চট্টগ্রাম সদর': 'Chattogram Sadar',
+  'বাঘা': 'Bagha', 'বাগমারা': 'Bagmara', 'চারঘাট': 'Charghat', 'দুর্গাপুর': 'Durgapur', 'গোদাগাড়ী': 'Godagari', 'মোহনপুর': 'Mohanpur', 'পবা': 'Paba', 'পুঠিয়া': 'Puthia', 'তানোর': 'Tanore', 'রাজশাহী সদর': 'Rajshahi Sadar',
+  'বটিয়াঘাটা': 'Batiaghata', 'দাকোপ': 'Dacope', 'ডুমুরিয়া': 'Dumuria', 'ফুলতলা': 'Fultala', 'কয়রা': 'Koyra', 'পাইকগাছা': 'Paikgachha', 'রূপসা': 'Rupsa', 'তেরখাদা': 'Terokhada', 'খুলনা সদর': 'Khulna Sadar',
+  'আগৈলঝাড়া': 'Agailjhara', 'বাকেরগঞ্জ': 'Bakerganj', 'বানারীপাড়া': 'Banaripara', 'গৌরনদী': 'Gournadi', 'হিজলা': 'Hizla', 'মেহেন্দিগঞ্জ': 'Mehendiganj', 'মুলাদী': 'Muladi', 'উজিরপুর': 'Uzirpur', 'বরিশাল সদর': 'Barishal Sadar',
+  'বালাগঞ্জ': 'Balaganj', 'বিয়ানীবাজার': 'Bianibazar', 'বিশ্বনাথ': 'Bishwanath', 'কোম্পানিগঞ্জ': 'Companiganj', 'ফেঞ্চুগঞ্জ': 'Fenchuganj', 'গোলাপগঞ্জ': 'Golapganj', 'গোয়াইনঘাট': 'Gowainghat', 'জৈন্তাপুর': 'Jaintiapur', 'কানাইঘাট': 'Kanaighat', 'ওসমানীনগর': 'Osmaninagar', 'সিলেট সদর': 'Sylhet Sadar', 'জকিগঞ্জ': 'Zakiganj', 'দক্ষিণ সুরমা': 'Dakshin Surma',
+  'বদরগঞ্জ': 'Badarganj', 'গঙ্গাচড়া': 'Gangachara', 'কাউনিয়া': 'Kaunia', 'মিঠাপুকুর': 'Mithapukur', 'পীরগঞ্জ': 'Pirganj', 'পীরগাছা': 'Pirgachha', 'তারাগঞ্জ': 'Taraganj', 'রংপুর সদর': 'Rangpur Sadar',
+  'ভালুকা': 'Bhaluka', 'ধোবাউড়া': 'Dhobaura', 'ফুলবাড়িয়া': 'Fulbaria', 'গফরগাঁও': 'Gafargaon', 'গৌরীপুর': 'Gouripur', 'হালুয়াঘাট': 'Haluaghat', 'ঈশ্বরগঞ্জ': 'Ishwarganj', 'মুক্তাগাছা': 'Muktagachha', 'নান্দাইল': 'Nandail', 'ফুলপুর': 'Phulpur', 'তারাকান্দা': 'Tarakanda', 'ত্রিশাল': 'Trishal', 'ময়মনসিংহ সদর': 'Mymensingh Sadar',
+  'বরুড়া': 'Barura', 'ব্রাহ্মণপাড়া': 'Brahmanpara', 'বুড়িচং': 'Burichang', 'চান্দিনা': 'Chandina', 'চৌদ্দগ্রাম': 'Chauddagram', 'দাউদকান্দি': 'Daudkandi', 'দেবীদ্বার': 'Debidwar', 'হোমনা': 'Homna', 'লাকসাম': 'Laksam', 'লালমাই': 'Lalmai', 'মেঘনা': 'Meghna', 'মনোহরগঞ্জ': 'Manoharganj', 'মুরাদনগর': 'Muradnagar', 'নাঙ্গলকোট': 'Nangalkot', 'তিতাস': 'Titas', 'কুমিল্লা সদর': 'Cumilla Sadar',
+  'ছাগলনাইয়া': 'Chhagalnaiya', 'দাগনভূঞা': 'Daganbhuiyan', 'ফুলগাজী': 'Fulgazi', 'পরশুরাম': 'Parshuram', 'সোনাগাজী': 'Sonagazi', 'ফেনী সদর': 'Feni Sadar',
+  'আখাউড়া': 'Akhaura', 'বাঞ্ছারামপুর': 'Bancharampur', 'বিজয়নগর': 'Bijoynagar', 'কসবা': 'Kasba', 'নাসিরনগর': 'Nasirnagar', 'নবীনগর': 'Nabinagar', 'সরাইল': 'Sarail', 'ব্রাহ্মণবাড়িয়া সদর': 'Brahmanbaria Sadar',
+  'বাঘাইছড়ি': 'Baghaichhari', 'বরকল': 'Barkal', 'বিলাইছড়ি': 'Bilaichhari', 'জুরাছড়ি': 'Juraichhari', 'কাউখালী': 'Kaukhali', 'কাপ্তাই': 'Kaptai', 'লংগদু': 'Langadu', 'নানিয়ারচর': 'Naniarchar', 'রাজস্থলী': 'Rajasthali', 'রাঙ্গামাটি সদর': 'Rangamati Sadar',
+  'বেগমগঞ্জ': 'Begumganj', 'চাটখিল': 'Chatkhil', 'হাতিয়া': 'Hatiya', 'কবিরহাট': 'Kabirhat', 'সেনবাগ': 'Senbagh', 'সোনাইমুড়ি': 'Sonaimuri', 'সুবর্ণচর': 'Subarnachar', 'নোয়াখালী সদর': 'Noakhali Sadar',
+  'ফরিদগঞ্জ': 'Faridganj', 'হাইমচর': 'Haimchar', 'হাজীগঞ্জ': 'Hajiganj', 'কচুয়া': 'Kachua', 'মতলব উত্তর': 'Matlab Uttar', 'মতলব দক্ষিণ': 'Matlab Dakshin', 'শাহরাস্তি': 'Shahrasti', 'চাঁদপুর সদর': 'Chandpur Sadar',
+  'কমলনগর': 'Kamalnagar', 'লক্ষ্মীপুর সদর': 'Lakshmipur Sadar', 'রামগঞ্জ': 'Ramganj', 'রামগতি': 'Ramgati', 'রায়পুর': 'Raipur',
+  'চকরিয়া': 'Chakaria', 'কুতুবদিয়া': 'Kutubdia', 'মহেশখালী': 'Maheshkhali', 'পেকুয়া': 'Pekua', 'রামু': 'Ramu', 'টেকনাফ': 'Teknaf', 'উখিয়া': 'Ukhia', 'কক্সবাজার সদর': "Cox's Bazar Sadar",
+  'দিঘিনালা': 'Dighinala', 'গুইমারা': 'Guimara', 'খাগড়াছড়ি সদর': 'Khagrachhari Sadar', 'লক্ষ্মীছড়ি': 'Lakshmichhari', 'মাটিরাঙ্গা': 'Matiranga', 'মানিকছড়ি': 'Manikchhari', 'মহালছড়ি': 'Mahalchhari', 'পানছড়ি': 'Panchhari', 'রামগড়': 'Ramgarh',
+  'আলীকদম': 'Alikadam', 'বান্দরবান সদর': 'Bandarban Sadar', 'লামা': 'Lama', 'নাইক্ষ্যংছড়ি': 'Naikhongchhari', 'রোয়াংছড়ি': 'Rowangchhari', 'রুমা': 'Ruma', 'থানচি': 'Thanchi',
+  'বেলাব': 'Belabo', 'মনোহরদী': 'Monohardi', 'নরসিংদী সদর': 'Narsingdi Sadar', 'পলাশ': 'Palash', 'রায়পুরা': 'Raipura', 'শিবপুর': 'Shibpur',
+  'কালিয়াকৈর': 'Kaliakair', 'কালীগঞ্জ': 'Kaliganj', 'কাপাসিয়া': 'Kapasia', 'গাজীপুর সদর': 'Gazipur Sadar', 'শ্রীপুর': 'Sreepur', 'টঙ্গী': 'Tongi',
+  'ভেদরগঞ্জ': 'Bhedarganj', 'ডামুড্যা': 'Damudya', 'গোসাইরহাট': 'Gosairhat', 'জাজিরা': 'Zajira', 'নড়িয়া': 'Naria', 'শরীয়তপুর সদর': 'Shariatpur Sadar',
+  'আড়াইহাজার': 'Araihazar', 'বন্দর': 'Bandar', 'নারায়ণগঞ্জ সদর': 'Narayanganj Sadar', 'রূপগঞ্জ': 'Rupganj', 'সোনারগাঁ': 'Sonargaon',
+  'বাসাইল': 'Basail', 'ভূঞাপুর': 'Bhuapur', 'দেলদুয়ার': 'Delduar', 'ধনবাড়ী': 'Dhanbari', 'ঘাটাইল': 'Ghatail', 'গোপালপুর': 'Gopalpur', 'কালিহাতী': 'Kalihati', 'মধুপুর': 'Madhupur', 'মির্জাপুর': 'Mirzapur', 'নাগরপুর': 'Nagarpur', 'সখিপুর': 'Sakhipur', 'টাঙ্গাইল সদর': 'Tangail Sadar',
+  'অষ্টগ্রাম': 'Austagram', 'বাজিতপুর': 'Bajitpur', 'ভৈরব': 'Bhairab', 'হোসেনপুর': 'Hossainpur', 'ইটনা': 'Itna', 'করিমগঞ্জ': 'Karimganj', 'কটিয়াদী': 'Kotiadi', 'কিশোরগঞ্জ সদর': 'Kishoreganj Sadar', 'কুলিয়ারচর': 'Kuliarchar', 'মিঠামইন': 'Mithamain', 'নিকলী': 'Nikli', 'পাকুন্দিয়া': 'Pakundia', 'তাড়াইল': 'Tarail',
+  'দৌলতপুর': 'Daulatpur', 'ঘিওর': 'Ghior', 'হরিরামপুর': 'Harirampur', 'মানিকগঞ্জ সদর': 'Manikganj Sadar', 'সাটুরিয়া': 'Saturia', 'শিবালয়': 'Shibalaya', 'সিঙ্গাইর': 'Singair',
+  'গজারিয়া': 'Gazaria', 'লৌহজং': 'Lohajang', 'মুন্সিগঞ্জ সদর': 'Munshiganj Sadar', 'শ্রীনগর': 'Sreenagar', 'সিরাজদিখান': 'Sirajdikhan', 'টঙ্গিবাড়ী': 'Tongibari',
+  'বালিয়াকান্দি': 'Baliakandi', 'গোয়ালন্দ': 'Goalanda', 'কালুখালী': 'Kalukhali', 'পাংশা': 'Pangsha', 'রাজবাড়ী সদর': 'Rajbari Sadar',
+  'কালকিনি': 'Kalkini', 'মাদারীপুর সদর': 'Madaripur Sadar', 'রাজৈর': 'Rajoir', 'শিবচর': 'Shibchar',
+  'কাশিয়ানী': 'Kashiani', 'কোটালীপাড়া': 'Kotalipara', 'মুকসুদপুর': 'Muksudpur', 'গোপালগঞ্জ সদর': 'Gopalganj Sadar', 'টুঙ্গিপাড়া': 'Tungipara',
+  'আলফাডাঙ্গা': 'Alfadanga', 'ভাঙ্গা': 'Bhanga', 'বোয়ালমারী': 'Boalmari', 'চরভদ্রাসন': 'Charbhadrasan', 'ফরিদপুর সদর': 'Faridpur Sadar', 'মধুখালী': 'Madhukhali', 'নগরকান্দা': 'Nagarkanda', 'সালথা': 'Saltha',
+  'আটোয়ারী': 'Atwari', 'বোদা': 'Boda', 'দেবীগঞ্জ': 'Debiganj', 'পঞ্চগড় সদর': 'Panchagarh Sadar', 'তেতুলিয়া': 'Tetulia',
+  'বিরামপুর': 'Birampur', 'বিরল': 'Birol', 'বোচাগঞ্জ': 'Bochaganj', 'চিরিরবন্দর': 'Chirirbandar', 'ফুলবাড়ী': 'Phulbari', 'ঘোড়াঘাট': 'Ghoraghat', 'হাকিমপুর': 'Hakimpur', 'খানসামা': 'Khansama', 'দিনাজপুর সদর': 'Dinajpur Sadar', 'কাহারোল': 'Kaharole',
+  'আদিতমারী': 'Aditmari', 'হাতীবান্ধা': 'Hatibandha', 'লালমনিরহাট সদর': 'Lalmonirhat Sadar', 'পাটগ্রাম': 'Patgram',
+  'ডিমলা': 'Dimla', 'ডোমার': 'Domar', 'জলঢাকা': 'Jaldhaka', 'কিশোরগঞ্জ (নীলফামারী)': 'Kishoreganj', 'নীলফামারী সদর': 'Nilphamari Sadar', 'সৈয়দপুর': 'Saidpur',
+  'ফুলছড়ি': 'Fulchhari', 'গাইবান্ধা সদর': 'Gaibandha Sadar', 'গোবিন্দগঞ্জ': 'Gobindaganj', 'পলাশবাড়ী': 'Palashbari', 'সাদুল্লাপুর': 'Sadullapur', 'সাঘাটা': 'Saghata', 'সুন্দরগঞ্জ': 'Sundarganj',
+  'বালিয়াডাঙ্গী': 'Baliadangi', 'হরিপুর': 'Haripur', 'ঠাকুরগাঁও সদর': 'Thakurgaon Sadar', 'রাণীশংকৈল': 'Ranisankail',
+  'ভূরুঙ্গামারী': 'Bhurungamari', 'চর রাজিবপুর': 'Char Rajibpur', 'চিলমারী': 'Chilmari', 'কুড়িগ্রাম সদর': 'Kurigram Sadar', 'নাগেশ্বরী': 'Nageshwari', 'রাজারহাট': 'Rajarhat', 'রৌমারী': 'Roumari', 'উলিপুর': 'Ulipur',
+  'বেলকুচি': 'Belkuchi', 'চৌহালী': 'Chauhali', 'কামারখন্দ': 'Kamarkhanda', 'কাজীপুর': 'Kazipur', 'রায়গঞ্জ': 'Raiganj', 'শাহজাদপুর': 'Shahjadpur', 'সিরাজগঞ্জ সদর': 'Sirajganj Sadar', 'তাড়াশ': 'Tarash', 'উল্লাপাড়া': 'Ullapara',
+  'আটঘরিয়া': 'Atghoria', 'বেড়া': 'Bera', 'ভাঙ্গুড়া': 'Bhangura', 'চাটমোহর': 'Chatmohar', 'ফরিদপুর (পাবনা)': 'Faridpur', 'ঈশ্বরদী': 'Ishwardi', 'পাবনা সদর': 'Pabna Sadar', 'সাঁথিয়া': 'Santhia', 'সুজানগর': 'Sujanagar',
+  'আদমদীঘি': 'Adamdighi', 'বগুড়া সদর': 'Bogura Sadar', 'ধুনট': 'Dhunat', 'দুপচাঁচিয়া': 'Dupchanchia', 'গাবতলী': 'Gabtali', 'কাহালু': 'Kahaloo', 'নন্দীগ্রাম': 'Nandigram', 'সারিয়াকান্দি': 'Sariakandi', 'শাজাহানপুর': 'Shajahanpur', 'শেরপুর (বগুড়া)': 'Sherpur', 'শিবগঞ্জ (বগুড়া)': 'Shibganj', 'সোনাতলা': 'Sonatola',
+  'বাগাতিপাড়া': 'Bagatipara', 'বড়াইগ্রাম': 'Baraigram', 'গুরুদাসপুর': 'Gurudaspur', 'লালপুর': 'Lalpur', 'নাটোর সদর': 'Natore Sadar', 'সিংড়া': 'Singra',
+  'আক্কেলপুর': 'Akkelpur', 'কালাই': 'Kalai', 'ক্ষেতলাল': 'Khetlal', 'পাঁচবিবি': 'Panchbibi', 'জয়পুরহাট সদর': 'Joypurhat Sadar',
+  'ভোলাহাট': 'Bholahat', 'গোমস্তাপুর': 'Gomastapur', 'নাচোল': 'Nachole', 'চাঁপাইনবাবগঞ্জ সদর': 'Chapainawabganj Sadar', 'শিবগঞ্জ (চাঁপাইনবাবগঞ্জ)': 'Shibganj',
+  'আত্রাই': 'Atrai', 'বদলগাছী': 'Badalgachhi', 'ধামইরহাট': 'Dhamoirhat', 'মহাদেবপুর': 'Mahadevpur', 'মান্দা': 'Manda', 'নিয়ামতপুর': 'Niamatpur', 'নওগাঁ সদর': 'Naogaon Sadar', 'পত্নীতলা': 'Patnitala', 'পোরশা': 'Porsha', 'রাণীনগর': 'Raninagar', 'সাপাহার': 'Sapahar',
+  'অভয়নগর': 'Abhaynagar', 'বাঘারপাড়া': 'Bagharpara', 'চৌগাছা': 'Chaugachha', 'ঝিকরগাছা': 'Jhikargachha', 'কেশবপুর': 'Keshabpur', 'মণিরামপুর': 'Manirampur', 'শার্শা': 'Sharsha', 'যশোর সদর': 'Jashore Sadar',
+  'আশাশুনি': 'Assasuni', 'দেবহাটা': 'Debhata', 'কালীগঞ্জ (সাতক্ষীরা)': 'Kaliganj', 'কলারোয়া': 'Kalaroa', 'সাতক্ষীরা সদর': 'Satkhira Sadar', 'শ্যামনগর': 'Shyamnagar', 'তালা': 'Tala',
+  'গাংনী': 'Gangni', 'মুজিবনগর': 'Mujibnagar', 'মেহেরপুর সদর': 'Meherpur Sadar',
+  'কালিয়া': 'Kalia', 'লোহাগড়া (নড়াইল)': 'Lohagara', 'নড়াইল সদর': 'Narail Sadar',
+  'আলমডাঙ্গা': 'Alamdanga', 'চুয়াডাঙ্গা সদর': 'Chuadanga Sadar', 'দামুড়হুদা': 'Damurhuda', 'জীবননগর': 'Jibannagar',
+  'ভেড়ামারা': 'Bheramara', 'দৌলতপুর (কুষ্টিয়া)': 'Daulatpur', 'কুমারখালী': 'Kumarkhali', 'কুষ্টিয়া সদর': 'Kushtia Sadar', 'মিরপুর (কুষ্টিয়া)': 'Mirpur', 'খোকসা': 'Khoksa',
+  'মহম্মদপুর': 'Mohammadpur', 'মাগুরা সদর': 'Magura Sadar', 'শালিখা': 'Shalikha', 'শ্রীপুর (মাগুরা)': 'Sreepur',
+  'বাগেরহাট সদর': 'Bagerhat Sadar', 'চিতলমারী': 'Chitalmari', 'ফকিরহাট': 'Fakirhat', 'কচুয়া (বাগেরহাট)': 'Kachua', 'মোংলা': 'Mongla', 'মোরেলগঞ্জ': 'Morrelganj', 'মোল্লাহাট': 'Mollahat', 'রামপাল': 'Rampal', 'শরণখোলা': 'Sharankhola',
+  'হরিণাকুণ্ডু': 'Harinakunda', 'ঝিনাইদহ সদর': 'Jhenaidah Sadar', 'কালীগঞ্জ (ঝিনাইদহ)': 'Kaliganj', 'কোটচাঁদপুর': 'Kotchandpur', 'মহেশপুর': 'Maheshpur', 'শৈলকুপা': 'Shailkupa',
+  'ঝালকাঠি সদর': 'Jhalokati Sadar', 'কাঁঠালিয়া': 'Kathalia', 'নলছিটি': 'Nalchity', 'রাজাপুর': 'Rajapur',
+  'বাউফল': 'Bauphal', 'দশমিনা': 'Dashmina', 'গলাচিপা': 'Galachipa', 'কলাপাড়া': 'Kalapara', 'মির্জাগঞ্জ': 'Mirzaganj', 'পটুয়াখালী সদর': 'Patuakhali Sadar', 'রাঙ্গাবালী': 'Rangabali',
+  'ভাণ্ডারিয়া': 'Bhandaria', 'কাউখালী (পিরোজপুর)': 'Kawkhali', 'মঠবাড়িয়া': 'Mathbaria', 'নাজিরপুর': 'Nazirpur', 'নেছারাবাদ': 'Nesarabad', 'পিরোজপুর সদর': 'Pirojpur Sadar', 'জিয়ানগর': 'Zianagar',
+  'বোরহানউদ্দিন': 'Borhanuddin', 'চরফ্যাশন': 'Charfasson', 'দৌলতখান': 'Daulatkhan', 'লালমোহন': 'Lalmohan', 'মনপুরা': 'Monpura', 'তজুমদ্দিন': 'Tazumuddin', 'ভোলা সদর': 'Bhola Sadar',
+  'আমতলী': 'Amtali', 'বামনা': 'Bamna', 'বরগুনা সদর': 'Barguna Sadar', 'বেতাগী': 'Betagi', 'পাথরঘাটা': 'Pathorghata', 'তালতলী': 'Taltali',
+  'বড়লেখা': 'Barlekha', 'জুড়ী': 'Juri', 'কমলগঞ্জ': 'Kamalganj', 'কুলাউড়া': 'Kulaura', 'মৌলভীবাজার সদর': 'Moulvibazar Sadar', 'রাজনগর': 'Rajnagar', 'শ্রীমঙ্গল': 'Srimangal',
+  'আজমিরীগঞ্জ': 'Ajmiriganj', 'বাহুবল': 'Bahubal', 'বানিয়াচং': 'Baniachong', 'চুনারুঘাট': 'Chunarughat', 'হবিগঞ্জ সদর': 'Habiganj Sadar', 'লাখাই': 'Lakhai', 'মাধবপুর': 'Madhabpur', 'নবীগঞ্জ': 'Nabiganj',
+  'বিশ্বম্ভরপুর': 'Bishwamvarpur', 'ছাতক': 'Chhatak', 'দিরাই': 'Dirai', 'দোয়ারাবাজার': 'Dowarabazar', 'জগন্নাথপুর': 'Jagannathpur', 'জামালগঞ্জ': 'Jamalganj', 'সুনামগঞ্জ সদর': 'Sunamganj Sadar', 'শাল্লা': 'Shalla', 'তাহিরপুর': 'Tahirpur', 'ধর্মপাশা': 'Dharmapasha', 'মধ্যনগর': 'Madhyanagar',
+  'আটপাড়া': 'Atpara', 'বারহাট্টা': 'Barhatta', 'দুর্গাপুর (নেত্রকোনা)': 'Durgapur', 'খালিয়াজুরী': 'Khaliajuri', 'কলমাকান্দা': 'Kolmakanda', 'কেন্দুয়া': 'Kendua', 'মদন': 'Madan', 'মোহনগঞ্জ': 'Mohanganj', 'নেত্রকোনা সদর': 'Netrokona Sadar', 'পূর্বধলা': 'Purbadhala',
+  'বকশীগঞ্জ': 'Bakshiganj', 'দেওয়ানগঞ্জ': 'Dewanganj', 'ইসলামপুর': 'Islampur', 'জামালপুর সদর': 'Jamalpur Sadar', 'মাদারগঞ্জ': 'Madarganj', 'মেলান্দহ': 'Melandaha', 'সরিষাবাড়ী': 'Sarishabari',
+  'ঝিনাইগাতী': 'Jhenaigati', 'নকলা': 'Nakla', 'নালিতাবাড়ী': 'Nalitabari', 'শেরপুর সদর': 'Sherpur Sadar', 'শ্রীবরদী': 'Sreebardi',
+};
+
+const allUpazilaEntries = Object.keys(upazilaEnNames).map(bn => ({ bn, en: upazilaEnNames[bn] }));
 export default function CustomerAuth({ onSuccess }) {
  const [isLogin, setIsLogin] = useState(true);
   const [phone, setPhone] = useState('');
@@ -229,6 +298,7 @@ export default function CustomerAuth({ onSuccess }) {
                 )}
               </div>
 
+        
               <div style={{ position: 'relative' }}>
                 <label style={{ fontSize: '12px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>উপজেলা *</label>
                 <input
@@ -238,16 +308,16 @@ export default function CustomerAuth({ onSuccess }) {
                   placeholder={districtUpazilas[district] ? 'উপজেলা লিখুন বা সিলেক্ট করুন...' : 'আগে জেলা সিলেক্ট করুন'}
                   style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#1f2937', opacity: !districtUpazilas[district] ? 0.5 : 1 }}
                 />
-                {districtUpazilas[district] && upazila && !districtUpazilas[district]?.includes(upazila) && (
+                                {districtUpazilas[district] && upazila && !districtUpazilas[district]?.includes(upazila) && (
                   <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '2px solid #fbcfe8', borderRadius: '10px', maxHeight: '200px', overflowY: 'auto', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                    {(districtUpazilas[district] || []).filter(u => u.includes(upazila)).map(u => (
+                    {(districtUpazilas[district] || []).filter(u => u.includes(upazila) || (upazilaEnNames[u] || '').toLowerCase().includes(upazila.toLowerCase())).map(u => (
                       <div key={u} onClick={() => setUpazila(u)} style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '14px', color: '#1f2937', borderBottom: '1px solid #f3f4f6' }}
                         onMouseEnter={e => e.currentTarget.style.background = '#fdf2f8'}
                         onMouseLeave={e => e.currentTarget.style.background = 'white'}>
-                        {u}
+                        {u} {upazilaEnNames[u] && <span style={{ color: '#9ca3af', fontSize: '12px' }}>({upazilaEnNames[u]})</span>}
                       </div>
                     ))}
-                    {(districtUpazilas[district] || []).filter(u => u.includes(upazila)).length === 0 && (
+                    {(districtUpazilas[district] || []).filter(u => u.includes(upazila) || (upazilaEnNames[u] || '').toLowerCase().includes(upazila.toLowerCase())).length === 0 && (
                       <div style={{ padding: '10px 14px', fontSize: '13px', color: '#9ca3af' }}>কোনো উপজেলা পাওয়া যায়নি</div>
                     )}
                   </div>
