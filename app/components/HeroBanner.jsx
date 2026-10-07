@@ -22,14 +22,14 @@ const banners = [
       {/* 👑 মোবাইল ও পিসি দুই জায়গাতেই ব্যানার না কেটে পারফেক্টলি ফিট করার জন্য aspect ratio ও object-fill সেট করা হলো */}
  <div className="w-full h-[140px] sm:h-[180px] md:h-[320px] overflow-hidden bg-white relative group">
         <img 
-          src={banners[currentIndex]} 
-          alt={`Sohel Mart Banner ${currentIndex + 1}`} 
-          className="w-full h-full object-cover transition-opacity duration-700 ease-in-out"
-          key={currentIndex}
-          onError={(e) => {
-            e.currentTarget.src = "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/hero-banner.jpg.jpg";
-          }}
-        />
+  src={banners[currentIndex]} 
+  alt={`Sohel Mart Banner ${currentIndex + 1}`} 
+  className="w-full h-full object-contain md:object-cover transition-opacity duration-700 ease-in-out bg-gray-50"
+  key={currentIndex}
+  onError={(e) => {
+    e.currentTarget.src = "https://jthdtmqrapnfmmmeuqsw.supabase.co/storage/v1/object/public/products/hero-banner.jpg.jpg";
+  }}
+/>
 
         {/* নিচে ছোট ডট ইন্ডিকেটর */}
         <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-1.5 z-10">
