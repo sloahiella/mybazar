@@ -4,9 +4,7 @@ import { useState, useEffect } from 'react';
 export default function HeroBanner() {
   // 👑 আপনার দেওয়া নতুন নির্ভুল বানানের ফ্রেশ ব্যানার ইউআরএল এখানে বসিয়ে দেওয়া হলো
 const banners = [
-    "https://i.ibb.co/8nTyfGbL/01.png",
-    "https://i.ibb.co/TqF4yz9x/03.png",
-    "https://i.ibb.co/x85n05hz/011.png"
+    "https://i.ibb.co/tw1NwLcK/05.png"
 ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -22,7 +20,7 @@ const banners = [
   return (
     <div className="w-full bg-white overflow-hidden box-border">
       {/* 👑 মোবাইল ও পিসি দুই জায়গাতেই ব্যানার না কেটে পারফেক্টলি ফিট করার জন্য aspect ratio ও object-fill সেট করা হলো */}
-    <div className="w-full h-[180px] md:h-[280px] overflow-hidden bg-gray-100 relative group">
+  <div className="w-full aspect-[16/9] md:aspect-[5/1] overflow-hidden bg-gray-100 relative group">
         <img 
           src={banners[currentIndex]} 
           alt={`Sohel Mart Banner ${currentIndex + 1}`} 
