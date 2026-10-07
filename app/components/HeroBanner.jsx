@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 
 export default function HeroBanner() {
   const banners = [
-    "https://i.ibb.co.com/4nv1vmXx/00.png"
+    "https://i.ibb.co.com/j9kBtqS5/050.jpg"
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
