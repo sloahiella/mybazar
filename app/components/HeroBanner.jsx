@@ -20,7 +20,7 @@ const banners = [
   return (
     <div className="w-full bg-white overflow-hidden box-border">
       {/* 👑 মোবাইল ও পিসি দুই জায়গাতেই ব্যানার না কেটে পারফেক্টলি ফিট করার জন্য aspect ratio ও object-fill সেট করা হলো */}
- <div className="w-full h-[200px] md:h-[320px] overflow-hidden bg-white relative group">
+ <div className="w-full h-[140px] sm:h-[180px] md:h-[320px] overflow-hidden bg-white relative group">
         <img 
           src={banners[currentIndex]} 
           alt={`Sohel Mart Banner ${currentIndex + 1}`} 
