@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 
 export default function HeroBanner() {
   const banners = [
-    "https://i.ibb.co.com/j9kBtqS5/050.jpg"
+    "https://i.ibb.co.com/zHbTsnHP/1920-700.jpg"
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -18,7 +18,7 @@ export default function HeroBanner() {
 
   return (
     <div className="w-full bg-white overflow-hidden box-border">
-      <div className="w-full aspect-[5/1] overflow-hidden bg-white relative group">
+     <div className="w-full aspect-[11/4] overflow-hidden bg-white relative group">
         <img
           src={banners[currentIndex]}
           alt={`Sohel Mart Banner ${currentIndex + 1}`}
