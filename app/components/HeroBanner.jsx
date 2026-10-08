@@ -18,7 +18,7 @@ export default function HeroBanner() {
 
   return (
     <div className="w-full bg-white overflow-hidden box-border">
-     <div className="w-full aspect-[11/4] overflow-hidden bg-white relative group">
+  <div className="w-full aspect-[11/5] md:aspect-[16/5] overflow-hidden bg-white relative group">
         <img
           src={banners[currentIndex]}
           alt={`Sohel Mart Banner ${currentIndex + 1}`}
