@@ -6,13 +6,14 @@ export default function HeroBanner() {
   // mobile না দিলে ল্যাপটপের ছবিই মোবাইলে দেখাবে
   const banners = [
     {
-      desktop: "https://i.ibb.co.com/Z6dVLJQg/laptop-1.jpg",
-      mobile: "https://i.ibb.co.com/21BLsSvk/mobile-1.jpg",
-      },
-      {
       desktop: "https://i.ibb.co.com/JR3TMFfL/laptop-2.jpg",
       mobile: "https://i.ibb.co.com/zVz2rJP3/moile-2.jpg",
     },
+    {
+      desktop: "https://i.ibb.co.com/Z6dVLJQg/laptop-1.jpg",
+      mobile: "https://i.ibb.co.com/21BLsSvk/mobile-1.jpg",
+      },
+      
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
