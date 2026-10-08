@@ -519,7 +519,9 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
         console.error('Related mohasagor fetch error:', e);
       }
 
-      setRelatedProducts(combined);
+          // 👑 কাস্টমারের জন্য স্টক আউট পণ্য লুকানো হলো, শুধু এডমিন সব দেখবে
+      const visibleRelated = isAdmin ? combined : combined.filter(p => (p.stock?.[0]?.quantity || 0) > 0);
+      setRelatedProducts(visibleRelated);
     }
     async function fetchReviews() {
       const { data } = await supabase.from('reviews').select('*').eq('product_id', product.id).order('created_at', { ascending: false });
@@ -664,7 +666,8 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
                       <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#db2777' }}>৳{listing.price}</span>
                       <button 
                         onClick={() => {
-                          if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে আগে একটি সাইজ সিলেক্ট করুন আপু!'); return; }
+                         if (stock <= 0) { alert('দুঃখিত, এই পণ্যটি এখন স্টকে নেই!'); return; }
+if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে আগে একটি সাইজ সিলেক্ট করুন আপু!'); return; }
                           onAdd({ ...product, price_per_unit: listing.price, seller_id: listing.seller_id, shop_name: listing.sellers?.shop_name, selectedSize }, 1);
                           onClose();
                         }}
@@ -728,7 +731,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
             </p>
           )}
           
-          <button onClick={() => { const savedPhone = localStorage.getItem('customer_phone'); if (!savedPhone) { onNeedLogin(); return; } if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে আগে একটি সাইজ সিলেক্ট করুন!'); return; } onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, getActualQty() || 1); onClose(); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '15px', width: '100%', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(219,39,119,0.2)' }}>🛒 ঝুড়িতে রাখুন</button>
+         <button disabled={stock <= 0} onClick={() => { if (stock <= 0) { alert('দুঃখিত, এই পণ্যটি এখন স্টকে নেই!'); return; } const savedPhone = localStorage.getItem('customer_phone'); if (!savedPhone) { onNeedLogin(); return; } if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে আগে একটি সাইজ সিলেক্ট করুন!'); return; } onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, getActualQty() || 1); onClose(); }} style={{ background: stock <= 0 ? '#9ca3af' : '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '15px', width: '100%', cursor: stock <= 0 ? 'not-allowed' : 'pointer', fontWeight: 'bold', boxShadow: stock <= 0 ? 'none' : '0 4px 12px rgba(219,39,119,0.2)' }}>{stock <= 0 ? '🔴 স্টক আউট' : '🛒 ঝুড়িতে রাখুন'}</button>
         </div>
       </div>
 
@@ -948,7 +951,7 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
               ))}
             </div>
           )}
-          <button onClick={() => { const savedPhone = localStorage.getItem('customer_phone'); if (!savedPhone) { onNeedLogin(); return; } if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে আগে একটি সাইজ সিলেক্ট করুন!'); return; } const a = getActualQty(); if (a > 0) onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, a); else onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, 1); }} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '7px 4px', fontSize: '12px', width: '100%', cursor: 'pointer', fontWeight: '500' }}>🛒 ঝুড়িতে রাখুন</button>
+         <button disabled={(product.stock?.[0]?.quantity || 0) <= 0} onClick={() => { if ((product.stock?.[0]?.quantity || 0) <= 0) { alert('দুঃখিত, এই পণ্যটি এখন স্টকে নেই!'); return; } const savedPhone = localStorage.getItem('customer_phone'); if (!savedPhone) { onNeedLogin(); return; } if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে আগে একটি সাইজ সিলেক্ট করুন!'); return; } const a = getActualQty(); if (a > 0) onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, a); else onAdd({ ...product, seller_id: 'sohel-mart', shop_name: 'Sohel Mart', selectedSize }, 1); }} style={{ background: (product.stock?.[0]?.quantity || 0) <= 0 ? '#9ca3af' : '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '7px 4px', fontSize: '12px', width: '100%', cursor: (product.stock?.[0]?.quantity || 0) <= 0 ? 'not-allowed' : 'pointer', fontWeight: '500' }}>{(product.stock?.[0]?.quantity || 0) <= 0 ? '🔴 স্টক আউট' : '🛒 ঝুড়িতে রাখুন'}</button>
         </div>
       </div>
     </div>
