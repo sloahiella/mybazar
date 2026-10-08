@@ -8,7 +8,9 @@ export default function HeroBanner() {
     {
       desktop: "https://i.ibb.co.com/Z6dVLJQg/laptop-1.jpg",
       mobile: "https://i.ibb.co.com/21BLsSvk/mobile-1.jpg",
-      desktop: "",
+      },
+      {
+      desktop: "https://i.ibb.co.com/JR3TMFfL/laptop-2.jpg",
       mobile: "https://i.ibb.co.com/zVz2rJP3/moile-2.jpg",
     },
   ];
