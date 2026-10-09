@@ -22,7 +22,7 @@ export default function HeroBanner() {
     if (banners.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length);
-        }, 6000);
+        }, 9000);
     return () => clearInterval(timer);
   }, [banners.length]);
 
