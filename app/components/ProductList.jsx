@@ -706,9 +706,9 @@ if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে 
               placeholder="পরিমাণ লিখুন"
             />
             {isPiece ? (
-             <span style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '0 10px', fontSize: '16px', color: '#6b7280', background: '#f9fafb', display: 'flex', alignItems: 'center' }}>pcs</span>
+           <span style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '0 10px', fontSize: '16px', color: '#111827', fontWeight: '600', background: '#f9fafb', display: 'flex', alignItems: 'center' }}>pcs</span>
             ) : (
-              <select value={unit} onChange={e => setUnit(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '0 4px', fontSize: '12px', background: 'white' }}>
+           <select value={unit} onChange={e => setUnit(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '0 4px', fontSize: '12px', background: 'white', color: '#111827', fontWeight: '600' }}>
                 {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
                 {isLiter && <><option value={product.unit}>L</option><option value="ml">ml</option></>}
               </select>
@@ -930,12 +930,12 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
           <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
             <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty} onChange={e => setQty(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', width: '100%', fontSize: '12px', color: '#1f2937', outline: 'none', minWidth: 0 }} placeholder="পরিমাণ" />
             {!isPiece && (
-              <select value={unit} onChange={e => setUnit(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 2px', fontSize: '11px', background: 'white', flexShrink: 0 }}>
+                         <select value={unit} onChange={e => setUnit(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 2px', fontSize: '11px', background: 'white', color: '#111827', fontWeight: '600', flexShrink: 0 }}>
                 {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
                 {isLiter && <><option value={product.unit}>L</option><option value="ml">ml</option></>}
               </select>
             )}
-            {isPiece && <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', color: '#6b7280', background: '#f9fafb', flexShrink: 0 }}>pcs</span>}
+                    {isPiece && <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', color: '#111827', fontWeight: '600', background: '#f9fafb', flexShrink: 0 }}>pcs</span>}
           </div>
           {qty && parseFloat(qty) > 0 && <p style={{ fontSize: '11px', color: '#db2777', fontWeight: 'bold', background: '#fdf2f8', padding: '3px 6px', borderRadius: '6px', border: '1px solid #fbcfe8', margin: '0 0 4px 0' }}>= {(getActualQty() * product.price_per_unit).toFixed(0)} Tk</p>}
          {availableSizes.length > 0 && (
@@ -1564,7 +1564,14 @@ const isMobile = useIsMobile()
 
   const displayProducts = getDisplayProducts();
 
-  function addToCart(product, qty) {
+    function addToCart(product, qty) {
+    // 👑 স্টকের বেশি পরিমাণ ঝুড়িতে রাখা যাবে না (ঝুড়িতে আগে থেকে থাকা পরিমাণসহ হিসাব)
+    const stockQty = parseFloat(product.stock?.[0]?.quantity) || 0;
+    const alreadyInCart = cart.filter(c => c.id === product.id).reduce((s, c) => s + c.qty, 0);
+    if (alreadyInCart + qty > stockQty + 0.0001) {
+      alert(`দুঃখিত, এই পণ্যের স্টকে মাত্র ${stockQty} ${product.unit} আছে${alreadyInCart > 0 ? ` (আপনার ঝুড়িতে আগেই ${alreadyInCart} ${product.unit} আছে)` : ''}।`);
+      return;
+    }
     const existing = cart.find(c => c.id === product.id && c.selectedSize === product.selectedSize);
     if (existing) { setCart(cart.map(c => c.id === product.id && c.selectedSize === product.selectedSize ? { ...c, qty: parseFloat((c.qty + qty).toFixed(3)) } : c)); return; }
     const cartSellerIds = [...new Set(cart.map(c => c.seller_id).filter(Boolean))];
@@ -1576,9 +1583,15 @@ const isMobile = useIsMobile()
     setCart([...cart, { ...product, qty }]);
   }
 
-  function updateCartQty(id, qty) {
-    if (qty <= 0) setCart(cart.filter(c => c.id !== id));
-    else setCart(cart.map(c => c.id === id ? { ...c, qty } : c));
+   function updateCartQty(id, qty) {
+    if (qty <= 0) { setCart(cart.filter(c => c.id !== id)); return; }
+    const item = cart.find(c => c.id === id);
+    const stockQty = parseFloat(item?.stock?.[0]?.quantity) || 0;
+    if (item && qty > stockQty + 0.0001) {
+      alert(`দুঃখিত, এই পণ্যের স্টকে মাত্র ${stockQty} ${item.unit} আছে।`);
+      return;
+    }
+    setCart(cart.map(c => c.id === id ? { ...c, qty } : c));
   }
 
   function removeFromCart(id) { setCart(cart.filter(c => c.id !== id)); }
