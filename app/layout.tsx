@@ -3,8 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 // @ts-ignore
 import "./globals.css";
 import Script from "next/script";
-// @ts-ignore
-import InstallButton from "../components/InstallButton";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +36,15 @@ export default function RootLayout({
         {/* 🛒 PWA & App Settings */}
         <link rel="icon" href="https://i.ibb.co.com/KjRBVJxC/logo.jpg" />
         <link rel="manifest" href="/manifest.json" />
+                <Script id="capture-install-prompt" strategy="beforeInteractive">
+          {`
+            window.addEventListener('beforeinstallprompt', function(e) {
+              e.preventDefault();
+              window.__installPrompt = e;
+              window.dispatchEvent(new Event('installPromptReady'));
+            });
+          `}
+        </Script>
         <meta name="theme-color" content="#db2777" />
         <meta name="google-site-verification" content="BRcTy6WhGMh4Rz1jVP26FrGjxRHuxILqUgsXqCtKqaU" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
@@ -116,8 +124,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* ✨ অ্যাপ ইনস্টল করার জন্য আপনার নতুন বাটন ✨ */}
-        <InstallButton />
+    
         {children}
       </body>
     </html>

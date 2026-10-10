@@ -39,21 +39,22 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
     return () => window.removeEventListener('resize', handleResize)
   }, [])
   // 👑 PWA Install prompt ধরে রাখার হুক
-  useEffect(() => {
-    function handler(e: any) {
-      e.preventDefault()
-      setInstallPrompt(e)
-      setShowInstallBtn(true)
+    useEffect(() => {
+    function pick() {
+      const p = (window as any).__installPrompt
+      if (p) { setInstallPrompt(p); setShowInstallBtn(true) }
     }
-    window.addEventListener('beforeinstallprompt', handler)
-    return () => window.removeEventListener('beforeinstallprompt', handler)
+    pick()
+    window.addEventListener('installPromptReady', pick)
+    return () => window.removeEventListener('installPromptReady', pick)
   }, [])
 
   async function handleInstallClick() {
     if (!installPrompt) return
     installPrompt.prompt()
     const { outcome } = await installPrompt.userChoice
-    if (outcome === 'accepted') setShowInstallBtn(false)
+       if (outcome === 'accepted') setShowInstallBtn(false)
+    ;(window as any).__installPrompt = null
     setInstallPrompt(null)
   }
 
