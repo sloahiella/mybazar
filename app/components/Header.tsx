@@ -144,20 +144,11 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
       )}
 
            {/* ডান দিক (প্রোফাইল, কার্ট ও অন্যান্য বাটন) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexDirection: (role || sellerUser) ? 'column' : 'row' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
 
-{/* ✅ আপনার (অ্যাডমিন) জন্য মোবাইলে আলাদা করে ছোট বাটন যা আইকন ঢেকে দিবে না */}
-        {isMobile && showInstallBtn && (role || sellerUser) && (
-          <div style={{ marginRight: '5px' }}>
-             <button onClick={handleInstallClick} style={{ background: 'white', color: PINK, border: 'none', fontSize: '8px', padding: '2px 5px', borderRadius: '4px' }}>
-               APP
-             </button>
-          </div>
-        )}
-        {/* ✅ মোবাইলে কাস্টমারের জন্য এখন বাটনটি ডান পাশে থাকবে */}
-        {isMobile && showInstallBtn && !role && !sellerUser && (
-          <button onClick={handleInstallClick} style={{ background: 'white', color: PINK, border: 'none', fontSize: '9px', fontWeight: 'bold', padding: '5px 10px', borderRadius: '20px', whiteSpace: 'nowrap', marginRight: '5px' }}>
-            INSTALL APP
+        {showInstallBtn && (
+          <button onClick={handleInstallClick} style={{ background: 'white', color: PINK, border: 'none', fontSize: (role || sellerUser) ? '10px' : '11px', fontWeight: 'bold', padding: (role || sellerUser) ? '4px 8px' : '6px 12px', borderRadius: '20px', whiteSpace: 'nowrap', cursor: 'pointer' }}>
+            📲 {(role || sellerUser) ? 'APP' : 'Install App'}
           </button>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
