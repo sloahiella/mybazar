@@ -10,7 +10,7 @@ export default async function sitemap() {
   const { data: pages } = await supabase.from('pages').select('id').eq('is_active', true);
 
   const productUrls = (products || []).map((product: any) => ({
-    url: `https://sohelmart.com?product=${product.id}`,
+      url: `https://sohelmart.com/product/${product.id}`,
     lastModified: new Date(),
   }));
 
