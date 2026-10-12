@@ -18,9 +18,12 @@ export default async function sitemap() {
     url: `https://sohelmart.com?page=${page.id}`,
     lastModified: new Date(),
   }));
-  return [
-    {
+   return [ {
       url: 'https://sohelmart.com',
+      lastModified: new Date(),
+    },
+    {
+      url: 'https://sohelmart.com/about',
       lastModified: new Date(),
     },
     ...pageUrls,
