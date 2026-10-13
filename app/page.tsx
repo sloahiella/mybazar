@@ -1106,6 +1106,9 @@ if (!selectedBranch) {
           }
         }}
       />
+            <div style={{ textAlign: 'center', padding: '16px 16px 90px', fontSize: '13px' }}>
+        <a href="/about" style={{ color: '#be185d', textDecoration: 'none', fontWeight: '600' }}>আমাদের সম্পর্কে ও অর্ডারের নিয়ম</a>
+      </div>
 {showSettings && (
        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowSettings(false)} />
