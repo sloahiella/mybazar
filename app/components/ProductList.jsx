@@ -1597,7 +1597,14 @@ const isMobile = useIsMobile()
   function removeFromCart(id) { setCart(cart.filter(c => c.id !== id)); }
   const total = cart.reduce((a, c) => a + c.price_per_unit * c.qty, 0);
 
-  const handlePageSelect = (page) => {
+  // 👑 ফ্রি ডেলিভারি: মোট ৩০০+ এবং কাঁচা বাজার ১৫০+ হলে
+  const DELIVERY_CHARGE = 30; // ← এখানে আপনার আসল ডেলিভারি চার্জ বসান
+  const kachaTotal = cart.filter(c => c.is_kacha_bazar).reduce((a, c) => a + c.price_per_unit * c.qty, 0);
+  const freeDelivery = total >= 300 && kachaTotal >= 150;
+  const deliveryFee = freeDelivery ? 0 : DELIVERY_CHARGE;
+  const grandTotal = total + deliveryFee;
+
+const handlePageSelect = (page) => {
     if (page) {
       setPageHistory(prev => [...prev, selectedPage]);
       window.history.pushState({ page: page.id }, '', `?page=${page.id}`);
@@ -1626,9 +1633,20 @@ const isMobile = useIsMobile()
           {cart.map(item => <CartItem key={`${item.id}-${item.selectedSize}`} item={item} onUpdate={updateCartQty} onRemove={removeFromCart} />)}
         </div>
     <div style={{ background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>
+            <span>পণ্যের দাম:</span><span>{total.toFixed(0)} Tk</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px', color: freeDelivery ? '#15803d' : '#374151', fontWeight: '600' }}>
+            <span>ডেলিভারি চার্জ:</span><span>{freeDelivery ? 'ফ্রি 🎉' : `${deliveryFee} Tk`}</span>
+          </div>
+          {!freeDelivery && (
+            <p style={{ fontSize: '12px', color: '#b45309', background: '#fef3c7', padding: '8px 10px', borderRadius: '8px', margin: '0 0 10px 0' }}>
+              ফ্রি ডেলিভারি পেতে {kachaTotal < 150 ? `আরও ${Math.ceil(150 - kachaTotal)} টাকার কাঁচা বাজার` : ''}{kachaTotal < 150 && total < 300 ? ' এবং ' : ''}{total < 300 ? `মোট আরও ${Math.ceil(300 - total)} টাকার পণ্য` : ''} নিন।
+            </p>
+          )}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <span style={{ fontWeight: 'bold', color: '#374151', fontSize: '18px' }}>Total:</span>
-            <span style={{ fontWeight: 'bold', color: '#db2777', fontSize: '20px' }}>{total.toFixed(0)} Tk</span>
+            <span style={{ fontWeight: 'bold', color: '#374151', fontSize: '18px' }}>সর্বমোট:</span>
+            <span style={{ fontWeight: 'bold', color: '#db2777', fontSize: '20px' }}>{grandTotal.toFixed(0)} Tk</span>
           </div>
           <button onClick={() => { if (officeOpen) { setShowCart(false); setShowOrder(true); } }} style={{ width: '100%', background: officeOpen ? '#db2777' : '#9ca3af', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '18px', fontWeight: 'bold', cursor: officeOpen ? 'pointer' : 'not-allowed' }}>{officeOpen ? 'অর্ডার করুন' : '🔴 অফিস বন্ধ'}</button>
         </div>
@@ -1642,7 +1660,7 @@ const isMobile = useIsMobile()
     if (!savedPhone) {
       return <CustomerAuth onSuccess={(data) => { localStorage.setItem('customer_phone', data.phone); localStorage.setItem('customer_name', data.name); localStorage.setItem('customer_district', data.district); localStorage.setItem('customer_upazila', data.upazila); setShowOrder(true); }} />;
     }
-    return <OrderForm cart={cart} branch={branch} total={total} onBack={() => setShowOrder(false)} onSuccess={(id, phone) => { setOrderId(id); setShowOrder(false); setCart([]); setShowCart(false); if (onOrderSuccess) onOrderSuccess(id, phone); }} />;
+    return <OrderForm cart={cart} branch={branch} total={grandTotal} deliveryFee={deliveryFee} onBack={() => setShowOrder(false)} onSuccess={(id, phone) => { setOrderId(id); setShowOrder(false); setCart([]); setShowCart(false); if (onOrderSuccess) onOrderSuccess(id, phone); }} />;
   }
 
 if (orderId) {

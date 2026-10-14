@@ -27,7 +27,7 @@ const inputStyle = {
   background: 'white',
 };
 
-export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
+export default function OrderForm({ cart, branch, total, deliveryFee = 0, onSuccess, onBack }) {
   const uniqueSellers = [...new Set(cart.map(item => item.seller_id).filter(Boolean))];
   const [form, setForm] = useState({
     name: localStorage.getItem('customer_name') || '',
@@ -91,7 +91,8 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
         vehicle_number: form.vehicle_number,
         payment_method: form.payment,
         transaction_id: form.transaction_id || null,
-        total_amount: total,
+            total_amount: total,
+        delivery_fee: deliveryFee,
         status: 'pending'
       })
       .select()
@@ -241,7 +242,13 @@ const items = cart.map(item => {
         </div>
 
              <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: PINK, fontSize: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>
+            <span>পণ্যের দাম:</span><span>{(total - deliveryFee).toFixed(0)} Tk</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: deliveryFee === 0 ? '#15803d' : '#374151', fontWeight: '600', marginBottom: '8px' }}>
+            <span>ডেলিভারি চার্জ:</span><span>{deliveryFee === 0 ? 'ফ্রি 🎉' : `${deliveryFee} Tk`}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: PINK, fontSize: '16px', borderTop: '1px solid #e5e7eb', paddingTop: '8px' }}>
             <span>সর্বমোট:</span>
             <span>{total.toFixed(0)} Tk</span>
           </div>
