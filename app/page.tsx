@@ -1318,10 +1318,10 @@ if (!selectedBranch) {
                             <button onClick={e => {
                               e.stopPropagation();
                               const kachaBazarTotal = (order.order_items || []).filter((it: any) => it.is_kacha_bazar).reduce((sum: number, it: any) => sum + (it.price * it.quantity), 0);
-                              if (kachaBazarTotal >= 50) {
+                             if ((order.order_items || []).reduce((s: number, it: any) => s + it.price * it.quantity, 0) >= 300 && kachaBazarTotal >= 150) {
                                 updateOrderStatus(order.id, 'delivered');
                               } else {
-                                const chargeStr = prompt('মুদি বাজারের ডেলিভারি চার্জ কত টাকা নিয়েছেন?');
+                                const chargeStr = prompt('ডেলিভারি চার্জ কত টাকা নিয়েছেন?');
                                 if (chargeStr === null) return;
                                 const charge = parseFloat(chargeStr) || 0;
                                 updateOrderStatus(order.id, 'delivered', undefined, charge);
