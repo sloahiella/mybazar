@@ -456,8 +456,8 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
   const topRef = useRef(null);
 
   // 👑 নিচের কোনো পণ্যে চাপলে নতুন পণ্য দেখাতে বক্স উপরে নিয়ে যাওয়া হবে
-  useEffect(() => {
-    if (topRef.current) topRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+   useEffect(() => {
+    if (topRef.current) topRef.current.scrollTop = 0;
   }, [product.id]);
 
   const u = (product.unit || '').toLowerCase().trim();
