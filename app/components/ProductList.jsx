@@ -453,6 +453,12 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
   
   const [listings, setListings] = useState([]);
   const [showOtherSellers, setShowOtherSellers] = useState(false);
+  const topRef = useRef(null);
+
+  // 👑 নিচের কোনো পণ্যে চাপলে নতুন পণ্য দেখাতে বক্স উপরে নিয়ে যাওয়া হবে
+  useEffect(() => {
+    if (topRef.current) topRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [product.id]);
 
   const u = (product.unit || '').toLowerCase().trim();
   const isKg = u === 'kg';
@@ -572,7 +578,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'white', zIndex: 9999, overflowY: 'auto' }}>
+      <div ref={topRef} style={{ position: 'fixed', inset: 0, background: 'white', zIndex: 9999, overflowY: 'auto' }}>
       <div style={{ background: '#db2777', color: 'white', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', position: 'sticky', top: 0, zIndex: 100 }}>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer' }}>←</button>
         <h2 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.name}</h2>
