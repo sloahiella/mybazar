@@ -491,7 +491,9 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
     setSelectedSize('');
    async function fetchRelated() {
       const { data } = await supabase.from('products').select('*, stock(*), product_images(*)').eq('page_id', product.page_id).eq('is_active', true).neq('id', product.id).limit(10);
-      let combined = data || [];
+            let combined = data || [];
+      // 👑 একই পেজের পণ্য, তাই কাঁচা বাজারের চিহ্ন একই থাকবে
+      combined = combined.map(p => ({ ...p, is_kacha_bazar: !!product.is_kacha_bazar }));
 
       // 👑 এই পেজে assign করা Mohasagor প্রোডাক্টগুলোও যোগ করা হলো
       try {
