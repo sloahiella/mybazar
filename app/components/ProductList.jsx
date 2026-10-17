@@ -1601,15 +1601,17 @@ const isMobile = useIsMobile()
   }
 
   function removeFromCart(id) { setCart(cart.filter(c => c.id !== id)); }
-  const total = cart.reduce((a, c) => a + c.price_per_unit * c.qty, 0);
+   const total = cart.reduce((a, c) => a + c.price_per_unit * c.qty, 0);
 
-  // 👑 ফ্রি ডেলিভারি: মোট ৩০০+ এবং কাঁচা বাজার ১৫০+ হলে
-  const DELIVERY_CHARGE = 30; // ← এখানে আপনার আসল ডেলিভারি চার্জ বসান
+  // 👑 ফ্রি ডেলিভারির হিসাব (শুধু দেখানোর জন্য, চার্জ যোগ হয় না)
   const kachaTotal = cart.filter(c => c.is_kacha_bazar).reduce((a, c) => a + c.price_per_unit * c.qty, 0);
-  const freeDelivery = total >= 300 && kachaTotal >= 150;
-  const deliveryFee = freeDelivery ? 0 : DELIVERY_CHARGE;
-  const grandTotal = total + deliveryFee;
-
+  const needKacha = Math.max(0, Math.ceil(150 - kachaTotal));
+  const remainingTotal = Math.max(0, Math.ceil(300 - total - needKacha));
+  const freeDelivery = needKacha === 0 && remainingTotal === 0;
+  const hintParts = [];
+  if (needKacha > 0) hintParts.push(`আরও ${needKacha} টাকার কাঁচা বাজার`);
+  if (remainingTotal > 0) hintParts.push(`আরও ${remainingTotal} টাকার যেকোনো পণ্য`);
+  const deliveryHint = freeDelivery ? '🎉 আপনার ডেলিভারি ফ্রি!' : `🚚 ফ্রি ডেলিভারি পেতে ${hintParts.join(' এবং ')} নিন`;
 const handlePageSelect = (page) => {
     if (page) {
       setPageHistory(prev => [...prev, selectedPage]);
@@ -1650,6 +1652,9 @@ const handlePageSelect = (page) => {
               ফ্রি ডেলিভারি পেতে {kachaTotal < 150 ? `আরও ${Math.ceil(150 - kachaTotal)} টাকার কাঁচা বাজার` : ''}{kachaTotal < 150 && total < 300 ? ' এবং ' : ''}{total < 300 ? `মোট আরও ${Math.ceil(300 - total)} টাকার পণ্য` : ''} নিন।
             </p>
           )}
+                   <div style={{ background: freeDelivery ? '#f0fdf4' : '#fffbeb', border: `1px solid ${freeDelivery ? '#bbf7d0' : '#fde68a'}`, borderRadius: '10px', padding: '10px 12px', marginBottom: '12px', fontSize: '13px', color: freeDelivery ? '#15803d' : '#92400e', fontWeight: '600', textAlign: 'center' }}>
+            {deliveryHint}
+          </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
             <span style={{ fontWeight: 'bold', color: '#374151', fontSize: '18px' }}>সর্বমোট:</span>
             <span style={{ fontWeight: 'bold', color: '#db2777', fontSize: '20px' }}>{grandTotal.toFixed(0)} Tk</span>
