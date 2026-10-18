@@ -974,7 +974,11 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
   const [extraImages, setExtraImages] = useState([]);
   const [pages, setPages] = useState([]);
   const currentStock = product.stock?.[0]?.quantity || 0;
-  const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
+   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
+
+  // 👑 ডেলিভারি ফ্রি কিনা (শুধু দেখানোর জন্য, চার্জ যোগ হয় না)
+  const kachaTotal = cart.filter(c => c.is_kacha_bazar).reduce((a, c) => a + c.price_per_unit * c.qty, 0);
+  const freeDelivery = total >= 300 && kachaTotal >= 150;
 
   const allSizesList = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
   const initialSizes = product.description && product.description.includes('Size:') 
