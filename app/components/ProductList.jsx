@@ -1662,6 +1662,7 @@ const handlePageSelect = (page) => {
     if (!savedPhone) {
       return <CustomerAuth onSuccess={(data) => { localStorage.setItem('customer_phone', data.phone); localStorage.setItem('customer_name', data.name); localStorage.setItem('customer_district', data.district); localStorage.setItem('customer_upazila', data.upazila); setShowOrder(true); }} />;
     }
+    return <OrderForm cart={cart} branch={branch} total={grandTotal} deliveryFee={deliveryFee} onBack={() => setShowOrder(false)} onSuccess={(id, phone) => { setOrderId(id); setShowOrder(false); setCart([]); setShowCart(false); if (onOrderSuccess) onOrderSuccess(id, phone); }} />;
   }
 
 if (orderId) {
