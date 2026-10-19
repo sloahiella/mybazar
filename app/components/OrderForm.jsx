@@ -27,7 +27,7 @@ const inputStyle = {
   background: 'white',
 };
 
-export default function OrderForm({ cart, branch, total, deliveryFee = 0, onSuccess, onBack }) {
+export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
   const uniqueSellers = [...new Set(cart.map(item => item.seller_id).filter(Boolean))];
   const [form, setForm] = useState({
     name: localStorage.getItem('customer_name') || '',
@@ -60,7 +60,11 @@ export default function OrderForm({ cart, branch, total, deliveryFee = 0, onSucc
     }
   }
 
-  const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
+   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
+
+  // 👑 ডেলিভারি ফ্রি কিনা (শুধু দেখানোর জন্য, চার্জ যোগ হয় না)
+  const kachaTotal = cart.filter(c => c.is_kacha_bazar).reduce((a, c) => a + c.price_per_unit * c.qty, 0);
+  const freeDelivery = total >= 300 && kachaTotal >= 150;
 
   async function submitOrder() {
          if (!form.name || !form.phone || !form.address) {
@@ -236,7 +240,7 @@ const items = cart.map(item => {
           {form.payment === 'cod' && (
             <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '12px', marginTop: '12px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#15803d', margin: '0 0 4px 0' }}>🚚 ক্যাশ অন ডেলিভারি</p>
-              <p style={{ fontSize: '12px', color: '#374151', margin: 0 }}>পণ্য পাওয়ার পর <strong>{total.toFixed(0)} Tk</strong> পরিশোধ করুন।</p>
+                  <p style={{ fontSize: '12px', color: '#374151', margin: 0 }}>পণ্য পাওয়ার পর <strong>{total.toFixed(0)} Tk</strong> পরিশোধ করুন।{!freeDelivery && ' (ডেলিভারি চার্জ আলাদা)'}</p>
             </div>
           )}
         </div>
