@@ -222,7 +222,7 @@ const items = cart.map(item => {
             </div>
           )}
 
-          {form.payment === 'nagad' && (
+                   {form.payment === 'nagad' && (
             <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '12px', padding: '12px', marginTop: '12px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#ea580c', margin: '0 0 6px 0' }}>🟠 নগদে পেমেন্ট করুন</p>
               <p style={{ fontSize: '12px', color: '#374151', margin: '3px 0' }}>📱 নম্বর: <strong>{nagadNumber}</strong></p>
