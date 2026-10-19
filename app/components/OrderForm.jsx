@@ -61,11 +61,9 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
   }
 
    const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
-
   // 👑 ডেলিভারি ফ্রি কিনা (শুধু দেখানোর জন্য, চার্জ যোগ হয় না)
-  const kachaTotal = cart.filter(c => c.is_kacha_bazar).reduce((a, c) => a + c.price_per_unit * c.qty, 0);
+   const kachaTotal = cart.filter(c => c.is_kacha_bazar).reduce((a, c) => a + c.price_per_unit * c.qty, 0);
   const freeDelivery = total >= 300 && kachaTotal >= 150;
-
   async function submitOrder() {
          if (!form.name || !form.phone || !form.address) {
       setError('নাম, ফোন নম্বর এবং ঠিকানা আবশ্যক!');
@@ -96,7 +94,6 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
         payment_method: form.payment,
         transaction_id: form.transaction_id || null,
             total_amount: total,
-        delivery_fee: deliveryFee,
         status: 'pending'
       })
       .select()
@@ -246,16 +243,13 @@ const items = cart.map(item => {
         </div>
 
              <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>
-            <span>পণ্যের দাম:</span><span>{(total - deliveryFee).toFixed(0)} Tk</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: deliveryFee === 0 ? '#15803d' : '#374151', fontWeight: '600', marginBottom: '8px' }}>
-            <span>ডেলিভারি চার্জ:</span><span>{deliveryFee === 0 ? 'ফ্রি 🎉' : `${deliveryFee} Tk`}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: PINK, fontSize: '16px', borderTop: '1px solid #e5e7eb', paddingTop: '8px' }}>
+                           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: PINK, fontSize: '16px' }}>
             <span>সর্বমোট:</span>
             <span>{total.toFixed(0)} Tk</span>
           </div>
+          <p style={{ fontSize: '12px', margin: '8px 0 0 0', color: freeDelivery ? '#15803d' : '#92400e', fontWeight: '600' }}>
+            {freeDelivery ? '🎉 আপনার ডেলিভারি ফ্রি' : '🚚 ডেলিভারি চার্জ প্রযোজ্য, ডেলিভারির সময় রাইডারকে দিতে হবে'}
+          </p>
         </div>
 
         {error && (
