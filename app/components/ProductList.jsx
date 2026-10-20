@@ -615,7 +615,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
              <span style={{ color: '#db2777', fontWeight: '900', fontSize: '20px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
               <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ color: '#9ca3af', fontSize: '16px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
-                <span style={{ color: '#f97316', fontSize: '14px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
+                <span style={{ color: '#f97316', fontSize: '14px', fontWeight: 'bold' }}>(৳{Math.round(product.price_per_unit * product.discount_percent / 100)} ছাড়)</span>
               </p>
             </div>
           ) : (
@@ -880,7 +880,7 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
     >
       {product.discount_percent > 0 && (
         <span style={{ position: 'absolute', top: '6px', right: '6px', background: '#db2777', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px', zIndex: 10 }}>
-          {product.discount_percent}% ছাড়
+          ৳{Math.round(product.price_per_unit * product.discount_percent / 100)} ছাড়
         </span>
       )}
       {canEdit && (
@@ -967,7 +967,7 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
 }
 
 function EditProductModal({ product, onClose, onSave, isAdmin }) {
-  const [form, setForm] = useState({ name: product.name || '', name_bn: product.name_bn || '', product_code: product.product_code || '', price_per_unit: product.price_per_unit || '', unit: product.unit || 'Kg', category: product.category || '', category_bn: product.category_bn || '', description: product.description || '', image_url: product.image_url || '', is_active: product.is_active, page_id: product.page_id ? String(product.page_id) : '', discount_percent: product.discount_percent || 0, cost_price: product.cost_price || '' });
+  const [form, setForm] = useState({ name: product.name || '', name_bn: product.name_bn || '', product_code: product.product_code || '', price_per_unit: product.price_per_unit || '', unit: product.unit || 'Kg', category: product.category || '', category_bn: product.category_bn || '', description: product.description || '', image_url: product.image_url || '', is_active: product.is_active, page_id: product.page_id ? String(product.page_id) : '', discount_amount: product.discount_percent > 0 ? Math.round(Number(product.price_per_unit) * Number(product.discount_percent) / 100) : '', cost_price: product.cost_price || '' });
   const [stockQty, setStockQty] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -975,11 +975,6 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
   const [pages, setPages] = useState([]);
   const currentStock = product.stock?.[0]?.quantity || 0;
    const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
-
-  // 👑 ডেলিভারি ফ্রি কিনা (শুধু দেখানোর জন্য, চার্জ যোগ হয় না)
-  const kachaTotal = cart.filter(c => c.is_kacha_bazar).reduce((a, c) => a + c.price_per_unit * c.qty, 0);
-  const freeDelivery = total >= 300 && kachaTotal >= 150;
-
   const allSizesList = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
   const initialSizes = product.description && product.description.includes('Size:') 
     ? product.description.split('Size:')[1].split('\n')[0].split(',').map(s => s.trim())
@@ -1024,7 +1019,12 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
     await supabase.from('product_images').delete().eq('id', id);
     fetchExtraImages();
   }
-
+  function toDiscountPercent() {
+    const price = parseFloat(form.price_per_unit) || 0;
+    const amount = parseFloat(form.discount_amount) || 0;
+    if (amount <= 0 || price <= 0 || amount >= price) return 0;
+    return Math.round((amount / price) * 100 * 10000) / 10000;
+  }
   const toggleSize = (size) => {
     if (selectedSizes.includes(size)) {
       setSelectedSizes(selectedSizes.filter(s => s !== size));
@@ -1034,6 +1034,7 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
   };
 
   async function save() {
+        if (form.discount_amount && (parseFloat(form.discount_amount) || 0) >= (parseFloat(form.price_per_unit) || 0)) { alert('ছাড়ের টাকা দামের চেয়ে কম হতে হবে!'); return; }
     setLoading(true);
     
     let rawDesc = form.description;
@@ -1042,7 +1043,7 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
     }
     const finalDescription = selectedSizes.length > 0 ? `${rawDesc}\nSize: ${selectedSizes.join(', ')}` : rawDesc;
 
-    await supabase.from('products').update({ name: form.name, name_bn: form.name_bn, product_code: form.product_code, price_per_unit: parseFloat(form.price_per_unit), unit: form.unit, category: form.category, category_bn: form.category_bn, description: finalDescription, image_url: form.image_url, is_active: form.is_active, page_id: form.page_id ? parseInt(form.page_id) : null, discount_percent: parseFloat(form.discount_percent) || 0, cost_price: form.cost_price ? parseFloat(form.cost_price) : null }).eq('id', product.id);
+    await supabase.from('products').update({ name: form.name, name_bn: form.name_bn, product_code: form.product_code, price_per_unit: parseFloat(form.price_per_unit), unit: form.unit, category: form.category, category_bn: form.category_bn, description: finalDescription, image_url: form.image_url, is_active: form.is_active, page_id: form.page_id ? parseInt(form.page_id) : null, discount_percent: toDiscountPercent(), cost_price: form.cost_price ? parseFloat(form.cost_price) : null }).eq('id', product.id);
     if (stockQty !== '') {
       const newQty = parseFloat(stockQty);
       if (!isNaN(newQty) && newQty >= 0) {
@@ -1070,7 +1071,7 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label><select name="unit" value={form.unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="Kg">Kg</option><option value="Liter">Liter</option><option value="pcs">pcs</option><option value="packet">Packet</option></select></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>পেজ সিলেক্ট করুন</label><select name="page_id" value={form.page_id} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="">-- পেজ সিলেক্ট করুন --</option>{pages.map(page => <option key={page.id} value={page.id}>{page.name_bn || page.name}</option>)}</select></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (ইং)</label><input name="category" value={form.category} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
-          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ডিসকাউন্ট %</label><input name="discount_percent" type="number" value={form.discount_percent || ''} onChange={handle} placeholder="যেমন: 10, 20" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+         <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ছাড় (টাকা)</label><input name="discount_amount" type="number" value={form.discount_amount} onChange={handle} placeholder="যেমন: 3, 5" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (বাং)</label><input name="category_bn" value={form.category_bn} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           
           <div style={{ background: '#fdf2f8', borderRadius: '10px', padding: '12px', border: '1px solid #fbcfe8' }}>
@@ -1131,7 +1132,7 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
 }
 
 function AddProductModal({ branch, defaultPage, onClose, onSave, isAdmin }) {
-  const [form, setForm] = useState({ name: '', name_bn: '', product_code: '', description: '', price_per_unit: '', unit: 'Kg', category: '', category_bn: '', stock: '', image_url: '', page_id: defaultPage?.id || '', discount_percent: 0, cost_price: '' });
+  const [form, setForm] = useState({ name: '', name_bn: '', product_code: '', description: '', price_per_unit: '', unit: 'Kg', category: '', category_bn: '', stock: '', image_url: '', page_id: defaultPage?.id || '', discount_amount: '', cost_price: '' });
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
@@ -1172,7 +1173,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave, isAdmin }) {
 
     const finalDescription = selectedSizes.length > 0 ? `${form.description}\nSize: ${selectedSizes.join(', ')}` : form.description;
 
-   const { data: product, error } = await supabase.from('products').insert({ name: form.name, name_bn: form.name_bn, product_code: form.product_code, description: finalDescription, price_per_unit: parseFloat(form.price_per_unit), unit: form.unit, branch_id: branch.id, category: form.category, category_bn: form.category_bn, image_url: form.image_url, page_id: form.page_id ? parseInt(form.page_id) : null, is_active: true, discount_percent: parseFloat(form.discount_percent) || 0, cost_price: form.cost_price ? parseFloat(form.cost_price) : null }).select().single();
+   const { data: product, error } = await supabase.from('products').insert({ name: form.name, name_bn: form.name_bn, product_code: form.product_code, description: finalDescription, price_per_unit: parseFloat(form.price_per_unit), unit: form.unit, branch_id: branch.id, category: form.category, category_bn: form.category_bn, image_url: form.image_url, page_id: form.page_id ? parseInt(form.page_id) : null, is_active: true, discount_percent: toDiscountPercent(), cost_price: form.cost_price ? parseFloat(form.cost_price) : null }).select().single();
     if (error) { alert('সমস্যা: ' + error.message); setLoading(false); return; }
     if (form.stock && parseFloat(form.stock) > 0) { await supabase.from('stock').insert({ product_id: product.id, quantity: parseFloat(form.stock) }); }
     alert('পণ্য যোগ হয়েছে!');
@@ -1194,7 +1195,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave, isAdmin }) {
 {isAdmin && <div><label style={{ fontSize: '12px', color: '#9333ea', fontWeight: 'bold' }}>💰 কেনা দাম (শুধু আপনি দেখবেন)</label><input name="cost_price" type="number" value={form.cost_price} onChange={handle} placeholder="যত টাকায় কিনেছেন" style={{ border: '2px solid #d8b4fe', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>}
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label><select name="unit" value={form.unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="Kg">Kg</option><option value="Liter">Liter</option><option value="pcs">pcs</option><option value="packet">Packet</option></select></div>
          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>পেজ সিলেক্ট করুন</label><select name="page_id" value={form.page_id} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="">-- পেজ সিলেক্ট করুন --</option>{pages.map(page => <option key={page.id} value={page.id}>{page.name_bn || page.name}</option>)}</select></div>
-         <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ডিসকাউন্ট %</label><input name="discount_percent" type="number" value={form.discount_percent || ''} onChange={handle} placeholder="যেমন: 10, 20" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+        <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ছাড় (টাকা)</label><input name="discount_amount" type="number" value={form.discount_amount} onChange={handle} placeholder="যেমন: 3, 5" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>প্রাথমিক স্টক</label><input name="stock" type="number" value={form.stock} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           
           <div style={{ background: '#fdf2f8', borderRadius: '10px', padding: '12px', border: '1px solid #fbcfe8' }}>
