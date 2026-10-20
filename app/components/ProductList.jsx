@@ -611,12 +611,10 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
           </div>
 
        {product.discount_percent > 0 ? (
-            <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-             <span style={{ color: '#db2777', fontWeight: '900', fontSize: '20px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
-              <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ color: '#9ca3af', fontSize: '16px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
-                <span style={{ color: '#f97316', fontSize: '14px', fontWeight: 'bold' }}>(৳{Math.round(product.price_per_unit * product.discount_percent / 100)} ছাড়)</span>
-              </p>
+         <div style={{ margin: '2px 0', display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
+        <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
+       <span style={{ color: '#9ca3af', fontSize: '13px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
+        <span style={{ color: '#f97316', fontSize: '12px', fontWeight: 'bold' }}>(৳{Math.round(product.price_per_unit * product.discount_percent / 100)} ছাড়)</span>
             </div>
           ) : (
              <p style={{ color: '#db2777', fontWeight: '900', fontSize: '24px', margin: '0 0 16px 0' }}>৳{product.price_per_unit}</p>
@@ -1577,7 +1575,12 @@ const isMobile = useIsMobile()
 
   const displayProducts = getDisplayProducts();
 
-    function addToCart(product, qty) {
+     function addToCart(rawProduct, qty) {
+    // 👑 ছাড় থাকলে ঝুড়িতে ছাড়ের পরের দামই যাবে (ছাড় দুবার কাটা ঠেকাতে discount_percent ০ করা হলো)
+    const dp = Number(rawProduct.discount_percent) || 0;
+    const product = dp > 0
+      ? { ...rawProduct, original_price: rawProduct.price_per_unit, price_per_unit: Math.round(rawProduct.price_per_unit * (1 - dp / 100)), discount_percent: 0 }
+      : rawProduct;
     // 👑 স্টকের বেশি পরিমাণ ঝুড়িতে রাখা যাবে না (ঝুড়িতে আগে থেকে থাকা পরিমাণসহ হিসাব)
     const stockQty = parseFloat(product.stock?.[0]?.quantity) || 0;
     const alreadyInCart = cart.filter(c => c.id === product.id).reduce((s, c) => s + c.qty, 0);
