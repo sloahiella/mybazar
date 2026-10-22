@@ -285,6 +285,7 @@ function OrdersModal({ onClose, isAdmin = false }) {
   async function fetchOrders(p) {
     if (!p) return;
     setLoading(true);
+    
     const { data } = await supabase.from('orders').select('*, order_items(*, products(name, name_bn, unit, image_url, product_code))').eq('customer_phone', p).order('created_at', { ascending: false });
     if (data) setOrders(data);
     setLoading(false); setSearched(true);
@@ -512,12 +513,12 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
                 name: mp.name,
                 name_bn: mp.name,
                 product_code: mp.product_code,
-               price_per_unit: mp.price,
+               price_per_unit: assign.custom_price != null ? Number(assign.custom_price) : mp.price,
                 cost_price: mp.sale_price || null,
                 available_sizes: (mp.product_variants || []).filter(v => v.attribute === 'Size').map(v => v.variant),
                 unit: 'pcs',
-                image_url: mp.thumbnail_img,
-                discount_percent: 0,
+                                image_url: mp.thumbnail_img,
+                discount_percent: Number(assign.discount_percent) || 0,
                 stock: [{ quantity: 100 }],
                 is_mohasagor: true,
               });
@@ -615,7 +616,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
          <div style={{ margin: '2px 0', display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
         <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
        <span style={{ color: '#9ca3af', fontSize: '13px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
-        <span style={{ color: '#f97316', fontSize: '12px', fontWeight: 'bold' }}>(৳{Math.round(product.price_per_unit * product.discount_percent / 100)} ছাড়)</span>
+        <span style={{ color: '#f97316', fontSize: '12px', fontWeight: 'bold' }}>({Math.round(product.discount_percent)}% ছাড়)</span>
             </div>
           ) : (
              <p style={{ color: '#db2777', fontWeight: '900', fontSize: '24px', margin: '0 0 16px 0' }}>৳{product.price_per_unit}</p>
@@ -922,10 +923,10 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
         <div style={{ flex: 1 }} />
         
    {product.discount_percent > 0 ? (
-                     <div style={{ margin: '2px 0', display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
+                            <div style={{ margin: '2px 0', display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
               <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
               <span style={{ color: '#9ca3af', fontSize: '13px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
-              <span style={{ color: '#f97316', fontSize: '12px', fontWeight: 'bold' }}>(৳{Math.round(product.price_per_unit * product.discount_percent / 100)} ছাড়)</span>
+              <span style={{ color: '#f97316', fontSize: '12px', fontWeight: 'bold' }}>({Math.round(product.discount_percent)}% OFF)</span>
             </div>
         ) : (
           <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
@@ -967,7 +968,7 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
 }
 
 function EditProductModal({ product, onClose, onSave, isAdmin }) {
-  const [form, setForm] = useState({ name: product.name || '', name_bn: product.name_bn || '', product_code: product.product_code || '', price_per_unit: product.price_per_unit || '', unit: product.unit || 'Kg', category: product.category || '', category_bn: product.category_bn || '', description: product.description || '', image_url: product.image_url || '', is_active: product.is_active, page_id: product.page_id ? String(product.page_id) : '', discount_amount: product.discount_percent > 0 ? Math.round(Number(product.price_per_unit) * Number(product.discount_percent) / 100) : '', cost_price: product.cost_price || '' });
+  const [form, setForm] = useState({ name: product.name || '', name_bn: product.name_bn || '', product_code: product.product_code || '', price_per_unit: product.price_per_unit || '', unit: product.unit || 'Kg', category: product.category || '', category_bn: product.category_bn || '', description: product.description || '', image_url: product.image_url || '', is_active: product.is_active, page_id: product.page_id ? String(product.page_id) : '', sale_price: product.discount_percent > 0 ? Math.round(Number(product.price_per_unit) * (1 - Number(product.discount_percent) / 100)) : '', cost_price: product.cost_price || '' });
   const [stockQty, setStockQty] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -1019,11 +1020,11 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
     await supabase.from('product_images').delete().eq('id', id);
     fetchExtraImages();
   }
-  function toDiscountPercent() {
+   function toDiscountPercent() {
     const price = parseFloat(form.price_per_unit) || 0;
-    const amount = parseFloat(form.discount_amount) || 0;
-    if (amount <= 0 || price <= 0 || amount >= price) return 0;
-    return Math.round((amount / price) * 100 * 10000) / 10000;
+    const sale = parseFloat(form.sale_price) || 0;
+    if (sale <= 0 || price <= 0 || sale >= price) return 0;
+    return Math.round(((price - sale) / price) * 100 * 10000) / 10000;
   }
   const toggleSize = (size) => {
     if (selectedSizes.includes(size)) {
@@ -1034,7 +1035,7 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
   };
 
   async function save() {
-        if (form.discount_amount && (parseFloat(form.discount_amount) || 0) >= (parseFloat(form.price_per_unit) || 0)) { alert('ছাড়ের টাকা দামের চেয়ে কম হতে হবে!'); return; }
+       if (form.sale_price && ((parseFloat(form.sale_price) || 0) >= (parseFloat(form.price_per_unit) || 0) || (parseFloat(form.sale_price) || 0) <= 0)) { alert('বিক্রি দাম মূল দামের চেয়ে কম এবং শূন্যের বেশি হতে হবে!'); return; }
     setLoading(true);
     
     let rawDesc = form.description;
@@ -1071,7 +1072,7 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label><select name="unit" value={form.unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="Kg">Kg</option><option value="Liter">Liter</option><option value="pcs">pcs</option><option value="packet">Packet</option></select></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>পেজ সিলেক্ট করুন</label><select name="page_id" value={form.page_id} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="">-- পেজ সিলেক্ট করুন --</option>{pages.map(page => <option key={page.id} value={page.id}>{page.name_bn || page.name}</option>)}</select></div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (ইং)</label><input name="category" value={form.category} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
-         <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ছাড় (টাকা)</label><input name="discount_amount" type="number" value={form.discount_amount} onChange={handle} placeholder="যেমন: 3, 5" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+       <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ছাড়ের পর বিক্রি দাম (টাকা) — ছাড় না দিলে খালি রাখুন</label><input name="sale_price" type="number" value={form.sale_price} onChange={handle} placeholder="যেমন: 700" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} />{form.sale_price && Number(form.price_per_unit) > Number(form.sale_price) && <p style={{ fontSize: '12px', color: '#15803d', margin: '4px 0 0 0', fontWeight: '600' }}>= {Math.round((1 - Number(form.sale_price) / Number(form.price_per_unit)) * 100)}% ছাড় (অটো)</p>}</div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ক্যাটাগরি (বাং)</label><input name="category_bn" value={form.category_bn} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           
           <div style={{ background: '#fdf2f8', borderRadius: '10px', padding: '12px', border: '1px solid #fbcfe8' }}>
@@ -1132,7 +1133,7 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
 }
 
 function AddProductModal({ branch, defaultPage, onClose, onSave, isAdmin }) {
-  const [form, setForm] = useState({ name: '', name_bn: '', product_code: '', description: '', price_per_unit: '', unit: 'Kg', category: '', category_bn: '', stock: '', image_url: '', page_id: defaultPage?.id || '', discount_amount: '', cost_price: '' });
+  const [form, setForm] = useState({ name: '', name_bn: '', product_code: '', description: '', price_per_unit: '', unit: 'Kg', category: '', category_bn: '', stock: '', image_url: '', page_id: defaultPage?.id || '', sale_price: '', cost_price: '' });
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
@@ -1170,6 +1171,16 @@ function AddProductModal({ branch, defaultPage, onClose, onSave, isAdmin }) {
   async function save() {
     if (!form.name || !form.product_code || !form.price_per_unit) { alert('নাম, কোড, দাম আবশ্যক!'); return; }
     setLoading(true);
+        // 👑 মহাসাগরের পণ্য products টেবিলে নেই, তাই দাম ও ছাড় assignments টেবিলে সেভ হবে
+    if (product.is_mohasagor) {
+      const mohaId = String(product.id).replace('moha-', '');
+      const upd = { discount_percent: toDiscountPercent() };
+      if ((parseFloat(form.price_per_unit) || 0) !== Number(product.price_per_unit)) upd.custom_price = parseFloat(form.price_per_unit) || null;
+      const { error: mErr } = await supabase.from('mohasagor_assignments').update(upd).eq('mohasagor_product_id', mohaId);
+      if (mErr) { alert('সেভ করতে সমস্যা: ' + mErr.message); setLoading(false); return; }
+      setLoading(false); onSave(); onClose();
+      return;
+    }
 
     const finalDescription = selectedSizes.length > 0 ? `${form.description}\nSize: ${selectedSizes.join(', ')}` : form.description;
 
@@ -1397,6 +1408,16 @@ const isMobile = useIsMobile()
   }, [showOrder]);
   async function fetchProducts() {
     setLoading(true);
+        // 👑 মহাসাগরের পণ্য products টেবিলে নেই, তাই দাম ও ছাড় assignments টেবিলে সেভ হবে
+    if (product.is_mohasagor) {
+      const mohaId = String(product.id).replace('moha-', '');
+      const upd = { discount_percent: toDiscountPercent() };
+      if ((parseFloat(form.price_per_unit) || 0) !== Number(product.price_per_unit)) upd.custom_price = parseFloat(form.price_per_unit) || null;
+      const { error: mErr } = await supabase.from('mohasagor_assignments').update(upd).eq('mohasagor_product_id', mohaId);
+      if (mErr) { alert('সেভ করতে সমস্যা: ' + mErr.message); setLoading(false); return; }
+      setLoading(false); onSave(); onClose();
+      return;
+    }
       let query = supabase.from('products').select('*, stock(*), product_images(*)').eq('branch_id', branch.id).eq('is_active', true).order('sort_order', { ascending: true });
     if (isSeller && sellerId) query = query.eq('seller_id', sellerId);
     const { data } = await query;
@@ -1429,7 +1450,7 @@ const isMobile = useIsMobile()
                 name: mp.name,
                 name_bn: mp.name,
                 product_code: mp.product_code,
-                price_per_unit: mp.price,
+                price_per_unit: assign.custom_price != null ? Number(assign.custom_price) : mp.price,
                 cost_price: mp.sale_price || null,
                 unit: 'pcs',
                 category: mp.category,
@@ -1437,8 +1458,8 @@ const isMobile = useIsMobile()
                 description: mp.details?.replace(/<[^>]*>/g, '') || '',
                 image_url: mp.thumbnail_img,
                 is_active: true,
-                page_id: assign.page_id,
-                discount_percent: 0,
+                               page_id: assign.page_id,
+                discount_percent: Number(assign.discount_percent) || 0,
                 sort_order: assign.sort_order ?? 999,
                stock: [{ quantity: (mp.stock_status || '').toLowerCase().includes('out') || (mp.stock_status || '').toLowerCase().includes('unavailable') ? 0 : 100 }],
                 product_images: (mp.product_images || []).map((img) => ({ image_url: img.product_image, sort_order: 0 })),
