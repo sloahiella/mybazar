@@ -439,6 +439,7 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
   );
 }
 function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin, onNeedLogin }) {
+    const unitPrice = Number(product.discount_percent) > 0 ? Math.round(product.price_per_unit * (1 - product.discount_percent / 100)) : product.price_per_unit;
   const [qty, setQty] = useState('');
   const [unit, setUnit] = useState(product.unit);
  const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -733,7 +734,7 @@ if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে 
               margin: '0 0 14px 0', 
               inlineSize: 'max-content' 
             }}>
-              মোট দাম = {(getActualQty() * product.price_per_unit).toFixed(0)} Tk
+              মোট দাম = {(getActualQty() * unitPrice).toFixed(0)} Tk
             </p>
           )}
           
@@ -837,6 +838,7 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const isKg = u === 'kg';
   const isLiter = u === 'liter' || u === 'l';
   const isPiece = !isKg && !isLiter;
+    const unitPrice = Number(product.discount_percent) > 0 ? Math.round(product.price_per_unit * (1 - product.discount_percent / 100)) : product.price_per_unit;
   const canEdit = isAdmin || (isEditor && String(product.page_id) === String(editorPageId)) || (isSeller && String(product.seller_id) === String(sellerId));
   const allValidSizes = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
   const descriptionSizes = product.description && product.description.includes('Size:')
@@ -943,7 +945,7 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
             )}
                     {isPiece && <span style={{ border: '2px solid #e5e7eb', borderRadius: '8px', padding: '6px 4px', fontSize: '11px', color: '#111827', fontWeight: '600', background: '#f9fafb', flexShrink: 0 }}>pcs</span>}
           </div>
-          {qty && parseFloat(qty) > 0 && <p style={{ fontSize: '11px', color: '#db2777', fontWeight: 'bold', background: '#fdf2f8', padding: '3px 6px', borderRadius: '6px', border: '1px solid #fbcfe8', margin: '0 0 4px 0' }}>= {(getActualQty() * product.price_per_unit).toFixed(0)} Tk</p>}
+                {qty && parseFloat(qty) > 0 && <p style={{ fontSize: '11px', color: '#db2777', fontWeight: 'bold', background: '#fdf2f8', padding: '3px 6px', borderRadius: '6px', border: '1px solid #fbcfe8', margin: '0 0 4px 0' }}>= {(getActualQty() * Math.round(product.price_per_unit * (1 - (Number(product.discount_percent) || 0) / 100))).toFixed(0)} Tk</p>}
          {availableSizes.length > 0 && (
             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' }}>
               {availableSizes.map(size => (
