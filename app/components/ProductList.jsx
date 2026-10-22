@@ -922,10 +922,10 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
         <div style={{ flex: 1 }} />
         
    {product.discount_percent > 0 ? (
-            <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ color: '#db2777', fontWeight: '900', fontSize: '25px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
-              <span style={{ color: '#9ca3af', fontSize: '20px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
-              <span style={{ color: '#f97316', fontSize: '18px', fontWeight: 'bold' }}>({product.discount_percent}% OFF)</span>
+                     <div style={{ margin: '2px 0', display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
+              <span style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px' }}>৳{Math.round(product.price_per_unit * (1 - product.discount_percent / 100))}</span>
+              <span style={{ color: '#9ca3af', fontSize: '13px', textDecoration: 'line-through' }}>৳{product.price_per_unit}</span>
+              <span style={{ color: '#f97316', fontSize: '12px', fontWeight: 'bold' }}>(৳{Math.round(product.price_per_unit * product.discount_percent / 100)} ছাড়)</span>
             </div>
         ) : (
           <p style={{ color: '#db2777', fontWeight: 'bold', fontSize: '18px', margin: '2px 0' }}>1 {product.unit} = {product.price_per_unit} Tk</p>
