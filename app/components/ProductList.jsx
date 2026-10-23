@@ -1037,7 +1037,16 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
   async function save() {
        if (form.sale_price && ((parseFloat(form.sale_price) || 0) >= (parseFloat(form.price_per_unit) || 0) || (parseFloat(form.sale_price) || 0) <= 0)) { alert('বিক্রি দাম মূল দামের চেয়ে কম এবং শূন্যের বেশি হতে হবে!'); return; }
     setLoading(true);
-    
+        // 👑 মহাসাগরের পণ্য products টেবিলে নেই, তাই দাম ও ছাড় assignments টেবিলে সেভ হবে
+    if (product.is_mohasagor) {
+      const mohaId = String(product.id).replace('moha-', '');
+      const upd = { discount_percent: toDiscountPercent() };
+      if ((parseFloat(form.price_per_unit) || 0) !== Number(product.price_per_unit)) upd.custom_price = parseFloat(form.price_per_unit) || null;
+      const { error: mErr } = await supabase.from('mohasagor_assignments').update(upd).eq('mohasagor_product_id', mohaId);
+      if (mErr) { alert('সেভ করতে সমস্যা: ' + mErr.message); setLoading(false); return; }
+      setLoading(false); onSave(); onClose();
+      return;
+    }
     let rawDesc = form.description;
     if (rawDesc.includes('\nSize:')) {
       rawDesc = rawDesc.split('\nSize:')[0];
@@ -1408,16 +1417,6 @@ const isMobile = useIsMobile()
   }, [showOrder]);
   async function fetchProducts() {
     setLoading(true);
-        // 👑 মহাসাগরের পণ্য products টেবিলে নেই, তাই দাম ও ছাড় assignments টেবিলে সেভ হবে
-    if (product.is_mohasagor) {
-      const mohaId = String(product.id).replace('moha-', '');
-      const upd = { discount_percent: toDiscountPercent() };
-      if ((parseFloat(form.price_per_unit) || 0) !== Number(product.price_per_unit)) upd.custom_price = parseFloat(form.price_per_unit) || null;
-      const { error: mErr } = await supabase.from('mohasagor_assignments').update(upd).eq('mohasagor_product_id', mohaId);
-      if (mErr) { alert('সেভ করতে সমস্যা: ' + mErr.message); setLoading(false); return; }
-      setLoading(false); onSave(); onClose();
-      return;
-    }
       let query = supabase.from('products').select('*, stock(*), product_images(*)').eq('branch_id', branch.id).eq('is_active', true).order('sort_order', { ascending: true });
     if (isSeller && sellerId) query = query.eq('seller_id', sellerId);
     const { data } = await query;
