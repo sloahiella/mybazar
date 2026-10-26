@@ -501,11 +501,9 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
       try {
         const { data: assigns } = await supabase.from('mohasagor_assignments').select('*').eq('page_id', product.page_id);
         if (assigns && assigns.length > 0) {
-          const res = await fetch('/api/mohasagor');
-          const mohaData = await res.json();
-          const mohaProducts = mohaData.products || [];
+         
           assigns.forEach(assign => {
-            const mp = mohaProducts.find(p => String(p.id) === String(assign.mohasagor_product_id));
+            const mp = assign.product_data;
             const mpFakeId = `moha-${assign.mohasagor_product_id}`;
             if (mp && mpFakeId !== String(product.id)) {
               combined.push({
@@ -1415,64 +1413,54 @@ const isMobile = useIsMobile()
     useEffect(() => {
     if (onOrderFormOpenChange) onOrderFormOpenChange(showOrder);
   }, [showOrder]);
-  async function fetchProducts() {
+   async function fetchProducts() {
     setLoading(true);
+    try {
       let query = supabase.from('products').select('*, stock(*), product_images(*)').eq('branch_id', branch.id).eq('is_active', true).order('sort_order', { ascending: true });
-    if (isSeller && sellerId) query = query.eq('seller_id', sellerId);
-    const { data } = await query;
-    
-    let allProducts = data || [];
+      if (isSeller && sellerId) query = query.eq('seller_id', sellerId);
+      const wantsMoha = branch.id === 1;
 
-    // 👑 কাঁচা বাজারের পেজগুলো বের করে প্রতিটা প্রোডাক্টে is_kacha_bazar ফ্ল্যাগ বসানো হলো
-    const { data: kachaPages } = await supabase.from('pages').select('id').eq('is_kacha_bazar', true);
-    const kachaPageIds = new Set((kachaPages || []).map(p => String(p.id)));
-      allProducts = allProducts.map(p => ({ ...p, is_kacha_bazar: kachaPageIds.has(String(p.page_id)) }));
-    setProducts([...allProducts]); // 👑 নিজের পণ্য আগে দেখানো হবে, মহাসাগরের পণ্য পরে যোগ হবে
+      // 👑 তিনটা কাজ একসাথে, একটার পর একটা নয়
+      const [prodRes, kachaRes, assignRes] = await Promise.all([
+        query,
+        supabase.from('pages').select('id').eq('is_kacha_bazar', true),
+        wantsMoha ? supabase.from('mohasagor_assignments').select('*').range(0, 9999) : Promise.resolve({ data: [] }),
+      ]);
 
-   // 👑 Mohasagor products আনার লজিক
-    if (branch.id === 1) {
-      try {
-       const { data: assignData } = await supabase
-          .from('mohasagor_assignments')
-          .select('*')
-          .range(0, 9999);
-        
-        if (assignData && assignData.length > 0) {
-          const res = await fetch('/api/mohasagor');
-          const mohaData = await res.json();
-          const mohaProducts = mohaData.products || [];
-          
-          assignData.forEach(assign => {
-            const mp = mohaProducts.find(p => String(p.id) === String(assign.mohasagor_product_id));
-            if (mp) {
-            allProducts.push({
-                id: `moha-${mp.id}`,
-                name: mp.name,
-                name_bn: mp.name,
-                product_code: mp.product_code,
-                price_per_unit: assign.custom_price != null ? Number(assign.custom_price) : mp.price,
-                cost_price: mp.sale_price || null,
-                unit: 'pcs',
-                category: mp.category,
-                category_bn: mp.category,
-                description: mp.details?.replace(/<[^>]*>/g, '') || '',
-                image_url: mp.thumbnail_img,
-                is_active: true,
-                               page_id: assign.page_id,
-                discount_percent: Number(assign.discount_percent) || 0,
-                sort_order: assign.sort_order ?? 999,
-               stock: [{ quantity: (mp.stock_status || '').toLowerCase().includes('out') || (mp.stock_status || '').toLowerCase().includes('unavailable') ? 0 : 100 }],
-                product_images: (mp.product_images || []).map((img) => ({ image_url: img.product_image, sort_order: 0 })),
-                is_mohasagor: true,
-              });
-            }
+      const kachaPageIds = new Set((kachaRes.data || []).map(p => String(p.id)));
+      let allProducts = (prodRes.data || []).map(p => ({ ...p, is_kacha_bazar: kachaPageIds.has(String(p.page_id)) }));
+
+      if (wantsMoha) {
+        (assignRes.data || []).forEach(assign => {
+          const mp = assign.product_data;
+          if (!mp) return;
+          allProducts.push({
+            id: `moha-${assign.mohasagor_product_id}`,
+            name: mp.name,
+            name_bn: mp.name,
+            product_code: mp.product_code,
+            price_per_unit: assign.custom_price != null ? Number(assign.custom_price) : mp.price,
+            cost_price: mp.sale_price || null,
+            available_sizes: (mp.product_variants || []).filter(v => v.attribute === 'Size').map(v => v.variant),
+            unit: 'pcs',
+            category: mp.category,
+            category_bn: mp.category,
+            description: mp.details || '',
+            image_url: mp.thumbnail_img,
+            is_active: true,
+            page_id: assign.page_id,
+            discount_percent: Number(assign.discount_percent) || 0,
+            sort_order: assign.sort_order ?? 999,
+            stock: [{ quantity: (mp.stock_status || '').toLowerCase().includes('out') || (mp.stock_status || '').toLowerCase().includes('unavailable') ? 0 : 100 }],
+            product_images: (mp.product_images || []).map((img) => ({ image_url: img.product_image, sort_order: 0 })),
+            is_mohasagor: true,
           });
-        }
-      } catch (e) {
-        console.error('Mohasagor fetch error:', e);
+        });
       }
+      setProducts(allProducts);
+    } catch (e) {
+      console.error('fetchProducts error:', e);
     }
-    setProducts(allProducts);
     setLoading(false);
   }
 
