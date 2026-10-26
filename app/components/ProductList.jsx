@@ -1426,7 +1426,8 @@ const isMobile = useIsMobile()
     // 👑 কাঁচা বাজারের পেজগুলো বের করে প্রতিটা প্রোডাক্টে is_kacha_bazar ফ্ল্যাগ বসানো হলো
     const { data: kachaPages } = await supabase.from('pages').select('id').eq('is_kacha_bazar', true);
     const kachaPageIds = new Set((kachaPages || []).map(p => String(p.id)));
-    allProducts = allProducts.map(p => ({ ...p, is_kacha_bazar: kachaPageIds.has(String(p.page_id)) }));
+      allProducts = allProducts.map(p => ({ ...p, is_kacha_bazar: kachaPageIds.has(String(p.page_id)) }));
+    setProducts([...allProducts]); // 👑 নিজের পণ্য আগে দেখানো হবে, মহাসাগরের পণ্য পরে যোগ হবে
 
    // 👑 Mohasagor products আনার লজিক
     if (branch.id === 1) {
