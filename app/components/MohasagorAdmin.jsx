@@ -7,6 +7,22 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
 
+function snapshotOf(p) {
+  if (!p) return null;
+  return {
+    id: p.id,
+    name: p.name,
+    product_code: p.product_code,
+    category: p.category,
+    price: p.price,
+    sale_price: p.sale_price,
+    thumbnail_img: p.thumbnail_img,
+    details: String(p.details || '').replace(/<[^>]*>/g, '').slice(0, 800),
+    stock_status: p.stock_status,
+    product_images: (p.product_images || p.product_image || []).slice(0, 6),
+    product_variants: p.product_variants || p.product_variant || [],
+  };
+}
 function PageSelector({ pages, value, onChange }) {
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
@@ -119,7 +135,7 @@ console.log('DEBUG: assignment for product 226 =', map['226']);
     } else {
       const { error } = await supabase
         .from('mohasagor_assignments')
-        .upsert({ mohasagor_product_id: parseInt(productId), page_id: parseInt(pageId) }, { onConflict: 'mohasagor_product_id' });
+         .upsert({ mohasagor_product_id: parseInt(productId), page_id: parseInt(pageId), product_data: snapshotOf(products.find(x => String(x.id) === String(productId))) }, { onConflict: 'mohasagor_product_id' });
       if (error) {
         alert('সেভ করতে সমস্যা হয়েছে: ' + error.message + ' (কোড: ' + error.code + ')');
         console.error('Upsert error:', error);
