@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export const maxDuration = 60;
 
-const SYNC_KEY = 'slaohiella123';
+const SYNC_KEY = process.env.SYNC_KEY || '';
 const CHUNK = 8;
 
 const supabase = createClient(
@@ -50,8 +50,19 @@ async function fetchPage(page: number) {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  if (searchParams.get('key') !== SYNC_KEY) {
-    return NextResponse.json({ ok: false, message: 'key ভুল' }, { status: 401 });
+  if (!SYNC_KEY || searchParams.get('key') !== SYNC_KEY) {
+    return NextResponse.json({ ok: false, message: 'key ভুল বা সেট করা নেই' }, { status: 401 });
+  }
+
+  const run = parseInt(searchParams.get('run') || '0', 10) || 0;
+  const runAt = run ? new Date(run * 1000).toISOString() : new Date().toISOString();
+
+  // শেষ ধাপ: অ্যাসাইন করা পণ্য আপডেট ও মুছে যাওয়া পণ্যের হিসাব
+  if (searchParams.get('finalize') === '1') {
+    if (!run) return NextResponse.json({ ok: false, message: 'run দরকার' });
+    const { error } = await supabase.rpc('finalize_mohasagor_sync', { run_at: runAt });
+    if (error) return NextResponse.json({ ok: false, message: error.message });
+    return NextResponse.json({ ok: true, finalized: true });
   }
 
   const from = Math.max(1, parseInt(searchParams.get('from') || '1', 10) || 1);
@@ -62,12 +73,14 @@ export async function GET(request: Request) {
   const failed: number[] = [];
   let lastPage = 0;
   let reachedEnd = false;
+  let fields: string[] = [];
 
   for (const pg of pageList) {
     if (lastPage && pg > lastPage) { reachedEnd = true; break; }
     const r = await fetchPage(pg);
     if (!r.ok) { failed.push(pg); continue; }
     lastPage = Math.max(lastPage, r.lastPage);
+    if (!fields.length && r.products[0]) fields = Object.keys(r.products[0]);
     for (const p of r.products) {
       rowsMap.set(String(p.id), {
         id: p.id,
@@ -77,17 +90,22 @@ export async function GET(request: Request) {
         price: p.price,
         thumbnail_img: p.thumbnail_img,
         data: snapshotOf(p),
+        synced_at: runAt,
       });
     }
+  }
+
+  if (!lastPage) {
+    return NextResponse.json({ ok: false, message: 'মহাসাগর থেকে কোনো পেজ আনা যায়নি', pages: pageList, failedPages: failed });
   }
 
   const rows = Array.from(rowsMap.values());
   for (let i = 0; i < rows.length; i += 200) {
     const { error } = await supabase.from('mohasagor_catalog').upsert(rows.slice(i, i + 200), { onConflict: 'id' });
-    if (error) return NextResponse.json({ ok: false, message: error.message, pages: pageList });
+    if (error) return NextResponse.json({ ok: false, message: error.message, pages: pageList, failedPages: failed });
   }
 
-  const done = !requested.length && (reachedEnd || (lastPage > 0 && pageList[pageList.length - 1] >= lastPage));
+  const done = !requested.length && (reachedEnd || pageList[pageList.length - 1] >= lastPage);
   return NextResponse.json({
     ok: true,
     pages: pageList,
@@ -96,5 +114,6 @@ export async function GET(request: Request) {
     lastPage,
     done,
     nextFrom: done ? null : from + CHUNK,
+    fields,
   });
 }

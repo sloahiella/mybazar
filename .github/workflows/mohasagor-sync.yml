@@ -1,0 +1,56 @@
+name: Mohasagor daily sync
+
+on:
+  schedule:
+    - cron: '0 19 * * *'   # বাংলাদেশ সময় রাত ১টা
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Sync Mohasagor catalog
+        env:
+          SYNC_KEY: ${{ secrets.SYNC_KEY }}
+          SITE: https://sohelmart.com
+        run: |
+          set -u
+          RUN=$(date +%s)
+          FROM=1
+          FAILED=""
+          TRIES=0
+          ITER=0
+
+          while true; do
+            ITER=$((ITER+1))
+            if [ $ITER -gt 60 ]; then echo "too many iterations"; exit 1; fi
+            RES=$(curl -s --max-time 120 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&from=$FROM&run=$RUN" || true)
+            echo "$RES" | head -c 300; echo
+            if [ "$(echo "$RES" | jq -r '.ok // false' 2>/dev/null)" != "true" ]; then
+              TRIES=$((TRIES+1))
+              if [ $TRIES -ge 5 ]; then echo "too many failures"; exit 1; fi
+              sleep 15
+              continue
+            fi
+            TRIES=0
+            F=$(echo "$RES" | jq -r '.failedPages | join(",")' 2>/dev/null || true)
+            if [ -n "$F" ]; then FAILED="$FAILED,$F"; fi
+            if [ "$(echo "$RES" | jq -r '.done')" = "true" ]; then break; fi
+            FROM=$(echo "$RES" | jq -r '.nextFrom')
+            sleep 3
+          done
+
+          FAILED=$(echo "$FAILED" | sed 's/^,//')
+          ROUND=0
+          while [ -n "$FAILED" ] && [ $ROUND -lt 3 ]; do
+            ROUND=$((ROUND+1))
+            RES=$(curl -s --max-time 120 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&pages=$FAILED&run=$RUN" || true)
+            echo "$RES" | head -c 300; echo
+            FAILED=$(echo "$RES" | jq -r '.failedPages | join(",")' 2>/dev/null || echo "$FAILED")
+            sleep 10
+          done
+
+          if [ -n "$FAILED" ]; then echo "failed pages remain: $FAILED"; exit 1; fi
+          curl -s --max-time 120 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&finalize=1&run=$RUN"
+          echo
