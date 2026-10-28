@@ -13,7 +13,7 @@ jobs:
       - name: Sync Mohasagor catalog
         env:
           SYNC_KEY: ${{ secrets.SYNC_KEY }}
-          SITE: https://sohelmart.com
+          SITE: https://www.sohelmart.com
         run: |
           set -u
           RUN=$(date +%s)
@@ -25,7 +25,7 @@ jobs:
           while true; do
             ITER=$((ITER+1))
             if [ $ITER -gt 60 ]; then echo "too many iterations"; exit 1; fi
-            RES=$(curl -s --max-time 120 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&from=$FROM&run=$RUN" || true)
+            RES=$(curl -sL --max-time 120 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&from=$FROM&run=$RUN" || true)
             echo "$RES" | head -c 300; echo
             if [ "$(echo "$RES" | jq -r '.ok // false' 2>/dev/null)" != "true" ]; then
               TRIES=$((TRIES+1))
@@ -45,12 +45,12 @@ jobs:
           ROUND=0
           while [ -n "$FAILED" ] && [ $ROUND -lt 3 ]; do
             ROUND=$((ROUND+1))
-            RES=$(curl -s --max-time 120 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&pages=$FAILED&run=$RUN" || true)
+            RES=$(curl -sL --max-time 120 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&pages=$FAILED&run=$RUN" || true)
             echo "$RES" | head -c 300; echo
             FAILED=$(echo "$RES" | jq -r '.failedPages | join(",")' 2>/dev/null || echo "$FAILED")
             sleep 10
           done
 
           if [ -n "$FAILED" ]; then echo "failed pages remain: $FAILED"; exit 1; fi
-          curl -s --max-time 120 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&finalize=1&run=$RUN"
+          curl -sL --max-time 120 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&finalize=1&run=$RUN"
           echo
