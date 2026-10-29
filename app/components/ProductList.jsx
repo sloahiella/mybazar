@@ -1579,7 +1579,7 @@ const isMobile = useIsMobile()
     
   if (!isAdmin && !isEditor && !isSeller) {
       const seen = new Set();
-      return baseProducts.filter(p => { if (seen.has(p.name)) return false; seen.add(p.name); return true; });
+       return baseProducts.filter(p => { if (p.is_mohasagor) return true; if (seen.has(p.name)) return false; seen.add(p.name); return true; });
     }
     return baseProducts;
   };
