@@ -8,7 +8,7 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - name: Sync Mohasagor catalog
         env:
@@ -17,40 +17,41 @@ jobs:
         run: |
           set -u
           RUN=$(date +%s)
-          FROM=1
-          FAILED=""
-          TRIES=0
-          ITER=0
 
-          while true; do
-            ITER=$((ITER+1))
-            if [ $ITER -gt 60 ]; then echo "too many iterations"; exit 1; fi
-            RES=$(curl -sL --max-time 120 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&from=$FROM&run=$RUN" || true)
-            echo "$RES" | head -c 300; echo
-            if [ "$(echo "$RES" | jq -r '.ok // false' 2>/dev/null)" != "true" ]; then
-              TRIES=$((TRIES+1))
-              if [ $TRIES -ge 5 ]; then echo "too many failures"; exit 1; fi
-              sleep 15
-              continue
-            fi
-            TRIES=0
-            F=$(echo "$RES" | jq -r '.failedPages | join(",")' 2>/dev/null || true)
-            if [ -n "$F" ]; then FAILED="$FAILED,$F"; fi
-            if [ "$(echo "$RES" | jq -r '.done')" = "true" ]; then break; fi
-            FROM=$(echo "$RES" | jq -r '.nextFrom')
+          # একটা পেজ আনে। ব্যর্থ হলে অপেক্ষা করে আবার চেষ্টা করে। সফল হলে মোট পেজ সংখ্যা ছাপে
+          fetch_page() {
+            local PG=$1
+            local TRY=0
+            while [ $TRY -lt 8 ]; do
+              TRY=$((TRY+1))
+              RES=$(curl -sL --max-time 90 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&pages=$PG&run=$RUN" || true)
+              OK=$(echo "$RES" | jq -r '.ok // false' 2>/dev/null || echo false)
+              FP=$(echo "$RES" | jq -r '(.failedPages // []) | length' 2>/dev/null || echo 1)
+              if [ "$OK" = "true" ] && [ "$FP" = "0" ]; then
+                LAST=$(echo "$RES" | jq -r '.lastPage')
+                echo "page $PG ok (last=$LAST)" >&2
+                echo "$LAST"
+                return 0
+              fi
+              echo "page $PG failed (try $TRY): $(echo "$RES" | head -c 150)" >&2
+              sleep $((10 + TRY * 10))
+            done
+            return 1
+          }
+
+          LAST=$(fetch_page 1) || { echo "page 1 could not be fetched"; exit 1; }
+          case "$LAST" in ''|*[!0-9]*) echo "bad last page value: $LAST"; exit 1;; esac
+          echo "total pages: $LAST"
+
+          BAD=""
+          PG=2
+          while [ $PG -le $LAST ]; do
+            if ! fetch_page $PG > /dev/null; then BAD="$BAD $PG"; fi
+            if [ $(echo $BAD | wc -w) -gt 8 ]; then echo "too many failures:$BAD"; exit 1; fi
+            PG=$((PG+1))
             sleep 3
           done
 
-          FAILED=$(echo "$FAILED" | sed 's/^,//')
-          ROUND=0
-          while [ -n "$FAILED" ] && [ $ROUND -lt 3 ]; do
-            ROUND=$((ROUND+1))
-            RES=$(curl -sL --max-time 120 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&pages=$FAILED&run=$RUN" || true)
-            echo "$RES" | head -c 300; echo
-            FAILED=$(echo "$RES" | jq -r '.failedPages | join(",")' 2>/dev/null || echo "$FAILED")
-            sleep 10
-          done
-
-          if [ -n "$FAILED" ]; then echo "failed pages remain: $FAILED"; exit 1; fi
+          if [ -n "$BAD" ]; then echo "failed pages remain:$BAD"; exit 1; fi
           curl -sL --max-time 120 "$SITE/api/mohasagor-sync?key=$SYNC_KEY&finalize=1&run=$RUN"
           echo
