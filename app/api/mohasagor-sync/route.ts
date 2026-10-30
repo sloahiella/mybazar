@@ -11,6 +11,34 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
 
+// অবৈধ অক্ষর (শূন্য অক্ষর, অর্ধেক কাটা ইমোজি) ডাটাবেজ নেয় না, তাই বাদ দেওয়া হয়
+function cleanStr(s: string) {
+  let out = '';
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    if (c === 0) continue;
+    if (c >= 0xd800 && c <= 0xdbff) {
+      const n = s.charCodeAt(i + 1);
+      if (n >= 0xdc00 && n <= 0xdfff) { out += s[i] + s[i + 1]; i++; }
+      continue;
+    }
+    if (c >= 0xdc00 && c <= 0xdfff) continue;
+    out += s[i];
+  }
+  return out;
+}
+
+function sanitize(v: any): any {
+  if (typeof v === 'string') return cleanStr(v);
+  if (Array.isArray(v)) return v.map(sanitize);
+  if (v && typeof v === 'object') {
+    const o: any = {};
+    for (const k of Object.keys(v)) o[k] = sanitize(v[k]);
+    return o;
+  }
+  return v;
+}
+
 function snapshotOf(p: any) {
   return {
     id: p.id,
@@ -57,7 +85,6 @@ export async function GET(request: Request) {
   const run = parseInt(searchParams.get('run') || '0', 10) || 0;
   const runAt = run ? new Date(run * 1000).toISOString() : new Date().toISOString();
 
-  // শেষ ধাপ: অ্যাসাইন করা পণ্য আপডেট ও মুছে যাওয়া পণ্যের হিসাব
   if (searchParams.get('finalize') === '1') {
     if (!run) return NextResponse.json({ ok: false, message: 'run দরকার' });
     const { error } = await supabase.rpc('finalize_mohasagor_sync', { run_at: runAt });
@@ -82,7 +109,7 @@ export async function GET(request: Request) {
     lastPage = Math.max(lastPage, r.lastPage);
     if (!fields.length && r.products[0]) fields = Object.keys(r.products[0]);
     for (const p of r.products) {
-      rowsMap.set(String(p.id), {
+      rowsMap.set(String(p.id), sanitize({
         id: p.id,
         name: p.name,
         category: p.category,
@@ -91,7 +118,7 @@ export async function GET(request: Request) {
         thumbnail_img: p.thumbnail_img,
         data: snapshotOf(p),
         synced_at: runAt,
-      });
+      }));
     }
   }
 
@@ -101,8 +128,19 @@ export async function GET(request: Request) {
 
   const rows = Array.from(rowsMap.values());
   for (let i = 0; i < rows.length; i += 200) {
-    const { error } = await supabase.from('mohasagor_catalog').upsert(rows.slice(i, i + 200), { onConflict: 'id' });
-    if (error) return NextResponse.json({ ok: false, message: error.message, pages: pageList, failedPages: failed });
+    const chunk = rows.slice(i, i + 200);
+    const { error } = await supabase.from('mohasagor_catalog').upsert(chunk, { onConflict: 'id' });
+    if (error) {
+      // একসাথে না হলে একটা একটা করে চেষ্টা, যাতে বোঝা যায় কোন পণ্যে সমস্যা
+      const bad: any[] = [];
+      for (const row of chunk) {
+        const { error: e1 } = await supabase.from('mohasagor_catalog').upsert(row, { onConflict: 'id' });
+        if (e1) bad.push({ id: row.id, name: String(row.name).slice(0, 40), err: e1.message });
+      }
+      if (bad.length) {
+        return NextResponse.json({ ok: false, message: error.message, badProducts: bad.slice(0, 5), pages: pageList, failedPages: failed });
+      }
+    }
   }
 
   const done = !requested.length && (reachedEnd || pageList[pageList.length - 1] >= lastPage);
