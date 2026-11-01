@@ -15,7 +15,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// ✅ ওয়েবসাইটের নাম এবং তথ্য
+const FACEBOOK_PAGE = 'https://www.facebook.com/share/1E4YXA5SqU/';
+
+// ✅ ওয়েবসাইটের নাম এবং তথ্য
 export const metadata: Metadata = {
   title: "Sohelmart | মাই বাজার",
   description: "অনলাইনে কেনাকাটা করুন সহজেই",
@@ -35,7 +37,29 @@ export default function RootLayout({
       <head>
         {/* 🛒 PWA & App Settings */}
         <link rel="icon" href="https://i.ibb.co.com/KjRBVJxC/logo.jpg" />
-        <link rel="manifest" href="/manifest.json" />
+               <link rel="manifest" href="/manifest.json" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'Sohel Mart',
+              alternateName: ['সোহেল মার্ট', 'Sohelmart'],
+              url: 'https://sohelmart.com',
+              logo: 'https://i.ibb.co.com/KjRBVJxC/logo.jpg',
+              telephone: '+8801872149655',
+              address: {
+                '@type': 'PostalAddress',
+                streetAddress: 'লালমোহন থানার মোড় ও করিমুন্নেছা হাফিজ মহিলা কলেজের মাঝামাঝি',
+                addressLocality: 'Lalmohan',
+                addressRegion: 'Bhola',
+                addressCountry: 'BD',
+              },
+              sameAs: [FACEBOOK_PAGE].filter((u) => u.startsWith('https://')),
+            }),
+          }}
+        />
                 <Script id="capture-install-prompt" strategy="beforeInteractive">
           {`
             window.addEventListener('beforeinstallprompt', function(e) {

@@ -1107,7 +1107,9 @@ if (!selectedBranch) {
         }}
       />
             <div style={{ textAlign: 'center', padding: '16px 16px 90px', fontSize: '13px' }}>
-        <a href="/about" style={{ color: '#be185d', textDecoration: 'none', fontWeight: '600' }}>আমাদের সম্পর্কে ও অর্ডারের নিয়ম</a>
+             <a href="/about" style={{ color: '#be185d', textDecoration: 'none', fontWeight: '600' }}>আমাদের সম্পর্কে ও অর্ডারের নিয়ম</a>
+        <span style={{ color: '#d1d5db', margin: '0 8px' }}>|</span>
+        <a href="ফেসবুক-লিংক" target="_blank" rel="noopener noreferrer" style={{ color: '#be185d', textDecoration: 'none', fontWeight: '600' }}>ফেসবুক পেজ</a>
       </div>
 {showSettings && (
        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
