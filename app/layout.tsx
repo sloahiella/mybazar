@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const FACEBOOK_PAGE = 'https://www.facebook.com/share/1E4YXA5SqU/';
+const FACEBOOK_PAGE = 'https://www.facebook.com/Sohelmart.com55';
 
 // ✅ ওয়েবসাইটের নাম এবং তথ্য
 export const metadata: Metadata = {
