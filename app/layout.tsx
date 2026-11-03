@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 const FACEBOOK_PAGE = 'https://www.facebook.com/Sohelmart.com55';
 
 // ✅ ওয়েবসাইটের নাম এবং তথ্য
-const FB_PIXEL_ID = 'আপনার_পিক্সেল_ID';
+const FB_PIXEL_ID = '901141949500851';
 export const metadata: Metadata = {
   title: "Sohelmart | মাই বাজার",
   description: "অনলাইনে কেনাকাটা করুন সহজেই",
