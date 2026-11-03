@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-
+import { trackFb } from './fbEvents';
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
@@ -129,6 +129,13 @@ const items = cart.map(item => {
       console.error('order_items insert error:', JSON.stringify(itemsError));
     }
     setLoading(false);
+      trackFb('Purchase', {
+      value: Math.round(total),
+      currency: 'BDT',
+      content_type: 'product',
+      content_ids: cart.map(c => String(c.id)),
+      num_items: cart.length,
+    });
     onSuccess(order.id, form.phone);
   }
  return (

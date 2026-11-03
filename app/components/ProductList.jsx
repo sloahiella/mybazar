@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import OrderForm from './OrderForm';
 import PageMenu from './PageMenu';
+import { trackFb } from './fbEvents';
  const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
@@ -460,6 +461,16 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
   // 👑 নিচের কোনো পণ্যে চাপলে নতুন পণ্য দেখাতে বক্স উপরে নিয়ে যাওয়া হবে
    useEffect(() => {
     if (topRef.current) topRef.current.scrollTop = 0;
+  }, [product.id]);
+
+  useEffect(() => {
+    trackFb('ViewContent', {
+      content_ids: [String(product.id)],
+      content_name: product.name,
+      content_type: 'product',
+      value: Math.round(product.price_per_unit * (1 - (Number(product.discount_percent) || 0) / 100)),
+      currency: 'BDT',
+    });
   }, [product.id]);
 
   const u = (product.unit || '').toLowerCase().trim();
@@ -1410,8 +1421,17 @@ const isMobile = useIsMobile()
     }
   }, [editingProduct, showAddModal, showOrder, showOrders]);
 
-    useEffect(() => {
+      useEffect(() => {
     if (onOrderFormOpenChange) onOrderFormOpenChange(showOrder);
+    if (showOrder) {
+      trackFb('InitiateCheckout', {
+        value: Math.round(total),
+        currency: 'BDT',
+        num_items: cart.length,
+        content_ids: cart.map(c => String(c.id)),
+        content_type: 'product',
+      });
+    }
   }, [showOrder]);
    async function fetchProducts() {
     setLoading(true);
@@ -1599,6 +1619,13 @@ const isMobile = useIsMobile()
       alert(`দুঃখিত, এই পণ্যের স্টকে মাত্র ${stockQty} ${product.unit} আছে${alreadyInCart > 0 ? ` (আপনার ঝুড়িতে আগেই ${alreadyInCart} ${product.unit} আছে)` : ''}।`);
       return;
     }
+      trackFb('AddToCart', {
+      content_ids: [String(product.id)],
+      content_name: product.name,
+      content_type: 'product',
+      value: Math.round(product.price_per_unit * qty),
+      currency: 'BDT',
+    });
     const existing = cart.find(c => c.id === product.id && c.selectedSize === product.selectedSize);
     if (existing) { setCart(cart.map(c => c.id === product.id && c.selectedSize === product.selectedSize ? { ...c, qty: parseFloat((c.qty + qty).toFixed(3)) } : c)); return; }
     const cartSellerIds = [...new Set(cart.map(c => c.seller_id).filter(Boolean))];
