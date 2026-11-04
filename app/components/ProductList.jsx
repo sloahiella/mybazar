@@ -1689,9 +1689,11 @@ const handlePageSelect = (page) => {
           {cart.map(item => <CartItem key={`${item.id}-${item.selectedSize}`} item={item} onUpdate={updateCartQty} onRemove={removeFromCart} />)}
         </div>
     <div style={{ background: 'white', padding: '16px', boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
-                     <div style={{ background: freeDelivery ? '#f0fdf4' : '#fffbeb', border: `1px solid ${freeDelivery ? '#bbf7d0' : '#fde68a'}`, borderRadius: '10px', padding: '10px 12px', marginBottom: '12px', fontSize: '13px', color: freeDelivery ? '#15803d' : '#92400e', fontWeight: '600', textAlign: 'center' }}>
+                   {branch?.name === 'lalmohan' && (
+          <div style={{ background: freeDelivery ? '#f0fdf4' : '#fffbeb', border: `1px solid ${freeDelivery ? '#bbf7d0' : '#fde68a'}`, borderRadius: '10px', padding: '10px 12px', marginBottom: '12px', fontSize: '13px', color: freeDelivery ? '#15803d' : '#92400e', fontWeight: '600', textAlign: 'center' }}>
             {deliveryHint}
           </div>
+          )}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
             <span style={{ fontWeight: 'bold', color: '#374151', fontSize: '18px' }}>Total:</span>
             <span style={{ fontWeight: 'bold', color: '#db2777', fontSize: '20px' }}>{total.toFixed(0)} Tk</span>

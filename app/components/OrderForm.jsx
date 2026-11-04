@@ -244,7 +244,7 @@ const items = cart.map(item => {
           {form.payment === 'cod' && (
             <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '12px', marginTop: '12px' }}>
               <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#15803d', margin: '0 0 4px 0' }}>🚚 ক্যাশ অন ডেলিভারি</p>
-                  <p style={{ fontSize: '12px', color: '#374151', margin: 0 }}>পণ্য পাওয়ার পর <strong>{total.toFixed(0)} Tk</strong> পরিশোধ করুন।{!freeDelivery && ' (ডেলিভারি চার্জ আলাদা)'}</p>
+                  <p style={{ fontSize: '12px', color: '#374151', margin: 0 }}>পণ্য পাওয়ার পর <strong>{total.toFixed(0)} Tk</strong> পরিশোধ করুন।{branch?.name === 'lalmohan' && !freeDelivery && ' (ডেলিভারি চার্জ আলাদা)'}</p>
             </div>
           )}
         </div>
@@ -254,9 +254,11 @@ const items = cart.map(item => {
             <span>সর্বমোট:</span>
             <span>{total.toFixed(0)} Tk</span>
           </div>
+                 {branch?.name === 'lalmohan' && (
           <p style={{ fontSize: '12px', margin: '8px 0 0 0', color: freeDelivery ? '#15803d' : '#92400e', fontWeight: '600' }}>
             {freeDelivery ? '🎉 আপনার ডেলিভারি ফ্রি' : '🚚 ডেলিভারি চার্জ প্রযোজ্য, ডেলিভারির সময় রাইডারকে দিতে হবে'}
           </p>
+          )}
         </div>
 
         {error && (
