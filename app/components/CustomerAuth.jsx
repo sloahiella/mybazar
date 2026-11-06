@@ -170,7 +170,10 @@ export default function CustomerAuth({ onSuccess }) {
   const [name, setName] = useState('');
   const [district, setDistrict] = useState('');
   const [upazila, setUpazila] = useState('');
-  const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
+  const [otpStep, setOtpStep] = useState('phone');
+  const [otpCode, setOtpCode] = useState('');
+  const [maskedEmail, setMaskedEmail] = useState('');
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -189,18 +192,45 @@ export default function CustomerAuth({ onSuccess }) {
   }, []);
 
   const upazilas = district ? (districtUpazilas[district] || []) : [];
-  async function handleLogin() {
-    if (!phone) { alert('ফোন নম্বর দিন!'); return; }
+   async function sendOtp() {
+    const p = phone.trim();
+    if (!p) { alert('ফোন নম্বর দিন!'); return; }
     setLoading(true);
-    const { data } = await supabase.from('customers').select('*').eq('phone', phone).single();
-    if (data) {
-      localStorage.setItem('customer_phone', data.phone);
-      localStorage.setItem('customer_name', data.name);
-      localStorage.setItem('customer_district', data.district);
-      localStorage.setItem('customer_upazila', data.upazila);
-      onSuccess(data);
-    } else {
-      alert('এই নম্বরে কোনো অ্যাকাউন্ট নেই! নতুন রেজিস্ট্রেশন করুন।');
+    try {
+      const res = await fetch('/api/otp/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: p }) });
+      const data = await res.json();
+      if (data.ok) {
+        setMaskedEmail(data.maskedEmail || '');
+        setOtpCode('');
+        setOtpStep('code');
+      } else {
+        alert(data.message || 'কোড পাঠানো যায়নি');
+      }
+    } catch (e) {
+      alert('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন');
+    }
+    setLoading(false);
+  }
+
+  async function verifyOtp() {
+    if (!otpCode.trim()) { alert('কোড দিন!'); return; }
+    setLoading(true);
+    try {
+      const res = await fetch('/api/otp/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: phone.trim(), code: otpCode.trim() }) });
+      const data = await res.json();
+      if (data.ok && data.customer) {
+        const c = data.customer;
+        localStorage.setItem('customer_phone', c.phone);
+        localStorage.setItem('customer_name', c.name);
+        localStorage.setItem('customer_district', c.district || '');
+        localStorage.setItem('customer_upazila', c.upazila || '');
+        if (c.email) localStorage.setItem('customer_email', c.email);
+        onSuccess(c);
+      } else {
+        alert(data.message || 'কোড ভুল হয়েছে');
+      }
+    } catch (e) {
+      alert('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন');
     }
     setLoading(false);
   }
@@ -325,10 +355,23 @@ export default function CustomerAuth({ onSuccess }) {
               </div>
             </>
           )}
+          {isLogin && otpStep === 'code' && (
+            <div style={{ background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '12px', padding: '12px' }}>
+              <p style={{ fontSize: '13px', color: '#374151', margin: '0 0 8px 0' }}>
+                {maskedEmail ? `${maskedEmail} ঠিকানায় ৬ অঙ্কের কোড পাঠানো হয়েছে (৫ মিনিট কাজ করবে)` : 'আপনার ইমেইলে কোড পাঠানো হয়েছে'}
+              </p>
+              <input value={otpCode} onChange={e => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))} inputMode="numeric" placeholder="৬ অঙ্কের কোড"
+                style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '16px', outline: 'none', boxSizing: 'border-box', color: '#1f2937', letterSpacing: '4px', textAlign: 'center' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+                <button type="button" onClick={sendOtp} disabled={loading} style={{ background: 'none', border: 'none', color: '#db2777', fontSize: '12px', cursor: 'pointer', padding: 0 }}>আবার কোড পাঠান</button>
+                <button type="button" onClick={() => { setOtpStep('phone'); setOtpCode(''); }} style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: '12px', cursor: 'pointer', padding: 0 }}>নম্বর বদলান</button>
+              </div>
+            </div>
+          )}
 
-       <button onClick={isLogin ? handleLogin : handleRegister} disabled={loading}
+       <button onClick={isLogin ? (otpStep === 'code' ? verifyOtp : sendOtp) : handleRegister} disabled={loading}
             style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.5 : 1, marginTop: '8px' }}>
-            {loading ? 'অপেক্ষা করুন...' : isLogin ? 'লগিন করুন' : 'রেজিস্ট্রেশন করুন'}
+            {loading ? 'অপেক্ষা করুন...' : isLogin ? (otpStep === 'code' ? 'লগিন করুন' : 'কোড পাঠান') : 'রেজিস্ট্রেশন করুন'}
           </button>
         </div>
       </div>
