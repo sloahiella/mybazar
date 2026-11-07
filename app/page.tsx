@@ -20,8 +20,9 @@ const supabase = createClient(
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
 );
 
-const ADMIN_PASSWORD = 'sloahiella@admin';
+const ADMIN_PASSWORD = 'sloahiella@gmail.com';
 const RIDER_PASSWORD = 'sloahiella@rider';
+const ADMIN_EMAIL = 'sloahiella@gmail.com';
 const LOGO_URL = 'https://i.ibb.co.com/Y7kNKLtt/Chat-GPT-Image-Aug-28-2026-10-19-19-PM.png';
 const PINK = '#db2777';
 const PINK_DARK = '#be185d';
@@ -574,7 +575,7 @@ useEffect(() => {
 }
     async function checkGoogleLogin() {
       const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
+            if (session?.user && session.user.email !== ADMIN_EMAIL) {
         const user = session.user
         const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
         const phone = user.phone || user.user_metadata?.phone || user.email || '00000000000'
@@ -592,7 +593,12 @@ useEffect(() => {
     checkGoogleLogin()
     checkSellerLogin()
        const savedRole = localStorage.getItem('role');
-    if (savedRole) setRole(savedRole);
+       if (savedRole) setRole(savedRole);
+    if (savedRole === 'admin') {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) { localStorage.removeItem('role'); setRole(null); }
+      });
+    }
     if (savedRole === 'rider') setRiderVehicle(localStorage.getItem('rider_vehicle'));
     if (localStorage.getItem('autoPrint') === 'true') setAutoPrint(true);
        const savedPhone = localStorage.getItem('customer_phone');
@@ -711,8 +717,11 @@ useEffect(() => {
 
     async function handleLogin() {
     if (loginType === 'admin') {
-      if (password === ADMIN_PASSWORD) { setRole('admin'); localStorage.setItem('role', 'admin'); setShowLoginModal(false); setPassword(''); setLoginError(''); }
-      else { setLoginError('Admin পাসওয়ার্ড ভুল!'); }
+           const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email: ADMIN_EMAIL, password });
+      if (authError || !authData?.user) { setLoginError('Admin পাসওয়ার্ড ভুল!'); return; }
+      const { data: isAdminOk } = await supabase.rpc('is_admin');
+      if (!isAdminOk) { await supabase.auth.signOut(); setLoginError('এই অ্যাকাউন্টের অ্যাডমিন অনুমতি নেই!'); return; }
+      setRole('admin'); localStorage.setItem('role', 'admin'); setShowLoginModal(false); setPassword(''); setLoginError('');
     } else if (loginType === 'rider') {
       if (password === RIDER_PASSWORD) { setRole('rider'); localStorage.setItem('role', 'rider'); setShowLoginModal(false); setPassword(''); setLoginError(''); }
       else { setLoginError('Rider পাসওয়ার্ড ভুল!'); }
@@ -723,7 +732,7 @@ useEffect(() => {
     }
   }
 
-  function handleLogout() { setRole(null); localStorage.removeItem('role'); localStorage.removeItem('editor_page_id'); localStorage.removeItem('editor_page_name'); localStorage.removeItem('current_page_id'); setShowAdminDrawer(false); }
+  function handleLogout() { supabase.auth.signOut(); setRole(null); localStorage.removeItem('role'); localStorage.removeItem('editor_page_id'); localStorage.removeItem('editor_page_name'); localStorage.removeItem('current_page_id'); setShowAdminDrawer(false); }
   function toggleAutoPrint() { const newVal = !autoPrint; setAutoPrint(newVal); localStorage.setItem('autoPrint', newVal.toString()); }
 
   const getFilteredByDate = (data: any[]) => {
