@@ -719,7 +719,8 @@ useEffect(() => {
     if (loginType === 'admin') {
            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email: ADMIN_EMAIL, password });
       if (authError || !authData?.user) { setLoginError('Admin পাসওয়ার্ড ভুল!'); return; }
-      const { data: isAdminOk } = await supabase.rpc('is_admin');
+          const { data: isAdminOk, error: rpcError } = await supabase.rpc('is_admin');
+      if (rpcError) { await supabase.auth.signOut(); setLoginError('যাচাইয়ে সমস্যা: ' + rpcError.message); return; }
       if (!isAdminOk) { await supabase.auth.signOut(); setLoginError('এই অ্যাকাউন্টের অ্যাডমিন অনুমতি নেই!'); return; }
       setRole('admin'); localStorage.setItem('role', 'admin'); setShowLoginModal(false); setPassword(''); setLoginError('');
     } else if (loginType === 'rider') {
