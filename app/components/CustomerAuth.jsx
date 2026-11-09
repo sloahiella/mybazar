@@ -236,23 +236,36 @@ export default function CustomerAuth({ onSuccess }) {
     setLoading(false);
   }
 
-  async function handleRegister() {
-   if (!name || !phone || !email || !district || !upazila) { alert('সব তথ্য দিন!'); return; }
-    if (phone.length < 11) { alert('সঠিক ফোন নম্বর দিন!'); return; }
+    async function handleRegister() {
+    if (!name || !phone || !email || !district || !upazila) { alert('সব তথ্য দিন!'); return; }
+    if (phone.trim().length < 11) { alert('সঠিক ফোন নম্বর দিন!'); return; }
     setLoading(true);
-    const { data: existing } = await supabase.from('customers').select('*').eq('phone', phone).single();
-    if (existing) { alert('এই নম্বরে আগেই অ্যাকাউন্ট আছে! লগিন করুন।'); setLoading(false); setIsLogin(true); return; }
-   const { data, error } = await supabase.from('customers').insert({ name, phone, email, district, upazila }).select().single();
-    if (error) { alert('সমস্যা হয়েছে: ' + error.message); setLoading(false); return; }
-    localStorage.setItem('customer_phone', data.phone);
-    localStorage.setItem('customer_name', data.name);
-    localStorage.setItem('customer_district', data.district);
-    localStorage.setItem('customer_upazila', data.upazila);
-    localStorage.setItem('customer_email', data.email || '');
-    onSuccess(data);
+    try {
+      const res = await fetch('/api/customer/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, email, district, upazila }),
+      });
+      const result = await res.json();
+      if (result.exists) {
+        alert('এই নম্বরে আগেই অ্যাকাউন্ট আছে! লগিন করুন।');
+        setIsLogin(true);
+      } else if (result.ok && result.customer) {
+        const data = result.customer;
+        localStorage.setItem('customer_phone', data.phone);
+        localStorage.setItem('customer_name', data.name);
+        localStorage.setItem('customer_district', data.district);
+        localStorage.setItem('customer_upazila', data.upazila);
+        localStorage.setItem('customer_email', data.email || '');
+        onSuccess(data);
+      } else {
+        alert(result.message || 'সমস্যা হয়েছে');
+      }
+    } catch (e) {
+      alert('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন');
+    }
     setLoading(false);
   }
-
   return (
     <div style={{ minHeight: '100vh', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
       <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(219,39,119,0.15)', padding: '32px', maxWidth: '400px', width: '100%' }}>
