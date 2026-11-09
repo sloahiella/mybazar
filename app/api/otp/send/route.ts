@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       phone,
       code_hash: hash(phone, code),
       expires_at: new Date(now + TTL_MS).toISOString(),
-      attempts: 0,
+           attempts: sent === 0 ? 0 : (otp?.attempts || 0),
       sent_count: sent + 1,
       window_start: sent === 0 ? new Date(now).toISOString() : otp?.window_start,
       locked_until: null,

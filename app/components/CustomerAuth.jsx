@@ -227,7 +227,8 @@ export default function CustomerAuth({ onSuccess }) {
         if (c.email) localStorage.setItem('customer_email', c.email);
         onSuccess(c);
       } else {
-        alert(data.message || 'কোড ভুল হয়েছে');
+            alert(data.message || 'কোড ভুল হয়েছে');
+        if (data.locked) { setOtpStep('phone'); setOtpCode(''); }
       }
     } catch (e) {
       alert('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন');
