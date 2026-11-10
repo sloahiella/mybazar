@@ -173,7 +173,21 @@ export default function CustomerAuth({ onSuccess }) {
     const [loading, setLoading] = useState(false);
   const [otpStep, setOtpStep] = useState('phone');
   const [otpCode, setOtpCode] = useState('');
-  const [maskedEmail, setMaskedEmail] = useState('');
+   const [maskedEmail, setMaskedEmail] = useState('');
+  const [expiresAt, setExpiresAt] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+
+  useEffect(() => {
+    if (otpStep !== 'code' || !expiresAt) return;
+    const tick = () => setSecondsLeft(Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [otpStep, expiresAt]);
+
+  // কোড পাঠানোর কত সেকেন্ড পর "আবার কোড পাঠান" চালু হবে। ৩০০ = মেয়াদ শেষ হলে। ৬০ করলে ১ মিনিট পর
+  const RESEND_AFTER_SEC = 300;
+  const canResend = (300 - secondsLeft) >= RESEND_AFTER_SEC;
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -202,7 +216,9 @@ export default function CustomerAuth({ onSuccess }) {
       if (data.ok) {
         setMaskedEmail(data.maskedEmail || '');
         setOtpCode('');
-        setOtpStep('code');
+              setOtpStep('code');
+        setSecondsLeft(300);
+        setExpiresAt(Date.now() + 5 * 60 * 1000);
       } else {
         alert(data.message || 'কোড পাঠানো যায়নি');
       }
@@ -225,6 +241,7 @@ export default function CustomerAuth({ onSuccess }) {
         localStorage.setItem('customer_district', c.district || '');
         localStorage.setItem('customer_upazila', c.upazila || '');
         if (c.email) localStorage.setItem('customer_email', c.email);
+               window.dispatchEvent(new Event('customerLoggedIn'));
         onSuccess(c);
       } else {
             alert(data.message || 'কোড ভুল হয়েছে');
@@ -257,6 +274,7 @@ export default function CustomerAuth({ onSuccess }) {
         localStorage.setItem('customer_district', data.district);
         localStorage.setItem('customer_upazila', data.upazila);
         localStorage.setItem('customer_email', data.email || '');
+               window.dispatchEvent(new Event('customerLoggedIn'));
         onSuccess(data);
       } else {
         alert(result.message || 'সমস্যা হয়েছে');
@@ -371,13 +389,16 @@ export default function CustomerAuth({ onSuccess }) {
           )}
           {isLogin && otpStep === 'code' && (
             <div style={{ background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '12px', padding: '12px' }}>
-              <p style={{ fontSize: '13px', color: '#374151', margin: '0 0 8px 0' }}>
-                {maskedEmail ? `${maskedEmail} ঠিকানায় ৬ অঙ্কের কোড পাঠানো হয়েছে (৫ মিনিট কাজ করবে)` : 'আপনার ইমেইলে কোড পাঠানো হয়েছে'}
+                          <p style={{ fontSize: '13px', color: '#374151', margin: '0 0 8px 0' }}>
+                {maskedEmail ? `${maskedEmail} ঠিকানায় ৬ অঙ্কের কোড পাঠানো হয়েছে` : 'আপনার ইমেইলে কোড পাঠানো হয়েছে'}
+              </p>
+              <p style={{ fontSize: '14px', fontWeight: 'bold', margin: '0 0 8px 0', textAlign: 'center', color: secondsLeft > 0 ? '#db2777' : '#dc2626' }}>
+                {secondsLeft > 0 ? `⏱ ${String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:${String(secondsLeft % 60).padStart(2, '0')} মিনিট বাকি` : 'কোডের মেয়াদ শেষ। নতুন কোড নিন।'}
               </p>
               <input value={otpCode} onChange={e => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))} inputMode="numeric" placeholder="৬ অঙ্কের কোড"
                 style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '16px', outline: 'none', boxSizing: 'border-box', color: '#1f2937', letterSpacing: '4px', textAlign: 'center' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
-                <button type="button" onClick={sendOtp} disabled={loading} style={{ background: 'none', border: 'none', color: '#db2777', fontSize: '12px', cursor: 'pointer', padding: 0 }}>আবার কোড পাঠান</button>
+               <button type="button" onClick={sendOtp} disabled={loading || !canResend} style={{ background: 'none', border: 'none', color: canResend ? '#db2777' : '#9ca3af', fontSize: '12px', cursor: canResend ? 'pointer' : 'not-allowed', padding: 0 }}>{canResend ? 'আবার কোড পাঠান' : 'আবার কোড পাঠান (অপেক্ষা করুন)'}</button>
                 <button type="button" onClick={() => { setOtpStep('phone'); setOtpCode(''); }} style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: '12px', cursor: 'pointer', padding: 0 }}>নম্বর বদলান</button>
               </div>
             </div>

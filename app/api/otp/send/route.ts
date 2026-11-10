@@ -77,10 +77,11 @@ export async function POST(request: Request) {
         text: `আপনার লগইন কোড: ${code}\nএই কোড ৫ মিনিট কাজ করবে। কাউকে কোডটি দেবেন না।`,
       }),
     });
-    if (!res.ok) {
+       if (!res.ok) {
+      const detail = await res.text();
+      console.error('Resend error', res.status, detail);
       return NextResponse.json({ ok: false, message: 'কোড পাঠানো যায়নি। একটু পরে চেষ্টা করুন বা হোয়াটসঅ্যাপে যোগাযোগ করুন।' }, { status: 502 });
     }
-
     return NextResponse.json({ ok: true, maskedEmail: mask(customer.email) });
   } catch {
     return NextResponse.json({ ok: false, message: 'কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন' }, { status: 500 });

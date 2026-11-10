@@ -909,7 +909,7 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
       )}
      {allImages.length > 0 && (
         <div style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }} onClick={() => onDoubleClick(product)}>
-          <img src={allImages[currentImageIndex]} alt={product.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block', opacity: (product.stock?.[0]?.quantity || 0) <= 0 ? 0.4 : 1 }} />
+         <img src={allImages[currentImageIndex]} loading="lazy" decoding="async" alt={product.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block', opacity: (product.stock?.[0]?.quantity || 0) <= 0 ? 0.4 : 1 }} />
           
           {/* 👑 আপনার শর্ত অনুযায়ী ভিজ্যুয়াল ব্যানার: এডমিন/সেলারের স্ক্রিনে স্টক আউট হলে ইমেজের ওপর বড় লাল লেখা ভেসে উঠবে ভাই */}
           {(product.stock?.[0]?.quantity || 0) <= 0 && (
@@ -1288,7 +1288,9 @@ const isMobile = useIsMobile()
   const [showCustomerOrders, setShowCustomerOrders] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [sellerSearch, setSellerSearch] = useState(null); // 👑 নতুন সেলার সার্চ ডাটা ট্র্যাক স্টেট
-  const [sellerProductIds, setSellerProductIds] = useState([]);
+    const [sellerProductIds, setSellerProductIds] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(24);
+  useEffect(() => { setVisibleCount(24); }, [selectedPage, selectedCategory, selectedName, search]);
 
   useEffect(() => {
     function handleShowOrders() { setShowCustomerOrders(true); }
@@ -1869,7 +1871,7 @@ if (orderId) {
           <style>{mobileGridStyle}</style>
           {/* 👑 আল্টিমেট পারফেক্ট ফিক্স: w-max এবং max-w-full দিয়ে জোরাজুরি ছাড়াই কার্ড দুটোকে পাশাপাশি আনা হলো ভাই */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-1.5 pt-0">
-{displayProducts.map((product, index) => (
+{(isAdmin ? displayProducts : displayProducts.slice(0, visibleCount)).map((product, index) => (
              <ProductCard  
                 key={product.id} 
                 product={product} 
@@ -1890,6 +1892,11 @@ if (orderId) {
                 onDragHandleDown={(e) => startDrag(index, e)} 
               />
             ))}
+                        {!isAdmin && displayProducts.length > visibleCount && (
+              <button onClick={() => setVisibleCount(c => c + 24)} className="col-span-full" style={{ padding: '12px', borderRadius: '12px', border: '2px solid #db2777', background: 'white', color: '#db2777', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', margin: '8px 0' }}>
+                আরও দেখান ({visibleCount}/{displayProducts.length})
+              </button>
+            )}
             {!loading && displayProducts.length === 0 && (
               <p className="col-span-full text-center text-gray-400 mt-10">
                 কোনো পণ্য পাওয়া যায়নি
