@@ -3,9 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
 
-const admin = createClient('https://jthdtmqrapnfmmmeuqsw.supabase.co', process.env.SUPABASE_SECRET_KEY || '');
+function getAdmin() {
+  const key = process.env.SUPABASE_SECRET_KEY;
+  if (!key) throw new Error('SUPABASE_SECRET_KEY missing');
+  return createClient('https://jthdtmqrapnfmmmeuqsw.supabase.co', key);
+}
 
 export async function POST(request: Request) {
+      const admin = getAdmin();
   try {
     const b = await request.json();
     const name = String(b?.name || '').trim().slice(0, 100);
