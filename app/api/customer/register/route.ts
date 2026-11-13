@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { clientIp, allowed, tooMany } from '../../_lib/rateLimit';
 
 export const runtime = 'nodejs';
 
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ ok: false, message: 'সঠিক ইমেইল দিন!' }, { status: 400 });
     }
-
+    if (!(await allowed(admin, `reg-ip:${clientIp(request)}`, 20, 3600))) return tooMany();
     const { data: existing } = await admin.from('customers').select('phone').eq('phone', phone).maybeSingle();
     if (existing) return NextResponse.json({ ok: false, exists: true });
 

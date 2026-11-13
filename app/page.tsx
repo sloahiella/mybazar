@@ -684,9 +684,10 @@ useEffect(() => {
   async function fetchOrders(filterPageId?: string) {
     const editorPageId = localStorage.getItem('editor_page_id');
     const currentPageId = filterPageId !== undefined ? filterPageId : localStorage.getItem('current_page_id');
-    const activePageId = currentPageId || (role === 'editor' ? editorPageId : null);
-    const { data } = await supabase.from('orders').select('*, order_items(*, products(name, name_bn, unit, image_url, page_id, product_code, cost_price))').order('created_at', { ascending: false });
-    if (data) {
+       const activePageId = role === 'editor' ? (currentPageId || editorPageId) : null;
+       const { data, error: ordersError } = await supabase.from('orders').select('*, order_items(*, products(name, name_bn, unit, image_url, page_id, product_code, cost_price))').order('created_at', { ascending: false });
+        if (ordersError) console.error('fetchOrders error:', ordersError);
+       if (data) {
       let filteredData = data;
       if (activePageId) { filteredData = data.filter((o: any) => o.order_items?.some((item: any) => { const productPageId = item.products?.page_id; if (!productPageId && !activePageId) return true; return String(productPageId) === String(activePageId); })); }
      setOrders(filteredData); setTotalOrders(filteredData.length);

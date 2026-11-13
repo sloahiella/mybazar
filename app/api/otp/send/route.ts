@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
-
 export const runtime = 'nodejs';
-
+import { clientIp, allowed, tooMany } from '../../_lib/rateLimit';
 function getAdmin() {
   const key = process.env.SUPABASE_SECRET_KEY;
   if (!key) throw new Error('SUPABASE_SECRET_KEY missing');
@@ -33,6 +32,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: 'সঠিক ফোন নম্বর দিন' }, { status: 400 });
     }
 
+        if (!(await allowed(admin, `otp-ip:${clientIp(request)}`, 30, 3600))) return tooMany();
     const now = Date.now();
     const { data: otp } = await admin.from('customer_otps').select('*').eq('phone', phone).maybeSingle();
 

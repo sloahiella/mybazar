@@ -47,7 +47,7 @@ export async function POST(request) {
     // 👑 ধাপ ১: বাক্যের মধ্যে থেকে সংখ্যা (প্রোডাক্ট কোড) নিজে থেকে বের করা
     const codeMatch = rawText.match(/\d{3,}/); // ৩ বা তার বেশি ডিজিটের সংখ্যা খুঁজবে
     const extractedCode = codeMatch ? codeMatch[0] : null;
-
+    const safeText = rawText.replace(/[,()%*\\]/g, ' ').slice(0, 80);
     let results = [];
 
     // 👑 ধাপ ২: কোড দিয়ে সরাসরি খোঁজা (সবচেয়ে নির্ভুল)
@@ -81,7 +81,7 @@ export async function POST(request) {
       const { data: ownByName } = await supabase
         .from('products')
         .select('name, name_bn, price_per_unit, product_code, category, category_bn')
-        .or(`name.ilike.%${rawText}%,name_bn.ilike.%${rawText}%,category.ilike.%${rawText}%,category_bn.ilike.%${rawText}%`)
+          .or(`name.ilike.%${safeText}%,name_bn.ilike.%${safeText}%,category.ilike.%${safeText}%,category_bn.ilike.%${safeText}%`)
         .eq('is_active', true)
         .limit(5);
       if (ownByName) results = ownByName;
