@@ -655,6 +655,58 @@ useEffect(() => {
       return () => { supabase.removeChannel(channel); };
     }
   }, [role]);
+    // 👑 রিয়েল-টাইম: নতুন অর্ডার, স্ট্যাটাস বদল ও আইটেম যোগ হলে তালিকা ও ব্যাজ নিজে আপডেট হবে
+  useEffect(() => {
+    if (role !== 'admin' && role !== 'editor') return;
+    let timer: any = null;
+    let poll: any = null;
+    let channel: any = null;
+    let cancelled = false;
+    let sig = '';
+
+    // অর্ডারের পরে আইটেম আলাদা অনুরোধে ঢোকে, তাই একটু অপেক্ষা করে তালিকা আনা হয়
+    const refreshSoon = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { fetchOrders(); }, 1200);
+    };
+
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (session?.access_token) supabase.realtime.setAuth(session.access_token);
+      channel = supabase
+        .channel('admin-live-' + Date.now())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, refreshSoon)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'order_items' }, refreshSoon)
+        .subscribe();
+    })();
+
+    const { data: authSub } = supabase.auth.onAuthStateChange((_event, s) => {
+      if (s?.access_token) supabase.realtime.setAuth(s.access_token);
+    });
+
+    // রিয়েল-টাইম কোনো কারণে না এলে ধরার জন্য প্রতি ৩০ সেকেন্ডে হালকা যাচাই
+    const check = async () => {
+      if (document.visibilityState !== 'visible') return;
+      const { data } = await supabase.from('orders').select('id,status').order('id', { ascending: false }).limit(200);
+      if (!data) return;
+      const next = data.map((o: any) => `${o.id}:${o.status}`).join(',');
+      if (sig && next !== sig) fetchOrders();
+      sig = next;
+    };
+    check();
+    poll = setInterval(check, 30000);
+    document.addEventListener('visibilitychange', check);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      clearInterval(poll);
+      document.removeEventListener('visibilitychange', check);
+      authSub?.subscription?.unsubscribe();
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [role]);
 
   function playNotificationSound() {
     try {
@@ -705,6 +757,7 @@ useEffect(() => {
 
   async function markAllRead() { await supabase.from('notifications').update({ is_read: true }).eq('is_read', false); fetchNotifications(); }
       async function updateOrderStatus(id: number, status: string, customerPhone?: string, deliveryCharge?: number) {
+        setOrders(prev => prev.map((o: any) => o.id === id ? { ...o, status } : o));
     const updateData: any = { status };
     if (deliveryCharge !== undefined) updateData.delivery_charge = deliveryCharge;
     await supabase.from('orders').update(updateData).eq('id', id);
@@ -751,7 +804,8 @@ useEffect(() => {
     });
   };
 
-   const effectiveRole = adminViewingAsRider ? 'rider' : role;
+    const effectiveRole = adminViewingAsRider ? 'rider' : role;
+  const pendingCount = orders.filter((o: any) => o.status === 'pending').length;
   const dateFilteredOrders = getFilteredByDate(orders).sort((a: any, b: any) => {
     const aPending = a.status === 'pending' ? 0 : 1;
     const bPending = b.status === 'pending' ? 0 : 1;
@@ -1013,7 +1067,7 @@ if (!selectedBranch) {
         role={role}
         sellerUser={sellerUser}
        hideHeader={cartOpen || orderFormOpen}
-       notificationCount={unreadCount}
+      notificationCount={pendingCount}
         onSellerClick={() => setShowSellerDrawer(true)}
                  onAdminClick={() => {
           setShowAdminDrawer(true);
@@ -1302,8 +1356,8 @@ if (!selectedBranch) {
             {[{ key: 'orders', label: '📋 Orders' }, ...(role === 'admin' ? [{ key: 'sellers', label: '🏪 Sellers' }, { key: 'riders', label: '🏍️ Riders' }, { key: 'withdrawals', label: '💰 Withdraw' }] : [])].map(t => (
   <button key={t.key} onClick={() => { setAdminTab(t.key); if (t.key === 'orders') markAllRead(); }} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: adminTab === t.key ? PINK : '#f3f4f6', color: adminTab === t.key ? 'white' : '#374151', position: 'relative' }}>
     {t.label}
-    {t.key === 'orders' && unreadCount > 0 && (
-      <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', color: 'white', fontSize: '10px', minWidth: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', padding: '0 3px' }}>{unreadCount}</span>
+    {t.key === 'orders' && pendingCount > 0 && (
+      <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', color: 'white', fontSize: '10px', minWidth: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', padding: '0 3px' }}>{pendingCount}</span>
     )}
   </button>
 ))}
