@@ -708,16 +708,21 @@ useEffect(() => {
     };
   }, [role]);
 
-  function playNotificationSound() {
+    function playNotificationSound() {
     try {
       const audioContext = new AudioContext();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      oscillator.connect(gainNode); gainNode.connect(audioContext.destination);
-      oscillator.frequency.value = 880;
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
-      oscillator.start(audioContext.currentTime); oscillator.stop(audioContext.currentTime + 0.5);
+      const beep = (start: number, freq: number) => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        osc.connect(gain); gain.connect(audioContext.destination);
+        gain.gain.setValueAtTime(1.0, audioContext.currentTime + start);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + start + 0.3);
+        osc.start(audioContext.currentTime + start);
+        osc.stop(audioContext.currentTime + start + 0.3);
+      };
+      beep(0, 880); beep(0.35, 1100); beep(0.7, 1320);
     } catch (e) {}
   }
 

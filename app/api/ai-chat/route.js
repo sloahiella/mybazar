@@ -1,22 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// 👑 Mohasagor প্রোডাক্ট ক্যাশ - বারবার তাদের সার্ভার থেকে টানার বদলে ১০ মিনিট মেমোরিতে রাখা হবে
-let mohaCache = null;
-let mohaCacheTime = 0;
-const CACHE_DURATION = 10 * 60 * 1000; // ১০ মিনিট
+export const maxDuration = 10;
 
-async function getMohaProducts(request) {
-  const now = Date.now();
-  if (mohaCache && now - mohaCacheTime < CACHE_DURATION) {
-    return mohaCache;
-  }
-  const res = await fetch(new URL('/api/mohasagor', request.url));
-  const data = await res.json();
-  mohaCache = data.products || [];
-  mohaCacheTime = now;
-  return mohaCache;
-}
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
@@ -24,176 +10,215 @@ const supabase = createClient(
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
+
+const TIMEOUT = Symbol('timeout');
+function withTimeout(promise, ms) {
+  return Promise.race([promise, new Promise((resolve) => setTimeout(() => resolve(TIMEOUT), ms))]);
+}
+
+// সবসময় JSON, সবসময় status 200, যাতে মেক ভেঙে না যায়
+function reply(body) {
+  return NextResponse.json(body, { status: 200, headers: corsHeaders });
+}
+
+const BN_DIGITS = '০১২৩৪৫৬৭৮৯';
+function toAsciiDigits(s) {
+  return s.replace(/[০-৯]/g, (d) => String(BN_DIGITS.indexOf(d)));
+}
+
+function finalPrice(price, discount) {
+  const p = Number(price) || 0;
+  const d = Number(discount) || 0;
+  return d > 0 ? Math.round(p * (1 - d / 100)) : p;
+}
+
+function mohaInStock(pd) {
+  const s = String(pd?.stock_status || '').toLowerCase();
+  return !(s.includes('out') || s.includes('unavailable'));
+}
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-export async function POST(request) {
-  try {
-    const body = await request.json();
-    const rawText = (body.query || body.message || body.product_code || body.name || '').toString().trim();
+// ----- পণ্য খোঁজা -----
+async function searchByTerm(term, code) {
+  const safe = term.replace(/[,()%*\\]/g, ' ').trim().slice(0, 80);
 
-    if (!rawText) {
-      return NextResponse.json(
-        { success: false, message: 'query দেওয়া হয়নি' },
-        { status: 400, headers: corsHeaders }
-      );
-    }
+  let ownQ = supabase
+    .from('products')
+    .select('name, name_bn, price_per_unit, discount_percent, product_code, category, category_bn, stock(quantity)')
+    .eq('is_active', true)
+    .limit(5);
+  let catQ = supabase
+    .from('mohasagor_catalog')
+    .select('id, name, category, product_code, price')
+    .limit(30);
 
-    // 👑 ধাপ ১: বাক্যের মধ্যে থেকে সংখ্যা (প্রোডাক্ট কোড) নিজে থেকে বের করা
-    const codeMatch = rawText.match(/\d{3,}/); // ৩ বা তার বেশি ডিজিটের সংখ্যা খুঁজবে
-    const extractedCode = codeMatch ? codeMatch[0] : null;
-    const safeText = rawText.replace(/[,()%*\\]/g, ' ').slice(0, 80);
-    let results = [];
+  if (code) {
+    ownQ = ownQ.eq('product_code', code);
+    catQ = catQ.eq('product_code', code);
+  } else {
+    if (!safe) return [];
+    ownQ = ownQ.or(`name.ilike.%${safe}%,name_bn.ilike.%${safe}%,category.ilike.%${safe}%,category_bn.ilike.%${safe}%`);
+    catQ = catQ.or(`name.ilike.%${safe}%,category.ilike.%${safe}%`);
+  }
 
-    // 👑 ধাপ ২: কোড দিয়ে সরাসরি খোঁজা (সবচেয়ে নির্ভুল)
-    if (extractedCode) {
-      const { data: ownByCode } = await supabase
-        .from('products')
-        .select('name, name_bn, price_per_unit, product_code, category, category_bn')
-        .eq('product_code', extractedCode)
-        .eq('is_active', true)
-        .limit(1);
-      if (ownByCode && ownByCode.length > 0) results = ownByCode;
+  const [ownRes, catRes] = await Promise.all([ownQ, catQ]);
+  const results = [];
 
-           if (results.length === 0) {
-        const mohaProductsList = await getMohaProducts(request);
-        const mohaMatch = mohaProductsList.filter(
-          (p) => String(p.product_code) === String(extractedCode)
-        );
-        results = mohaMatch.map((p) => ({
-          name: p.name,
-          name_bn: p.name,
-          price_per_unit: p.price,
-          product_code: p.product_code,
-          category: p.category,
-          category_bn: p.category,
-        }));
-      }
-    }
-
-    // 👑 ধাপ ৩: কোড দিয়ে না পেলে, নাম দিয়ে খোঁজা (বাংলা ও ইংরেজি দুটোতেই, আংশিক মিল হলেও চলবে)
-    if (results.length === 0) {
-      const { data: ownByName } = await supabase
-        .from('products')
-        .select('name, name_bn, price_per_unit, product_code, category, category_bn')
-          .or(`name.ilike.%${safeText}%,name_bn.ilike.%${safeText}%,category.ilike.%${safeText}%,category_bn.ilike.%${safeText}%`)
-        .eq('is_active', true)
-        .limit(5);
-      if (ownByName) results = ownByName;
-    }
-
-    // 👑 ধাপ ৪: এখনো না পেলে Mohasagor প্রোডাক্টেও নাম দিয়ে খোঁজা
-        if (results.length === 0) {
-      const mohaProductsList = await getMohaProducts(request);
-      const lowerText = rawText.toLowerCase();
-      const mohaMatch = mohaProductsList
-        .filter((p) => p.name?.toLowerCase().includes(lowerText) || p.category?.toLowerCase().includes(lowerText))
-        .slice(0, 5);
-      results = mohaMatch.map((p) => ({
-        name: p.name,
-        name_bn: p.name,
-        price_per_unit: p.price,
-        product_code: p.product_code,
-        category: p.category,
-        category_bn: p.category,
-      }));
-    }
-
-    // 👑 ধাপ ৫: সাজানো JSON রেসপন্স - শুধু retail price, wholesale কখনো না
-    if (results.length === 0) {
-      return NextResponse.json(
-        { success: true, found: false, count: 0, products: [], message: 'কোনো পণ্য খুঁজে পাওয়া যায়নি' },
-        { headers: corsHeaders }
-      );
-    }
-
-    const formattedProducts = results.map((p) => ({
+  (ownRes.data || []).forEach((p) => {
+    const qty = Number(p.stock?.[0]?.quantity) || 0;
+    results.push({
       product_name: p.name_bn || p.name,
       product_code: p.product_code,
-      retail_price: p.price_per_unit,
+      retail_price: finalPrice(p.price_per_unit, p.discount_percent),
       category: p.category_bn || p.category,
-    }));
+      in_stock: qty > 0,
+    });
+  });
 
-    return NextResponse.json(
-      {
-        success: true,
-        found: true,
-        count: formattedProducts.length,
-        products: formattedProducts,
-      },
-      { headers: corsHeaders }
-    );
-  } catch (error) {
-    console.error('AI chat lookup error:', error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 500, headers: corsHeaders }
-    );
-  }
-}
-// 👑 GET রিকোয়েস্ট - Make.com থেকে র‍্যান্ডম প্রোডাক্ট অটো-পোস্ট করার জন্য
-export async function GET(request) {
-  try {
-    // ধাপ ১: নিজের products টেবিল থেকে সব সক্রিয় প্রোডাক্ট আনা
-    const { data: ownProducts } = await supabase
-      .from('products')
-      .select('id, name, name_bn, price_per_unit, description, image_url, product_images(image_url)')
-      .eq('is_active', true);
-
-        // ধাপ ২: Mohasagor প্রোডাক্টও আনা (cache থেকে, দ্রুত)
-    const mohaProductsList = await getMohaProducts(request);
-    const mohaProducts = mohaProductsList.map((p) => ({
-      id: `moha-${p.id}`,
-      name: p.name,
-      price_per_unit: p.price,
-      description: p.details ? p.details.replace(/<[^>]*>/g, '').slice(0, 200) : '',
-      image_url: p.thumbnail_img,
-      product_images: (p.product_images || []).map((img) => ({ image_url: img.product_image })),
-    }));
-
-    const allProducts = [...(ownProducts || []), ...mohaProducts];
-
-    if (allProducts.length === 0) {
-      return NextResponse.json(
-        { success: false, message: 'কোনো পণ্য পাওয়া যায়নি' },
-        { status: 404, headers: corsHeaders }
-      );
-    }
-
-    // ধাপ ৩: লটারির মতো একটা র‍্যান্ডম প্রোডাক্ট বাছাই করা
-    const randomProduct = allProducts[Math.floor(Math.random() * allProducts.length)];
-
-    // ধাপ ৪: সব ছবি একসাথে জড়ো করা (মূল ছবি + অতিরিক্ত ছবি)
-    const imageList = [];
-    if (randomProduct.image_url) imageList.push(randomProduct.image_url);
-    if (randomProduct.product_images) {
-      randomProduct.product_images.forEach((img) => {
-        if (img.image_url && !imageList.includes(img.image_url)) imageList.push(img.image_url);
+  // মহাসাগরের পণ্যের মধ্যে শুধু যেগুলো সাইটে অ্যাসাইন করা আছে
+  const catRows = catRes.data || [];
+  if (catRows.length > 0) {
+    const ids = catRows.map((c) => c.id);
+    const { data: assigns } = await supabase
+      .from('mohasagor_assignments')
+      .select('mohasagor_product_id, custom_price, discount_percent, product_data')
+      .in('mohasagor_product_id', ids);
+    const byId = new Map((assigns || []).map((a) => [String(a.mohasagor_product_id), a]));
+    for (const c of catRows) {
+      const a = byId.get(String(c.id));
+      if (!a || !a.product_data) continue;
+      const base = a.custom_price != null ? a.custom_price : c.price;
+      results.push({
+        product_name: c.name,
+        product_code: c.product_code,
+        retail_price: finalPrice(base, a.discount_percent),
+        category: c.category,
+        in_stock: mohaInStock(a.product_data),
       });
     }
+  }
 
-    // ধাপ ৫: সাজানো JSON রেসপন্স যেটা Gemini সহজে পড়তে পারবে
-    return NextResponse.json(
-      {
-        success: true,
-        product_name: randomProduct.name_bn || randomProduct.name,
-        price: randomProduct.price_per_unit,
-        description: (randomProduct.description || '').slice(0, 200),
-        images: imageList,
-        buy_link: `https://sohelmart.com/?product=${randomProduct.id}`,
-      },
-      { headers: corsHeaders }
-    );
-  } catch (error) {
-    console.error('Random product fetch error:', error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 500, headers: corsHeaders }
-    );
+  return results.slice(0, 5);
+}
+
+async function searchProducts(rawText) {
+  const text = toAsciiDigits(rawText);
+  const codeMatch = text.match(/\d{3,}/);
+  const code = codeMatch ? codeMatch[0] : null;
+
+  if (code) {
+    const byCode = await searchByTerm(text, code);
+    if (byCode.length > 0) return byCode;
+  }
+
+  const words = text.replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter((w) => w.length >= 2);
+  const phrase = words.join(' ');
+  if (phrase) {
+    const byPhrase = await searchByTerm(phrase, null);
+    if (byPhrase.length > 0) return byPhrase;
+  }
+
+  const longest = [...words].sort((a, b) => b.length - a.length)[0];
+  if (longest && longest !== phrase) return await searchByTerm(longest, null);
+  return [];
+}
+
+export async function POST(request) {
+  const empty = { success: false, found: false, count: 0, products: [] };
+  try {
+    let body = {};
+    try { body = await request.json(); } catch { body = {}; }
+    const rawText = String(body.query || body.message || body.product_code || body.name || '').trim();
+    if (!rawText) return reply({ ...empty, message: 'query দেওয়া হয়নি' });
+
+    const result = await withTimeout(searchProducts(rawText), 4500);
+    if (result === TIMEOUT) return reply({ ...empty, message: 'সাময়িক সমস্যা, একটু পরে চেষ্টা করুন' });
+
+    return reply({
+      success: true,
+      found: result.length > 0,
+      count: result.length,
+      products: result,
+      ...(result.length === 0 ? { message: 'কোনো পণ্য খুঁজে পাওয়া যায়নি' } : {}),
+    });
+  } catch (e) {
+    console.error('ai-chat error:', e);
+    return reply({ ...empty, message: 'সাময়িক সমস্যা হয়েছে, একটু পরে চেষ্টা করুন' });
+  }
+}
+
+// ----- র‍্যান্ডম পণ্য (ফেসবুকে অটো-পোস্টের জন্য) -----
+async function randomProduct() {
+  const [ownC, mohaC] = await Promise.all([
+    supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true),
+    supabase.from('mohasagor_assignments').select('mohasagor_product_id', { count: 'exact', head: true }).not('product_data', 'is', null),
+  ]);
+  const own = ownC.count || 0;
+  const moha = mohaC.count || 0;
+  const total = own + moha;
+  if (total === 0) return null;
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const r = Math.floor(Math.random() * total);
+
+    if (r < own) {
+      const { data } = await supabase
+        .from('products')
+        .select('id, name, name_bn, price_per_unit, discount_percent, description, image_url, product_images(image_url), stock(quantity)')
+        .eq('is_active', true)
+        .order('id')
+        .range(r, r);
+      const p = data && data[0];
+      if (!p || !(Number(p.stock?.[0]?.quantity) > 0)) continue;
+      const images = [];
+      if (p.image_url) images.push(p.image_url);
+      (p.product_images || []).forEach((im) => { if (im.image_url && !images.includes(im.image_url)) images.push(im.image_url); });
+      return {
+        product_name: p.name_bn || p.name,
+        price: finalPrice(p.price_per_unit, p.discount_percent),
+        description: String(p.description || '').split('\nSize:')[0].slice(0, 200),
+        images,
+        buy_link: `https://sohelmart.com/?product=${p.id}`,
+      };
+    }
+
+    const idx = r - own;
+    const { data } = await supabase
+      .from('mohasagor_assignments')
+      .select('mohasagor_product_id, custom_price, discount_percent, product_data')
+      .not('product_data', 'is', null)
+      .order('mohasagor_product_id')
+      .range(idx, idx);
+    const a = data && data[0];
+    const pd = a && a.product_data;
+    if (!pd || !mohaInStock(pd)) continue;
+    const images = [];
+    if (pd.thumbnail_img) images.push(pd.thumbnail_img);
+    (pd.product_images || []).forEach((im) => { const u = im.product_image; if (u && !images.includes(u)) images.push(u); });
+    return {
+      product_name: pd.name,
+      price: finalPrice(a.custom_price != null ? a.custom_price : pd.price, a.discount_percent),
+      description: String(pd.details || '').slice(0, 200),
+      images,
+      buy_link: `https://sohelmart.com/?product=moha-${a.mohasagor_product_id}`,
+    };
+  }
+  return null;
+}
+
+export async function GET() {
+  try {
+    const result = await withTimeout(randomProduct(), 4500);
+    if (result === TIMEOUT || !result) return reply({ success: false, message: 'এখন কোনো পণ্য পাওয়া যায়নি' });
+    return reply({ success: true, ...result });
+  } catch (e) {
+    console.error('random product error:', e);
+    return reply({ success: false, message: 'সাময়িক সমস্যা হয়েছে' });
   }
 }
