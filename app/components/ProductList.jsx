@@ -440,6 +440,119 @@ function SubPageChips({ selectedPage, branch, isAdmin, onSelectPage }) {
     </div>
   );
 }
+// 👑 স্ক্রিনশট ছোট করে আপলোড (সর্বোচ্চ ১০০০ পিক্সেল চওড়া), মোবাইলে দ্রুত লোডের জন্য
+async function compressImage(file, maxW = 1000, quality = 0.8) {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxW / bitmap.width);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise(res => canvas.toBlob(b => res(b), 'image/jpeg', quality));
+    return blob || file;
+  } catch (e) {
+    return file;
+  }
+}
+
+function ReviewImages({ productId, isAdmin }) {
+  const pid = String(productId);
+  const [items, setItems] = useState([]);
+  const [shown, setShown] = useState(2);
+  const [uploading, setUploading] = useState(false);
+  const [viewer, setViewer] = useState(null);
+
+  async function load() {
+    const { data } = await supabase.from('review_images').select('*').eq('product_id', pid).order('created_at', { ascending: false });
+    setItems(data || []);
+  }
+
+  useEffect(() => {
+    setShown(2);
+    load();
+    // ফিল্টার ছাড়া শোনা হচ্ছে, কারণ মোছার খবর ফিল্টার দিয়ে আসে না। টেবিল ছোট, তাই সমস্যা নেই
+    const channel = supabase
+      .channel('review-images-' + pid + '-' + Date.now())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'review_images' }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [pid]);
+
+  async function handleUpload(e) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setUploading(true);
+    for (const file of files) {
+      try {
+        const blob = await compressImage(file);
+        const path = `reviews/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+        const { error: upErr } = await supabase.storage.from('products').upload(path, blob, { contentType: blob.type || 'image/jpeg' });
+        if (upErr) { alert('আপলোড ব্যর্থ: ' + upErr.message); continue; }
+        const { data: urlData } = supabase.storage.from('products').getPublicUrl(path);
+        const { error: insErr } = await supabase.from('review_images').insert({ product_id: pid, image_url: urlData.publicUrl });
+        if (insErr) alert('সেভ ব্যর্থ: ' + insErr.message);
+      } catch (err) {
+        alert('ছবি আপলোডে সমস্যা: ' + (err?.message || err));
+      }
+    }
+    setUploading(false);
+    e.target.value = '';
+    load();
+  }
+
+  async function remove(item) {
+    if (!confirm('এই রিভিউ ছবি মুছে দেবেন?')) return;
+    const { error } = await supabase.from('review_images').delete().eq('id', item.id);
+    if (error) { alert('মুছতে সমস্যা: ' + error.message); return; }
+    const marker = '/object/public/products/';
+    const idx = item.image_url.indexOf(marker);
+    if (idx > -1) {
+      try { await supabase.storage.from('products').remove([decodeURIComponent(item.image_url.slice(idx + marker.length))]); } catch (e) {}
+    }
+    load();
+  }
+
+  if (items.length === 0 && !isAdmin) return null;
+
+  return (
+    <div style={{ marginTop: '16px' }}>
+      <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 10px 0' }}>⭐ কাস্টমার রিভিউ {items.length > 0 && `(${items.length})`}</h3>
+
+      {isAdmin && (
+        <label style={{ display: 'inline-block', background: '#fdf2f8', border: '1px dashed #db2777', color: '#db2777', fontSize: '13px', fontWeight: 'bold', padding: '8px 14px', borderRadius: '10px', cursor: uploading ? 'not-allowed' : 'pointer', marginBottom: '10px' }}>
+          {uploading ? 'আপলোড হচ্ছে...' : '📷 রিভিউয়ের ছবি আপলোড করুন'}
+          <input type="file" accept="image/*" multiple onChange={handleUpload} disabled={uploading} style={{ display: 'none' }} />
+        </label>
+      )}
+
+      {items.length === 0 && isAdmin && <p style={{ fontSize: '12px', color: '#9ca3af', margin: '0 0 8px 0' }}>এখনও কোনো রিভিউ ছবি নেই</p>}
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        {items.slice(0, shown).map(item => (
+          <div key={item.id} style={{ position: 'relative', border: '1px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden', background: '#f9fafb' }}>
+            <img src={item.image_url} alt="কাস্টমার রিভিউ" loading="lazy" onClick={() => setViewer(item.image_url)} style={{ width: '100%', display: 'block', cursor: 'zoom-in' }} />
+            {isAdmin && (
+              <button onClick={() => remove(item)} style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(239,68,68,0.95)', color: 'white', border: 'none', borderRadius: '6px', padding: '3px 8px', fontSize: '12px', cursor: 'pointer' }}>🗑️</button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {items.length > shown && (
+        <button onClick={() => setShown(s => s + 2)} style={{ width: '100%', marginTop: '12px', padding: '10px', borderRadius: '10px', border: '2px solid #db2777', background: 'white', color: '#db2777', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}>
+          আরও রিভিউ দেখুন ({shown}/{items.length})
+        </button>
+      )}
+
+      {viewer && (
+        <div onClick={() => setViewer(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', cursor: 'zoom-out' }}>
+          <img src={viewer} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }} />
+        </div>
+      )}
+    </div>
+  );
+}
 function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin, onNeedLogin }) {
     const unitPrice = Number(product.discount_percent) > 0 ? Math.round(product.price_per_unit * (1 - product.discount_percent / 100)) : product.price_per_unit;
   const [qty, setQty] = useState('');
@@ -591,10 +704,9 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
   }
 
   return (
-      <div ref={topRef} style={{ position: 'fixed', inset: 0, background: 'white', zIndex: 9999, overflowY: 'auto' }}>
-      <div style={{ background: '#db2777', color: 'white', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', position: 'sticky', top: 0, zIndex: 100 }}>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer' }}>←</button>
-        <h2 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.name}</h2>
+         <div ref={topRef} style={{ position: 'fixed', top: '60px', left: 0, right: 0, bottom: 0, background: 'white', zIndex: 900, overflowY: 'auto' }}>
+           <div style={{ background: 'white', borderBottom: '1px solid #f3f4f6', padding: '8px 16px', position: 'sticky', top: 0, zIndex: 100 }}>
+        <button onClick={onClose} style={{ background: '#fdf2f8', border: '1px solid #fbcfe8', color: '#db2777', fontSize: '13px', fontWeight: 'bold', padding: '6px 14px', borderRadius: '20px', cursor: 'pointer' }}>← পেছনে</button>
       </div>
 
       <div style={{ display: 'flex', flexDirection: typeof window !== 'undefined' && window.innerWidth < 768 ? 'column' : 'row', gap: '24px', padding: '16px' }}>
@@ -767,7 +879,7 @@ if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে 
             <p style={{ fontSize: '14px', color: '#4b5563', margin: 0, lineHeight: 1.8, whiteSpace: 'pre-line' }}>{product.description && product.description.includes('\nSize:') ? product.description.split('\nSize:')[0] : product.description || 'কোনো বিবরণ নেই।'}</p>
           </div>
         )}
-
+        {activeTab === 'description' && <ReviewImages key={product.id} productId={product.id} isAdmin={isAdmin} />}
         {activeTab === 'specifications' && (
           <div style={{ border: '1.5px solid #e5e7eb', borderRadius: '12px', padding: '14px' }}>
             {isAdmin && !editingSpec && (
