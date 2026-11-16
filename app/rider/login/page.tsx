@@ -25,20 +25,24 @@ export default function RiderLogin() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function handleLogin() {
+    async function handleLogin() {
     setError('')
     if (!phone.trim() || !password.trim()) { setError('ফোন ও পাসওয়ার্ড দিন!'); return }
     setLoading(true)
-    const { data } = await supabase.from('riders').select('*').eq('phone', phone.trim()).single()
-    setLoading(false)
-    if (!data) { setError('এই নম্বরে কোনো অ্যাকাউন্ট নেই!'); return }
-    if (data.password !== password) { setError('পাসওয়ার্ড ভুল!'); return }
-    if (!data.is_approved) { setError('আপনার অ্যাকাউন্ট এখনো অনুমোদন হয়নি!'); return }
+    const email = `r${phone.trim().replace(/\D/g, '')}@riders.sohelmart.com`
+    const { data: auth, error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    if (authError || !auth?.user) { setLoading(false); setError('ফোন নম্বর বা পাসওয়ার্ড ভুল!'); return }
+
+    const { data: rider } = await supabase.from('riders').select('id, name, vehicle_number, is_approved').eq('user_id', auth.user.id).maybeSingle()
+    if (!rider) { await supabase.auth.signOut(); setLoading(false); setError('এই অ্যাকাউন্টে রাইডারের তথ্য পাওয়া যায়নি!'); return }
+    if (!rider.is_approved) { await supabase.auth.signOut(); setLoading(false); setError('আপনার অ্যাকাউন্ট এখনো অনুমোদন হয়নি!'); return }
+
     localStorage.setItem('role', 'rider')
-    localStorage.setItem('rider_id', String(data.id))
-    localStorage.setItem('rider_name', data.name)
-    localStorage.setItem('rider_vehicle', data.vehicle_number)
-    router.push('/')
+    localStorage.setItem('rider_id', String(rider.id))
+    localStorage.setItem('rider_name', rider.name)
+    localStorage.setItem('rider_vehicle', rider.vehicle_number)
+    setLoading(false)
+    window.location.href = '/'
   }
 
   return (

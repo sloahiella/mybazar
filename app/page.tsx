@@ -21,7 +21,7 @@ const supabase = createClient(
 );
 
 const ADMIN_PASSWORD = 'sloahiella@gmail.com';
-const RIDER_PASSWORD = 'sloahiella@rider';
+
 const ADMIN_EMAIL = 'sloahiella@gmail.com';
 const LOGO_URL = 'https://i.ibb.co.com/Y7kNKLtt/Chat-GPT-Image-Aug-28-2026-10-19-19-PM.png';
 const PINK = '#db2777';
@@ -575,7 +575,7 @@ useEffect(() => {
 }
     async function checkGoogleLogin() {
       const { data: { session } } = await supabase.auth.getSession()
-            if (session?.user && session.user.email !== ADMIN_EMAIL) {
+     if (session?.user && session.user.email !== ADMIN_EMAIL && !(session.user.email || '').endsWith('@riders.sohelmart.com')) {
         const user = session.user
         const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
         const phone = user.phone || user.user_metadata?.phone || user.email || '00000000000'
@@ -594,7 +594,7 @@ useEffect(() => {
     checkSellerLogin()
        const savedRole = localStorage.getItem('role');
        if (savedRole) setRole(savedRole);
-    if (savedRole === 'admin') {
+       if (savedRole === 'admin' || savedRole === 'rider') {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (!session) { localStorage.removeItem('role'); setRole(null); }
       });
@@ -782,9 +782,7 @@ useEffect(() => {
       if (rpcError) { await supabase.auth.signOut(); setLoginError('যাচাইয়ে সমস্যা: ' + rpcError.message); return; }
       if (!isAdminOk) { await supabase.auth.signOut(); setLoginError('এই অ্যাকাউন্টের অ্যাডমিন অনুমতি নেই!'); return; }
       setRole('admin'); localStorage.setItem('role', 'admin'); setShowLoginModal(false); setPassword(''); setLoginError('');
-    } else if (loginType === 'rider') {
-      if (password === RIDER_PASSWORD) { setRole('rider'); localStorage.setItem('role', 'rider'); setShowLoginModal(false); setPassword(''); setLoginError(''); }
-      else { setLoginError('Rider পাসওয়ার্ড ভুল!'); }
+
     } else {
       const { data } = await supabase.from('pages').select('*').eq('vendor_password', password).single();
       if (data) { setRole('editor'); localStorage.setItem('role', 'editor'); localStorage.setItem('editor_page_id', String(data.id)); localStorage.setItem('editor_page_name', data.name_bn || data.name); setShowLoginModal(false); setPassword(''); setLoginError(''); }

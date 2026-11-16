@@ -26,7 +26,7 @@ export default function RiderRegister() {
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleRegister() {
+    async function handleRegister() {
     setError('')
     if (!name.trim() || !phone.trim() || !vehicleNumber.trim() || !password.trim()) {
       setError('সব তথ্য দিন!')
@@ -36,28 +36,25 @@ export default function RiderRegister() {
       setError('সঠিক ফোন নম্বর দিন!')
       return
     }
-    if (password.length < 4) {
-      setError('পাসওয়ার্ড কমপক্ষে ৪ অক্ষরের দিন!')
+    if (password.length < 6) {
+      setError('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের দিন!')
       return
     }
     setLoading(true)
-    const { error: insertError } = await supabase.from('riders').insert({
-      name: name.trim(),
-      phone: phone.trim(),
-      vehicle_number: vehicleNumber.trim(),
-      password: password,
-      is_approved: false,
-    })
-    setLoading(false)
-    if (insertError) {
-      if (insertError.code === '23505') {
-        setError('এই ফোন নম্বরে আগেই রেজিস্ট্রেশন করা আছে!')
-      } else {
-        setError('সমস্যা হয়েছে: ' + insertError.message)
-      }
-      return
+    try {
+      const res = await fetch('/api/rider/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, vehicleNumber, password }),
+      })
+      const data = await res.json()
+      setLoading(false)
+      if (!data.ok) { setError(data.message || 'সমস্যা হয়েছে'); return }
+      setDone(true)
+    } catch (e) {
+      setLoading(false)
+      setError('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন')
     }
-    setDone(true)
   }
 
   if (done) {
