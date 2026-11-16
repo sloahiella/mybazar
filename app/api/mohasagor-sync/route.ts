@@ -6,10 +6,11 @@ export const maxDuration = 60;
 const SYNC_KEY = process.env.SYNC_KEY || '';
 const CHUNK = 8;
 
-const supabase = createClient(
-  'https://jthdtmqrapnfmmmeuqsw.supabase.co',
-  'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
-);
+function getSupabase() {
+  const key = process.env.SUPABASE_SECRET_KEY;
+  if (!key) throw new Error('SUPABASE_SECRET_KEY missing');
+  return createClient('https://jthdtmqrapnfmmmeuqsw.supabase.co', key);
+}
 
 // অবৈধ অক্ষর (শূন্য অক্ষর, অর্ধেক কাটা ইমোজি) ডাটাবেজ নেয় না, তাই বাদ দেওয়া হয়
 function cleanStr(s: string) {
@@ -82,6 +83,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: false, message: 'key ভুল বা সেট করা নেই' }, { status: 401 });
   }
 
+    const supabase = getSupabase();
   const run = parseInt(searchParams.get('run') || '0', 10) || 0;
   const runAt = run ? new Date(run * 1000).toISOString() : new Date().toISOString();
 
