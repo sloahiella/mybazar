@@ -527,6 +527,32 @@ const [showEmailForm, setShowEmailForm] = useState(false);
 const [showMohasagorAdmin, setShowMohasagorAdmin] = useState(false);
 const [showBranchControl, setShowBranchControl] = useState(false);
 const [adminViewingAsRider, setAdminViewingAsRider] = useState(false);
+const [showPanelHub, setShowPanelHub] = useState(false);
+const [hubPickEditor, setHubPickEditor] = useState(false);
+const [hubPages, setHubPages] = useState<any[]>([]);
+const [hubPageSearch, setHubPageSearch] = useState('');
+const [viewPage, setViewPage] = useState<{ id: string; name: string } | null>(null);
+
+function openRiderPanel() {
+  setShowPanelHub(false); setShowSettings(false); setViewPage(null);
+  setAdminViewingAsRider(true); setShowAdminDrawer(true); fetchOrders();
+}
+function openSellerPanel() {
+  setShowPanelHub(false); setShowSettings(false); setViewPage(null); setAdminViewingAsRider(false);
+  setAdminTab('sellers'); setShowAdminDrawer(true);
+}
+async function openEditorPicker() {
+  setHubPickEditor(true); setHubPageSearch('');
+  if (hubPages.length === 0) {
+    const { data } = await supabase.from('pages').select('id, name, name_bn').order('name_bn');
+    setHubPages(data || []);
+  }
+}
+function openEditorPanel(p: any) {
+  setShowPanelHub(false); setHubPickEditor(false); setShowSettings(false); setAdminViewingAsRider(false);
+  setViewPage({ id: String(p.id), name: p.name_bn || p.name });
+  setAdminTab('orders'); setShowAdminDrawer(true); fetchOrders();
+}
 const [riderVehicle, setRiderVehicle] = useState<string | null>(null);
 const [settingsSearch, setSettingsSearch] = useState('');
 const [emailSubject, setEmailSubject] = useState('');
@@ -840,7 +866,7 @@ useEffect(() => {
 
     const effectiveRole = adminViewingAsRider ? 'rider' : role;
   const pendingCount = orders.filter((o: any) => o.status === 'pending').length;
-  const dateFilteredOrders = getFilteredByDate(orders).sort((a: any, b: any) => {
+  const dateFilteredOrders = getFilteredByDate(viewPage ? orders.filter((o: any) => (o.order_items || []).some((it: any) => String(it.products?.page_id) === String(viewPage.id))) : orders).sort((a: any, b: any) => {
     const aPending = a.status === 'pending' ? 0 : 1;
     const bPending = b.status === 'pending' ? 0 : 1;
     return aPending - bPending;
@@ -1110,7 +1136,8 @@ if (!selectedBranch) {
        hideHeader={cartOpen || orderFormOpen}
       notificationCount={pendingCount}
         onSellerClick={() => setShowSellerDrawer(true)}
-                 onAdminClick={() => {
+                onAdminClick={() => {
+          setViewPage(null); setAdminViewingAsRider(false);
           setShowAdminDrawer(true);
           if (role === 'editor') {
             const pageId = localStorage.getItem('current_page_id');
@@ -1217,6 +1244,40 @@ if (!selectedBranch) {
         <span style={{ color: '#d1d5db', margin: '0 8px' }}>|</span>
         <a href="https://www.facebook.com/Sohelmart.com55" target="_blank" rel="noopener noreferrer" style={{ color: '#be185d', textDecoration: 'none', fontWeight: '600' }}>ফেসবুক পেজ</a>
       </div>
+            {showPanelHub && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => { setShowPanelHub(false); setHubPickEditor(false); }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'white', width: '100%', maxWidth: '420px', borderRadius: '20px 20px 0 0', padding: '16px', maxHeight: '80vh', overflowY: 'auto' }}>
+            {!hubPickEditor ? (
+              <>
+                <h3 style={{ margin: '0 0 6px 0', color: PINK, fontSize: '17px' }}>🧭 সব প্যানেল</h3>
+                <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#6b7280' }}>যে প্যানেলে ঢুকবেন, সেটা ঠিক ওই ব্যবহারকারী যেভাবে দেখে সেভাবে খুলবে।</p>
+                {[
+                  { icon: '🏍️', label: 'রাইডার প্যানেল', sub: 'কনফার্ম অর্ডার, ডেলিভারি, আয়ের হিসাব', fn: openRiderPanel },
+                  { icon: '✏️', label: 'এডিটর প্যানেল', sub: 'একটা পেজ বেছে তার অর্ডার ও হিসাব', fn: openEditorPicker },
+                  { icon: '🏪', label: 'সেলার প্যানেল', sub: 'সেলার তালিকা, প্রতিটার অর্ডার ও আয়', fn: openSellerPanel },
+                ].map(p => (
+                  <button key={p.label} onClick={() => p.fn()} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px 14px', marginBottom: '8px', cursor: 'pointer', textAlign: 'left' }}>
+                    <span style={{ fontSize: '24px' }}>{p.icon}</span>
+                    <span>
+                      <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#1f2937' }}>{p.label}</span>
+                      <span style={{ display: 'block', fontSize: '12px', color: '#6b7280' }}>{p.sub}</span>
+                    </span>
+                  </button>
+                ))}
+              </>
+            ) : (
+              <>
+                <button onClick={() => setHubPickEditor(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', padding: 0, marginBottom: '8px' }}>← ব্যাক</button>
+                <h3 style={{ margin: '0 0 8px 0', color: PINK, fontSize: '16px' }}>✏️ কোন পেজের এডিটর প্যানেল?</h3>
+                <input value={hubPageSearch} onChange={e => setHubPageSearch(e.target.value)} placeholder="🔍 পেজ খুঁজুন..." style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', marginBottom: '10px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} />
+                {hubPages.filter(p => (p.name_bn || p.name || '').toLowerCase().includes(hubPageSearch.toLowerCase())).map(p => (
+                  <button key={p.id} onClick={() => openEditorPanel(p)} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '10px 14px', marginBottom: '6px', cursor: 'pointer', textAlign: 'left', fontSize: '14px', color: '#1f2937' }}>{p.name_bn || p.name}</button>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      )}
 {showSettings && (
        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowSettings(false)} />
@@ -1226,13 +1287,10 @@ if (!selectedBranch) {
               <button onClick={() => setShowSettings(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
         <div style={{ padding: '16px' }}>
-              {!showEmailForm && !showMohasagorAdmin && (
-                <input
-                  value={settingsSearch}
-                  onChange={e => setSettingsSearch(e.target.value)}
-                  placeholder="🔍 সেটিংস খুঁজুন..."
-                  style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', marginBottom: '12px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }}
-                />
+                           {!showEmailForm && !showMohasagorAdmin && !showBranchControl && role === 'admin' && 'সব প্যানেল all panels'.includes(settingsSearch.toLowerCase()) && (
+                <button onClick={() => setShowPanelHub(true)} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600', color: '#1f2937', textAlign: 'left', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '20px' }}>🧭</span> সব প্যানেল (All Panels)
+                </button>
               )}
               {!showEmailForm && !showMohasagorAdmin && 'email send'.includes(settingsSearch.toLowerCase()) && (
                 <button onClick={() => setShowEmailForm(true)} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600', color: '#1f2937', textAlign: 'left', marginBottom: '8px' }}>
@@ -1349,8 +1407,8 @@ if (!selectedBranch) {
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowAdminDrawer(false)} />
           <div style={{ position: 'relative', marginLeft: 'auto', width: '100%', maxWidth: '380px', background: 'white', height: '100%', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.15)' }}>
             <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>{effectiveRole === 'rider' ? '🏍️ Rider Panel' : role === 'editor' ? `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel` : role === 'admin' ? '👑 Admin Panel' : '📋 Panel'}</h2>
-            <button onClick={() => { setShowAdminDrawer(false); setAdminViewingAsRider(false); }} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
+          <h2 style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>{effectiveRole === 'rider' ? '🏍️ Rider Panel' : viewPage ? `✏️ ${viewPage.name} Panel` :role === 'editor' ? `✏️ ${localStorage.getItem('editor_page_name') || 'Editor'} Panel` : role === 'admin' ? '👑 Admin Panel' : '📋 Panel'}</h2>
+            <button onClick={() => { setShowAdminDrawer(false); setAdminViewingAsRider(false); setViewPage(null); }} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
             <div style={{ padding: '16px' }}>
                                         {(
