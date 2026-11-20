@@ -276,48 +276,80 @@ function AdminSellerView({ seller, onBack }: { seller: any; onBack: () => void }
 
 function RiderManagement() {
   const [riders, setRiders] = useState<any[]>([])
+  const [busy, setBusy] = useState<number | null>(null)
 
-  useEffect(() => { fetchRiders() }, [])
+  useEffect(() => {
+    fetchRiders()
+    const ch = supabase.channel('riders-live-' + Date.now())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'riders' }, () => fetchRiders())
+      .subscribe()
+    return () => { supabase.removeChannel(ch) }
+  }, [])
 
   async function fetchRiders() {
-    const { data } = await supabase.from('riders').select('*').order('created_at', { ascending: false })
+    const { data } = await supabase.from('riders').select('id, name, phone, vehicle_number, is_approved, is_blocked, created_at').order('created_at', { ascending: false })
     if (data) setRiders(data)
   }
 
   async function approveRider(id: number) {
-    await supabase.from('riders').update({ is_approved: true }).eq('id', id)
+    const { error } = await supabase.from('riders').update({ is_approved: true }).eq('id', id)
+    if (error) alert('অনুমোদন করা যায়নি: ' + error.message)
     fetchRiders()
   }
 
-  async function rejectRider(id: number) {
-    if (!confirm('এই রাইডার মুছে দেবেন?')) return
-    await supabase.from('riders').delete().eq('id', id)
+  async function act(action: string, riderId: number, extra: any = {}) {
+    setBusy(riderId)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/admin/rider-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token || ''}` },
+        body: JSON.stringify({ action, riderId, ...extra }),
+      })
+      const data = await res.json()
+      if (!data.ok) alert(data.message || 'কাজটি করা যায়নি')
+      else if (action === 'reset_password') alert('✅ পাসওয়ার্ড বদলানো হয়েছে। রাইডারকে নতুন পাসওয়ার্ডটা জানিয়ে দিন।')
+    } catch (e) {
+      alert('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন')
+    }
+    setBusy(null)
     fetchRiders()
   }
+
+  function resetPassword(r: any) {
+    const p = prompt(`${r.name}-এর নতুন পাসওয়ার্ড দিন (কমপক্ষে ৬ অক্ষর):`)
+    if (!p) return
+    act('reset_password', r.id, { password: p })
+  }
+  function block(r: any) { if (confirm(`${r.name}-কে ব্লক করবেন? সে আর লগইন করতে পারবে না।`)) act('block', r.id) }
+  function remove(r: any) { if (confirm(`${r.name}-কে চিরতরে মুছে দেবেন? এটা ফেরানো যাবে না।`)) act('delete', r.id) }
+
+  const btn = (bg: string): any => ({ background: bg, color: 'white', border: 'none', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', cursor: 'pointer' })
 
   return (
     <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {riders.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো রাইডার নেই</p>}
-      {riders.map((rider) => (
-        <div key={rider.id} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '0 0 2px 0' }}>🏍️ {rider.name}</p>
-              <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>📱 {rider.phone}</p>
-              <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>🚗 গাড়ি নম্বর: {rider.vehicle_number}</p>
-              <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '20px', display: 'inline-block', marginTop: '4px', background: rider.is_approved ? '#dcfce7' : '#fef9c3', color: rider.is_approved ? '#15803d' : '#854d0e' }}>
-                {rider.is_approved ? '✅ অ্যাপ্রুভড' : '⏳ অপেক্ষমান'}
-              </span>
+      {riders.map((rider) => {
+        const pending = !rider.is_approved && !rider.is_blocked
+        return (
+          <div key={rider.id} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px', opacity: busy === rider.id ? 0.5 : 1 }}>
+            <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '0 0 2px 0' }}>🏍️ {rider.name}</p>
+            <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>📱 {rider.phone}</p>
+            <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>🚗 গাড়ি নম্বর: {rider.vehicle_number}</p>
+            <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '20px', display: 'inline-block', marginTop: '4px', background: rider.is_blocked ? '#fee2e2' : rider.is_approved ? '#dcfce7' : '#fef9c3', color: rider.is_blocked ? '#dc2626' : rider.is_approved ? '#15803d' : '#854d0e' }}>
+              {rider.is_blocked ? '⛔ ব্লক করা' : rider.is_approved ? '✅ অ্যাপ্রুভড' : '⏳ অপেক্ষমান'}
+            </span>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
+              {pending && <button onClick={() => approveRider(rider.id)} style={btn('#16a34a')}>✅ Approve</button>}
+              {pending && <button onClick={() => remove(rider)} style={btn('#ef4444')}>❌ Reject</button>}
+              {rider.is_approved && <button onClick={() => resetPassword(rider)} style={btn('#2563eb')}>🔑 পাসওয়ার্ড বদলান</button>}
+              {rider.is_approved && <button onClick={() => block(rider)} style={btn('#f97316')}>⛔ ব্লক</button>}
+              {rider.is_blocked && <button onClick={() => act('unblock', rider.id)} style={btn('#16a34a')}>✅ আবার চালু</button>}
+              {(rider.is_approved || rider.is_blocked) && <button onClick={() => remove(rider)} style={btn('#ef4444')}>🗑️ মুছুন</button>}
             </div>
-            {!rider.is_approved && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <button onClick={() => approveRider(rider.id)} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>✅ Approve</button>
-                <button onClick={() => rejectRider(rider.id)} style={{ background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>❌ Reject</button>
-              </div>
-            )}
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
@@ -782,7 +814,6 @@ useEffect(() => {
       if (rpcError) { await supabase.auth.signOut(); setLoginError('যাচাইয়ে সমস্যা: ' + rpcError.message); return; }
       if (!isAdminOk) { await supabase.auth.signOut(); setLoginError('এই অ্যাকাউন্টের অ্যাডমিন অনুমতি নেই!'); return; }
       setRole('admin'); localStorage.setItem('role', 'admin'); setShowLoginModal(false); setPassword(''); setLoginError('');
-
     } else {
       const { data } = await supabase.from('pages').select('*').eq('vendor_password', password).single();
       if (data) { setRole('editor'); localStorage.setItem('role', 'editor'); localStorage.setItem('editor_page_id', String(data.id)); localStorage.setItem('editor_page_name', data.name_bn || data.name); setShowLoginModal(false); setPassword(''); setLoginError(''); }
