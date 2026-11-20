@@ -1069,6 +1069,13 @@ if (!selectedBranch) {
               </div>
              <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} placeholder={loginType === 'admin' ? 'Admin পাসওয়ার্ড' : loginType === 'rider' ? 'Rider পাসওয়ার্ড' : 'Editor পাসওয়ার্ড'} style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginBottom: '8px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} autoFocus />
               {loginError && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '8px' }}>{loginError}</p>}
+                           {loginType === 'admin' && (
+                <button type="button" onClick={async () => {
+                  const target = window.location.hostname === 'localhost' ? window.location.origin + '/reset-password' : 'https://www.sohelmart.com/reset-password';
+                  const { error } = await supabase.auth.resetPasswordForEmail(ADMIN_EMAIL, { redirectTo: target });
+                  alert(error ? 'ইমেইল পাঠানো যায়নি: ' + error.message : '✅ পাসওয়ার্ড বদলানোর লিংক অ্যাডমিনের ইমেইলে পাঠানো হয়েছে');
+                }} style={{ background: 'none', border: 'none', color: PINK, fontSize: '12px', cursor: 'pointer', padding: 0, marginBottom: '8px' }}>পাসওয়ার্ড ভুলে গেছেন?</button>
+              )}
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={handleLogin} style={{ background: PINK, color: 'white', border: 'none', borderRadius: '8px', padding: '10px', flex: 1, fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>লগইন</button>
                 <button onClick={() => { setShowLoginModal(false); setPassword(''); setLoginError(''); }} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '10px 16px', fontSize: '14px', cursor: 'pointer' }}>বাতিল</button>
