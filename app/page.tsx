@@ -765,6 +765,16 @@ useEffect(() => {
       if (channel) supabase.removeChannel(channel);
     };
   }, [role]);
+  // সেশন চলে গেলে (অন্য জায়গা থেকে লগআউট, মেয়াদ শেষ) অ্যাডমিন বা রাইডারের চিহ্ন সরিয়ে দেওয়া
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        const r = localStorage.getItem('role');
+        if (r === 'admin' || r === 'rider') { localStorage.removeItem('role'); setRole(null); }
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
 
     function playNotificationSound() {
     try {
@@ -847,7 +857,7 @@ useEffect(() => {
     }
   }
 
-  function handleLogout() { supabase.auth.signOut(); setRole(null); localStorage.removeItem('role'); localStorage.removeItem('editor_page_id'); localStorage.removeItem('editor_page_name'); localStorage.removeItem('current_page_id'); setShowAdminDrawer(false); }
+function handleLogout() { supabase.auth.signOut({ scope: 'local' }); setRole(null); localStorage.removeItem('role'); localStorage.removeItem('editor_page_id'); localStorage.removeItem('editor_page_name'); localStorage.removeItem('current_page_id'); setShowAdminDrawer(false); }
   function toggleAutoPrint() { const newVal = !autoPrint; setAutoPrint(newVal); localStorage.setItem('autoPrint', newVal.toString()); }
 
   const getFilteredByDate = (data: any[]) => {
@@ -1095,12 +1105,8 @@ if (!selectedBranch) {
               </div>
              <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} placeholder={loginType === 'admin' ? 'Admin পাসওয়ার্ড' : loginType === 'rider' ? 'Rider পাসওয়ার্ড' : 'Editor পাসওয়ার্ড'} style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginBottom: '8px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} autoFocus />
               {loginError && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '8px' }}>{loginError}</p>}
-                           {loginType === 'admin' && (
-                <button type="button" onClick={async () => {
-                  const target = window.location.hostname === 'localhost' ? window.location.origin + '/reset-password' : 'https://www.sohelmart.com/reset-password';
-                  const { error } = await supabase.auth.resetPasswordForEmail(ADMIN_EMAIL, { redirectTo: target });
-                  alert(error ? 'ইমেইল পাঠানো যায়নি: ' + error.message : '✅ পাসওয়ার্ড বদলানোর লিংক অ্যাডমিনের ইমেইলে পাঠানো হয়েছে');
-                }} style={{ background: 'none', border: 'none', color: PINK, fontSize: '12px', cursor: 'pointer', padding: 0, marginBottom: '8px' }}>পাসওয়ার্ড ভুলে গেছেন?</button>
+                                        {loginType === 'admin' && (
+                <a href={`/forgot-password?email=${encodeURIComponent(ADMIN_EMAIL)}`} style={{ color: PINK, fontSize: '12px', display: 'inline-block', marginBottom: '8px' }}>পাসওয়ার্ড ভুলে গেছেন?</a>
               )}
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={handleLogin} style={{ background: PINK, color: 'white', border: 'none', borderRadius: '8px', padding: '10px', flex: 1, fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>লগইন</button>
@@ -1307,11 +1313,7 @@ if (!selectedBranch) {
                   <span style={{ fontSize: '20px' }}>🏢</span> শাখা নিয়ন্ত্রণ
                 </button>
               )}
-                            {!showEmailForm && !showMohasagorAdmin && !showBranchControl && role === 'admin' && 'রাইডার প্যানেল'.includes(settingsSearch) && (
-                <button onClick={() => { setAdminViewingAsRider(true); setShowSettings(false); setShowAdminDrawer(true); fetchOrders(); }} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600', color: '#1f2937', textAlign: 'left', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '20px' }}>🏍️</span> রাইডার প্যানেল দেখুন
-                </button>
-              )}
+              
               {showMohasagorAdmin && (
                 <div>
                   <button onClick={() => setShowMohasagorAdmin(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', marginBottom: '8px', padding: 0 }}>← ব্যাক</button>
@@ -1444,14 +1446,14 @@ if (!selectedBranch) {
               )}
             </div>
             {role === 'admin' && (
-              <div style={{ padding: '0 16px 12px' }}>
+             <div style={{ padding: '0 16px 12px', display: (adminViewingAsRider || viewPage) ? 'none' : 'block' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f9fafb', borderRadius: '12px', padding: '12px' }}>
                   <div><p style={{ fontSize: '14px', fontWeight: '500', color: '#374151', margin: '0 0 2px 0' }}>🖨️ Auto Print</p><p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>নতুন অর্ডারে অটো প্রিন্ট</p></div>
                   <button onClick={toggleAutoPrint} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '500', border: 'none', cursor: 'pointer', background: autoPrint ? PINK : '#e5e7eb', color: autoPrint ? 'white' : '#6b7280' }}>{autoPrint ? '✅ চালু' : '❌ বন্ধ'}</button>
                 </div>
               </div>
             )}
-            <div style={{ display: 'flex', gap: '8px', padding: '0 16px 12px', overflowX: 'auto' }}>
+            <div style={{ display: (adminViewingAsRider || viewPage) ? 'none' : 'flex', gap: '8px', padding: '0 16px 12px', overflowX: 'auto' }}>
             {[{ key: 'orders', label: '📋 Orders' }, ...(role === 'admin' ? [{ key: 'sellers', label: '🏪 Sellers' }, { key: 'riders', label: '🏍️ Riders' }, { key: 'withdrawals', label: '💰 Withdraw' }] : [])].map(t => (
   <button key={t.key} onClick={() => { setAdminTab(t.key); if (t.key === 'orders') markAllRead(); }} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: adminTab === t.key ? PINK : '#f3f4f6', color: adminTab === t.key ? 'white' : '#374151', position: 'relative' }}>
     {t.label}
