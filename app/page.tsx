@@ -287,7 +287,7 @@ function RiderManagement() {
   }, [])
 
   async function fetchRiders() {
-    const { data } = await supabase.from('riders').select('id, name, phone, vehicle_number, is_approved, is_blocked, created_at').order('created_at', { ascending: false })
+    const { data } = await supabase.from('riders').select('id, name, phone, email, vehicle_number, is_approved, is_blocked, created_at').order('created_at', { ascending: false })
     if (data) setRiders(data)
   }
 
@@ -334,7 +334,8 @@ function RiderManagement() {
         return (
           <div key={rider.id} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px', opacity: busy === rider.id ? 0.5 : 1 }}>
             <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '0 0 2px 0' }}>🏍️ {rider.name}</p>
-            <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>📱 {rider.phone}</p>
+                       <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>📱 {rider.phone}</p>
+            <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>✉️ {rider.email}</p>
             <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>🚗 গাড়ি নম্বর: {rider.vehicle_number}</p>
             <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '20px', display: 'inline-block', marginTop: '4px', background: rider.is_blocked ? '#fee2e2' : rider.is_approved ? '#dcfce7' : '#fef9c3', color: rider.is_blocked ? '#dc2626' : rider.is_approved ? '#15803d' : '#854d0e' }}>
               {rider.is_blocked ? '⛔ ব্লক করা' : rider.is_approved ? '✅ অ্যাপ্রুভড' : '⏳ অপেক্ষমান'}
@@ -633,7 +634,7 @@ useEffect(() => {
 }
     async function checkGoogleLogin() {
       const { data: { session } } = await supabase.auth.getSession()
-     if (session?.user && session.user.email !== ADMIN_EMAIL && !(session.user.email || '').endsWith('@riders.sohelmart.com')) {
+         if (session?.user && session.user.app_metadata?.provider === 'google') {
         const user = session.user
         const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
         const phone = user.phone || user.user_metadata?.phone || user.email || '00000000000'

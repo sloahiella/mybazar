@@ -1168,6 +1168,16 @@ function EditProductModal({ product, onClose, onSave, isAdmin }) {
       setLoading(false); onSave(); onClose();
       return;
     }
+        // 👑 মহাসাগরের পণ্য products টেবিলে নেই, তাই দাম ও ছাড় assignments টেবিলে সেভ হবে
+    if (product.is_mohasagor) {
+      const mohaId = String(product.id).replace('moha-', '');
+      const upd = { discount_percent: toDiscountPercent() };
+      if ((parseFloat(form.price_per_unit) || 0) !== Number(product.price_per_unit)) upd.custom_price = parseFloat(form.price_per_unit) || null;
+      const { error: mErr } = await supabase.from('mohasagor_assignments').update(upd).eq('mohasagor_product_id', mohaId);
+      if (mErr) { alert('সেভ করতে সমস্যা: ' + mErr.message); setLoading(false); return; }
+      setLoading(false); onSave(); onClose();
+      return;
+    }
     let rawDesc = form.description;
     if (rawDesc.includes('\nSize:')) {
       rawDesc = rawDesc.split('\nSize:')[0];
@@ -1300,18 +1310,8 @@ function AddProductModal({ branch, defaultPage, onClose, onSave, isAdmin }) {
 
   async function save() {
     if (!form.name || !form.product_code || !form.price_per_unit) { alert('নাম, কোড, দাম আবশ্যক!'); return; }
+        if (form.sale_price && ((parseFloat(form.sale_price) || 0) >= (parseFloat(form.price_per_unit) || 0) || (parseFloat(form.sale_price) || 0) <= 0)) { alert('বিক্রি দাম মূল দামের চেয়ে কম এবং শূন্যের বেশি হতে হবে!'); return; }
     setLoading(true);
-        // 👑 মহাসাগরের পণ্য products টেবিলে নেই, তাই দাম ও ছাড় assignments টেবিলে সেভ হবে
-    if (product.is_mohasagor) {
-      const mohaId = String(product.id).replace('moha-', '');
-      const upd = { discount_percent: toDiscountPercent() };
-      if ((parseFloat(form.price_per_unit) || 0) !== Number(product.price_per_unit)) upd.custom_price = parseFloat(form.price_per_unit) || null;
-      const { error: mErr } = await supabase.from('mohasagor_assignments').update(upd).eq('mohasagor_product_id', mohaId);
-      if (mErr) { alert('সেভ করতে সমস্যা: ' + mErr.message); setLoading(false); return; }
-      setLoading(false); onSave(); onClose();
-      return;
-    }
-
     const finalDescription = selectedSizes.length > 0 ? `${form.description}\nSize: ${selectedSizes.join(', ')}` : form.description;
 
    const { data: product, error } = await supabase.from('products').insert({ name: form.name, name_bn: form.name_bn, product_code: form.product_code, description: finalDescription, price_per_unit: parseFloat(form.price_per_unit), unit: form.unit, branch_id: branch.id, category: form.category, category_bn: form.category_bn, image_url: form.image_url, page_id: form.page_id ? parseInt(form.page_id) : null, is_active: true, discount_percent: toDiscountPercent(), cost_price: form.cost_price ? parseFloat(form.cost_price) : null }).select().single();

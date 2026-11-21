@@ -1,41 +1,23 @@
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 
-const PINK = '#db2777'
-const PINK_BORDER = '#fbcfe8'
-
-const inputStyle = {
-  border: `2px solid ${PINK_BORDER}`,
-  borderRadius: '10px',
-  padding: '10px 14px',
-  width: '100%',
-  fontSize: '14px',
-  outline: 'none',
-  boxSizing: 'border-box' as const,
-  color: '#1f2937',
-  background: 'white',
-}
-
 export default function RiderLogin() {
-  const router = useRouter()
-  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-    async function handleLogin() {
+  async function handleLogin() {
     setError('')
-    if (!phone.trim() || !password.trim()) { setError('ফোন ও পাসওয়ার্ড দিন!'); return }
+    if (!email.trim() || !password.trim()) { setError('ইমেইল ও পাসওয়ার্ড দিন!'); return }
     setLoading(true)
-    const email = `r${phone.trim().replace(/\D/g, '')}@riders.sohelmart.com`
-    const { data: auth, error: authError } = await supabase.auth.signInWithPassword({ email, password })
-    if (authError || !auth?.user) { setLoading(false); setError('ফোন নম্বর বা পাসওয়ার্ড ভুল!'); return }
+    const { data: auth, error: authError } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
+    if (authError || !auth?.user) { setLoading(false); setError('ইমেইল বা পাসওয়ার্ড ভুল!'); return }
 
     const { data: rider } = await supabase.from('riders').select('id, name, vehicle_number, is_approved').eq('user_id', auth.user.id).maybeSingle()
-    if (!rider) { await supabase.auth.signOut(); setLoading(false); setError('এই অ্যাকাউন্টে রাইডারের তথ্য পাওয়া যায়নি!'); return }
-    if (!rider.is_approved) { await supabase.auth.signOut(); setLoading(false); setError('আপনার অ্যাকাউন্ট এখনো অনুমোদন হয়নি!'); return }
+    if (!rider) { await supabase.auth.signOut({ scope: 'local' }); setLoading(false); setError('এই অ্যাকাউন্টে রাইডারের তথ্য পাওয়া যায়নি!'); return }
+    if (!rider.is_approved) { await supabase.auth.signOut({ scope: 'local' }); setLoading(false); setError('আপনার অ্যাকাউন্ট অনুমোদন হয়নি বা ব্লক করা আছে!'); return }
 
     localStorage.setItem('role', 'rider')
     localStorage.setItem('rider_id', String(rider.id))
@@ -45,30 +27,19 @@ export default function RiderLogin() {
     window.location.href = '/'
   }
 
+  const box: any = { minHeight: '100vh', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }
+  const card: any = { background: 'white', borderRadius: '20px', padding: '28px', maxWidth: '380px', width: '100%', boxShadow: '0 4px 20px rgba(219,39,119,0.15)' }
+  const inp: any = { border: '2px solid #fbcfe8', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', boxSizing: 'border-box', outline: 'none', color: '#1f2937', marginBottom: '10px' }
+
   return (
-    <div style={{ minHeight: '100vh', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-      <div style={{ background: 'white', borderRadius: '20px', padding: '32px', maxWidth: '380px', width: '100%', boxShadow: '0 4px 20px rgba(219,39,119,0.15)' }}>
-        <h1 style={{ color: PINK, fontSize: '22px', textAlign: 'center', margin: '0 0 4px 0' }}>🏍️ রাইডার লগইন</h1>
-        <p style={{ color: '#6b7280', fontSize: '13px', textAlign: 'center', margin: '0 0 20px 0' }}>সোহেল মার্ট</p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div>
-            <label style={{ fontSize: '12px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>ফোন নম্বর</label>
-            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="01XXXXXXXXX" onKeyDown={e => e.key === 'Enter' && handleLogin()} style={inputStyle} />
-          </div>
-          <div>
-            <label style={{ fontSize: '12px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>পাসওয়ার্ড</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} style={inputStyle} />
-          </div>
-
-          {error && <p style={{ color: '#ef4444', fontSize: '13px', background: '#fee2e2', padding: '10px', borderRadius: '8px', margin: 0, textAlign: 'center' }}>{error}</p>}
-
-          <button onClick={handleLogin} disabled={loading} style={{ background: PINK, color: 'white', border: 'none', borderRadius: '12px', padding: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.5 : 1, marginTop: '4px' }}>
-            {loading ? 'অপেক্ষা করুন...' : 'লগইন করুন'}
-          </button>
-          <a href="/rider/register" style={{ textAlign: 'center', fontSize: '13px', color: PINK, textDecoration: 'none' }}>অ্যাকাউন্ট নেই? রেজিস্ট্রেশন করুন</a>
-        </div>
-      </div>
-    </div>
+    <div style={box}><div style={card}>
+      <h1 style={{ color: '#db2777', fontSize: '20px', textAlign: 'center', margin: '0 0 14px 0' }}>🏍️ রাইডার লগইন</h1>
+      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="ইমেইল" type="email" style={inp} />
+      <input value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} placeholder="পাসওয়ার্ড" type="password" style={inp} />
+      {error && <p style={{ color: '#ef4444', fontSize: '13px', margin: '0 0 8px 0' }}>{error}</p>}
+      <button onClick={handleLogin} disabled={loading} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', width: '100%', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.5 : 1 }}>{loading ? 'অপেক্ষা করুন...' : 'লগইন'}</button>
+      <p style={{ textAlign: 'center', fontSize: '13px', marginTop: '12px' }}><a href="/forgot-password" style={{ color: '#db2777' }}>পাসওয়ার্ড ভুলে গেছেন?</a></p>
+      <p style={{ textAlign: 'center', fontSize: '13px', margin: 0 }}><a href="/rider/register" style={{ color: '#db2777' }}>নতুন রাইডার? রেজিস্ট্রেশন করুন</a></p>
+    </div></div>
   )
 }

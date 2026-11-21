@@ -68,7 +68,7 @@ export default function SellerLogin() {
           style={{background:'#16a34a', color:'#fff', padding:'14px', borderRadius:'6px', fontSize:'17px', fontWeight:'bold', border:'none', cursor:'pointer'}}>
           {loading ? 'অপেক্ষা করুন...' : 'লগিন করুন'}
         </button>
-
+<p style={{ textAlign: 'center', marginTop: '12px' }}><a href="/forgot-password" style={{ color: '#db2777', fontSize: '13px' }}>পাসওয়ার্ড ভুলে গেছেন?</a></p>
         <p style={{textAlign:'center', fontSize:'14px', color:'#555', margin:0}}>
           অ্যাকাউন্ট নেই?{' '}
           <a href="/seller/register" style={{color:'#16a34a', fontWeight:'bold', textDecoration:'none'}}>
