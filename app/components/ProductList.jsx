@@ -1299,6 +1299,12 @@ function AddProductModal({ branch, defaultPage, onClose, onSave, isAdmin }) {
     setForm(prev => ({ ...prev, image_url: urlData.publicUrl }));
     setUploading(false);
   }
+  function toDiscountPercent() {
+    const price = parseFloat(form.price_per_unit) || 0;
+    const sale = parseFloat(form.sale_price) || 0;
+    if (sale <= 0 || price <= 0 || sale >= price) return 0;
+    return Math.round(((price - sale) / price) * 100 * 10000) / 10000;
+  }
 
   const toggleSize = (size) => {
     if (selectedSizes.includes(size)) {
@@ -1336,7 +1342,7 @@ function AddProductModal({ branch, defaultPage, onClose, onSave, isAdmin }) {
 {isAdmin && <div><label style={{ fontSize: '12px', color: '#9333ea', fontWeight: 'bold' }}>💰 কেনা দাম (শুধু আপনি দেখবেন)</label><input name="cost_price" type="number" value={form.cost_price} onChange={handle} placeholder="যত টাকায় কিনেছেন" style={{ border: '2px solid #d8b4fe', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>}
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ইউনিট</label><select name="unit" value={form.unit} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="Kg">Kg</option><option value="Liter">Liter</option><option value="pcs">pcs</option><option value="packet">Packet</option></select></div>
          <div><label style={{ fontSize: '12px', color: '#6b7280' }}>পেজ সিলেক্ট করুন</label><select name="page_id" value={form.page_id} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', background: 'white', color: '#1f2937' }}><option value="">-- পেজ সিলেক্ট করুন --</option>{pages.map(page => <option key={page.id} value={page.id}>{page.name_bn || page.name}</option>)}</select></div>
-        <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ছাড় (টাকা)</label><input name="discount_amount" type="number" value={form.discount_amount} onChange={handle} placeholder="যেমন: 3, 5" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
+      <div><label style={{ fontSize: '12px', color: '#6b7280' }}>ছাড়ের পর বিক্রি দাম (টাকা) — ছাড় না দিলে খালি রাখুন</label><input name="sale_price" type="number" value={form.sale_price} onChange={handle} placeholder="যেমন: 700" style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} />{form.sale_price && Number(form.price_per_unit) > Number(form.sale_price) && <p style={{ fontSize: '12px', color: '#15803d', margin: '4px 0 0 0', fontWeight: '600' }}>= {Math.round((1 - Number(form.sale_price) / Number(form.price_per_unit)) * 100)}% ছাড় (অটো)</p>}</div>
           <div><label style={{ fontSize: '12px', color: '#6b7280' }}>প্রাথমিক স্টক</label><input name="stock" type="number" value={form.stock} onChange={handle} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '14px', marginTop: '4px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} /></div>
           
           <div style={{ background: '#fdf2f8', borderRadius: '10px', padding: '12px', border: '1px solid #fbcfe8' }}>
