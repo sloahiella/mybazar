@@ -69,10 +69,6 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
       setError('নাম, ফোন নম্বর এবং ঠিকানা আবশ্যক!');
       return;
     }
-    if (branch?.name === 'lalmohan' && !form.vehicle_number) {
-      setError('গাড়ি নম্বর আবশ্যক!');
-      return;
-    }
     if ((form.payment === 'bkash' || form.payment === 'nagad') && !form.transaction_id) {
       setError('বিকাশ/নগদ এ পেমেন্ট করলে Transaction ID দিতে হবে!');
       return;
@@ -186,7 +182,7 @@ const items = cart.map(item => {
             </div>
                         {branch?.name === 'lalmohan' && (
             <div>
-              <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>গাড়ি নম্বর *</label>
+            <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>গাড়ি নম্বর (ঐচ্ছিক)</label>
               <input name="vehicle_number" value={form.vehicle_number} onChange={handle}
                 placeholder="আপনার এলাকার গাড়ি নম্বর লিখুন"
                 style={inputStyle} />

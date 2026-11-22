@@ -277,6 +277,9 @@ function AdminSellerView({ seller, onBack }: { seller: any; onBack: () => void }
 function RiderManagement() {
   const [riders, setRiders] = useState<any[]>([])
   const [busy, setBusy] = useState<number | null>(null)
+  const [showAdd, setShowAdd] = useState(false)
+  const [adding, setAdding] = useState(false)
+  const [f, setF] = useState({ name: '', phone: '', email: '', vehicleNumber: '', password: '' })
 
   useEffect(() => {
     fetchRiders()
@@ -297,18 +300,23 @@ function RiderManagement() {
     fetchRiders()
   }
 
+  async function callApi(body: any) {
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/admin/rider-action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify(body),
+    })
+    return await res.json()
+  }
+
   async function act(action: string, riderId: number, extra: any = {}) {
     setBusy(riderId)
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch('/api/admin/rider-action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token || ''}` },
-        body: JSON.stringify({ action, riderId, ...extra }),
-      })
-      const data = await res.json()
+      const data = await callApi({ action, riderId, ...extra })
       if (!data.ok) alert(data.message || 'কাজটি করা যায়নি')
       else if (action === 'reset_password') alert('✅ পাসওয়ার্ড বদলানো হয়েছে। রাইডারকে নতুন পাসওয়ার্ডটা জানিয়ে দিন।')
+      else if (action === 'delete' && data.keptAccount) alert('রাইডার ভূমিকা সরানো হয়েছে। এই ইমেইলের অন্য ভূমিকা আছে, তাই অ্যাকাউন্ট রাখা হয়েছে।')
     } catch (e) {
       alert('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন')
     }
@@ -316,25 +324,63 @@ function RiderManagement() {
     fetchRiders()
   }
 
+  async function addRider() {
+    if (!f.name.trim() || !f.phone.trim() || !f.email.trim() || !f.vehicleNumber.trim()) { alert('নাম, ফোন, ইমেইল ও গাড়ির নম্বর দিন'); return }
+    setAdding(true)
+    try {
+      const data = await callApi({ action: 'add_rider', ...f })
+      if (!data.ok) alert(data.message || 'যোগ করা যায়নি')
+      else {
+        alert(data.linkedExisting ? '✅ রাইডার যোগ হয়েছে। এই ইমেইলে আগে থেকেই অ্যাকাউন্ট ছিল, তাই সেটার সাথে যুক্ত করা হয়েছে (পাসওয়ার্ড অপরিবর্তিত)।' : '✅ নতুন রাইডার অ্যাকাউন্ট তৈরি হয়েছে।')
+        setF({ name: '', phone: '', email: '', vehicleNumber: '', password: '' })
+        setShowAdd(false)
+      }
+    } catch (e) {
+      alert('নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন')
+    }
+    setAdding(false)
+    fetchRiders()
+  }
+
   function resetPassword(r: any) {
-    const p = prompt(`${r.name}-এর নতুন পাসওয়ার্ড দিন (কমপক্ষে ৬ অক্ষর):`)
+    const p = prompt(`${r.name}-এর নতুন পাসওয়ার্ড দিন (কমপক্ষে ৮ অক্ষর):`)
     if (!p) return
     act('reset_password', r.id, { password: p })
   }
-  function block(r: any) { if (confirm(`${r.name}-কে ব্লক করবেন? সে আর লগইন করতে পারবে না।`)) act('block', r.id) }
-  function remove(r: any) { if (confirm(`${r.name}-কে চিরতরে মুছে দেবেন? এটা ফেরানো যাবে না।`)) act('delete', r.id) }
+  function block(r: any) { if (confirm(`${r.name}-কে ব্লক করবেন? সে আর রাইডার হিসেবে ঢুকতে পারবে না।`)) act('block', r.id) }
+  function remove(r: any) { if (confirm(`${r.name}-কে মুছে দেবেন? এটা ফেরানো যাবে না।`)) act('delete', r.id) }
 
   const btn = (bg: string): any => ({ background: bg, color: 'white', border: 'none', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', cursor: 'pointer' })
+  const inp: any = { border: '2px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', width: '100%', fontSize: '13px', boxSizing: 'border-box', outline: 'none', color: '#1f2937', marginBottom: '8px' }
 
   return (
     <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <button onClick={() => setShowAdd(!showAdd)} style={{ ...btn('#db2777'), padding: '10px', fontSize: '13px' }}>{showAdd ? '✕ বন্ধ করুন' : '➕ রাইডার যোগ করুন'}</button>
+
+      {showAdd && (
+        <div style={{ background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: '12px', padding: '12px' }}>
+          <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 8px 0' }}>ইমেইলে আগে থেকে অ্যাকাউন্ট থাকলে (যেমন আপনার নিজের Gmail), সেটার সাথেই রাইডার ভূমিকা যুক্ত হবে, পাসওয়ার্ড খালি রাখুন।</p>
+          {([
+            ['name', 'নাম', 'text'],
+            ['phone', 'ফোন নম্বর', 'tel'],
+            ['email', 'ইমেইল (Gmail)', 'email'],
+            ['vehicleNumber', 'গাড়ির নম্বর', 'text'],
+            ['password', 'পাসওয়ার্ড (আগে অ্যাকাউন্ট থাকলে খালি রাখুন)', 'password'],
+          ] as const).map(([k, ph, t]) => (
+            <input key={k} type={t} value={f[k]} onChange={e => setF({ ...f, [k]: e.target.value })} placeholder={ph} style={inp} />
+          ))}
+          <button onClick={addRider} disabled={adding} style={{ ...btn('#16a34a'), width: '100%', padding: '10px', fontSize: '13px', opacity: adding ? 0.5 : 1 }}>{adding ? 'অপেক্ষা করুন...' : '✅ যোগ করুন'}</button>
+        </div>
+      )}
+
       {riders.length === 0 && <p style={{ textAlign: 'center', color: '#9ca3af', padding: '32px 0' }}>কোনো রাইডার নেই</p>}
+
       {riders.map((rider) => {
         const pending = !rider.is_approved && !rider.is_blocked
         return (
           <div key={rider.id} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px', opacity: busy === rider.id ? 0.5 : 1 }}>
             <p style={{ fontWeight: 'bold', fontSize: '14px', color: '#111', margin: '0 0 2px 0' }}>🏍️ {rider.name}</p>
-                       <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>📱 {rider.phone}</p>
+            <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>📱 {rider.phone}</p>
             <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>✉️ {rider.email}</p>
             <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}>🚗 গাড়ি নম্বর: {rider.vehicle_number}</p>
             <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '20px', display: 'inline-block', marginTop: '4px', background: rider.is_blocked ? '#fee2e2' : rider.is_approved ? '#dcfce7' : '#fef9c3', color: rider.is_blocked ? '#dc2626' : rider.is_approved ? '#15803d' : '#854d0e' }}>
