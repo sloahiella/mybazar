@@ -1553,6 +1553,41 @@ const isMobile = useIsMobile()
       });
     }
   }, [showOrder]);
+    // 👑 স্টক বদলালে (অর্ডার, ক্যান্সেল, অ্যাডমিনের পরিবর্তন) কার্ডে সাথে সাথে নতুন সংখ্যা
+  useEffect(() => {
+    const applyRow = (row) => {
+      setProducts(prev => prev.map(p => String(p.id) === String(row.product_id)
+        ? { ...p, stock: [{ ...(p.stock?.[0] || {}), quantity: row.quantity }] }
+        : p));
+    };
+
+    const ch = supabase
+      .channel('stock-live-' + Date.now())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock' }, (payload) => {
+        console.log('stock realtime:', payload.eventType, payload.new);
+        if (payload.new && payload.new.product_id != null) applyRow(payload.new);
+      })
+      .subscribe((status) => { console.log('stock channel:', status); });
+
+    // খবর কোনো কারণে না এলে ধরার জন্য: সাইটে ফিরলে আর প্রতি ১ মিনিটে একবার সব স্টক মিলিয়ে নেওয়া
+    const refreshAll = async () => {
+      if (document.visibilityState !== 'visible') return;
+      const { data } = await supabase.from('stock').select('product_id, quantity');
+      if (!data) return;
+      const map = new Map(data.map(r => [String(r.product_id), r.quantity]));
+      setProducts(prev => prev.map(p => map.has(String(p.id))
+        ? { ...p, stock: [{ ...(p.stock?.[0] || {}), quantity: map.get(String(p.id)) }] }
+        : p));
+    };
+    document.addEventListener('visibilitychange', refreshAll);
+    const poll = setInterval(refreshAll, 60000);
+
+    return () => {
+      supabase.removeChannel(ch);
+      document.removeEventListener('visibilitychange', refreshAll);
+      clearInterval(poll);
+    };
+  }, []);
    async function fetchProducts() {
     setLoading(true);
     try {

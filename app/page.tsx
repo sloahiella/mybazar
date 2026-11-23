@@ -14,7 +14,7 @@ import { requestNotificationPermission, messaging, onMessage } from './firebase'
 import FeatureBar from './components/FeatureBar';
 import MohasagorProducts from './components/MohasagorProducts';
 import MohasagorAdmin from './components/MohasagorAdmin';
-
+import LoginMonitor from './components/LoginMonitor';
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
@@ -575,6 +575,7 @@ const [showMohasagorAdmin, setShowMohasagorAdmin] = useState(false);
 const [showBranchControl, setShowBranchControl] = useState(false);
 const [adminViewingAsRider, setAdminViewingAsRider] = useState(false);
 const [showPanelHub, setShowPanelHub] = useState(false);
+const [showLoginMonitor, setShowLoginMonitor] = useState(false);
 const [hubPickEditor, setHubPickEditor] = useState(false);
 const [hubPages, setHubPages] = useState<any[]>([]);
 const [hubPageSearch, setHubPageSearch] = useState('');
@@ -1297,6 +1298,7 @@ if (!selectedBranch) {
         <span style={{ color: '#d1d5db', margin: '0 8px' }}>|</span>
         <a href="https://www.facebook.com/Sohelmart.com55" target="_blank" rel="noopener noreferrer" style={{ color: '#be185d', textDecoration: 'none', fontWeight: '600' }}>ফেসবুক পেজ</a>
       </div>
+     {showLoginMonitor && <LoginMonitor onClose={() => setShowLoginMonitor(false)} />}
             {showPanelHub && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => { setShowPanelHub(false); setHubPickEditor(false); }}>
           <div onClick={e => e.stopPropagation()} style={{ background: 'white', width: '100%', maxWidth: '420px', borderRadius: '20px 20px 0 0', padding: '16px', maxHeight: '80vh', overflowY: 'auto' }}>
@@ -1307,7 +1309,8 @@ if (!selectedBranch) {
                 {[
                   { icon: '🏍️', label: 'রাইডার প্যানেল', sub: 'কনফার্ম অর্ডার, ডেলিভারি, আয়ের হিসাব', fn: openRiderPanel },
                   { icon: '✏️', label: 'এডিটর প্যানেল', sub: 'একটা পেজ বেছে তার অর্ডার ও হিসাব', fn: openEditorPicker },
-                  { icon: '🏪', label: 'সেলার প্যানেল', sub: 'সেলার তালিকা, প্রতিটার অর্ডার ও আয়', fn: openSellerPanel },
+                 { icon: '🏪', label: 'সেলার প্যানেল', sub: 'সেলার তালিকা, প্রতিটার অর্ডার ও আয়', fn: openSellerPanel },
+                  { icon: '🛡️', label: 'লগইন নজরদারি', sub: 'কে কখন ঢুকছে, সেশন বাতিল, ব্লক', fn: () => { setShowPanelHub(false); setShowSettings(false); setShowLoginMonitor(true); } },
                 ].map(p => (
                   <button key={p.label} onClick={() => p.fn()} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px 14px', marginBottom: '8px', cursor: 'pointer', textAlign: 'left' }}>
                     <span style={{ fontSize: '24px' }}>{p.icon}</span>
