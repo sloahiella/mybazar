@@ -729,7 +729,7 @@ function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin,
             <span style={{ fontSize: '13px', color: '#4b5563', fontWeight: '700', marginLeft: '4px' }}>{reviews.length || 0} Reviews</span>
             <span style={{ color: '#d1d5db', margin: '0 4px' }}>|</span>
             <span style={{ fontSize: '13px', color: stock > 0 ? '#4b5563' : '#ef4444', fontWeight: '700' }}>
-              {stock > 0 ? `Stock ${Math.round(stock)}` : 'Stock 0 ⚠️'}
+             {stock > 0 ? `Stock ${Math.round(stock * 100) / 100}` : 'Stock 0 ⚠️'}
             </span>
           </div>
 
@@ -1454,19 +1454,15 @@ const isMobile = useIsMobile()
   const sellerId = isSeller ? localStorage.getItem('seller_id') : null;
 
   useEffect(() => { fetchProducts(); }, [branch]);
+   const urlProductHandled = useRef(false);
   useEffect(() => {
-    async function loadProductFromUrl() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const productId = urlParams.get('product');
-      if (!productId || products.length === 0) return;
-
-      const found = products.find(p => String(p.id) === String(productId));
-      if (found) {
-        setSelectedProduct(found);
-      }
-    }
-    loadProductFromUrl();
-  }, [products]);
+    if (urlProductHandled.current || loading || products.length === 0) return;
+    urlProductHandled.current = true;
+    const productId = new URLSearchParams(window.location.search).get('product');
+    if (!productId) return;
+    const found = products.find(p => String(p.id) === String(productId));
+    if (found) setSelectedProduct(found);
+  }, [products, loading]);
   useEffect(() => {
     async function loadInitialPage() {
       if (initialPageLoaded) return;
@@ -1588,6 +1584,12 @@ const isMobile = useIsMobile()
       clearInterval(poll);
     };
   }, []);
+    function closeProduct() {
+    setSelectedProduct(null);
+    if (window.location.search.includes('product=')) {
+      window.history.replaceState(null, '', selectedPage ? `?page=${selectedPage.id}` : window.location.pathname);
+    }
+  }
    async function fetchProducts() {
     setLoading(true);
     try {
@@ -1885,8 +1887,8 @@ if (orderId) {
     <div className="pb-40">
       {selectedProduct && (
         <ProductDetailModal
-          product={selectedProduct} 
-          onClose={() => setSelectedProduct(null)} 
+         product={products.find(p => String(p.id) === String(selectedProduct.id)) || selectedProduct}
+          onClose={closeProduct}
           onAdd={addToCart} 
           onSelectProduct={(p) => setSelectedProduct(p)} 
           isAdmin={isAdmin}

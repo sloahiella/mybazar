@@ -668,7 +668,7 @@ useEffect(() => {
     async function checkSellerLogin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
-  const { data: seller } = await supabase.from('sellers').select('*, profiles(full_name)').eq('profile_id', user.id).single()
+  const { data: seller } = await supabase.from('sellers').select('*, profiles(full_name)').eq('profile_id', user.id).maybeSingle()
  if (seller?.is_approved) {
     setSellerUser(seller)
     if (seller.branch_id) {
@@ -882,7 +882,7 @@ useEffect(() => {
     const updateData: any = { status };
     if (deliveryCharge !== undefined) updateData.delivery_charge = deliveryCharge;
     await supabase.from('orders').update(updateData).eq('id', id);
-    await supabase.from('notifications').update({ is_read: true }).ilike('body', `%#${id}%`);
+   await supabase.from('notifications').update({ is_read: true }).eq('order_id', id);
     if (status === 'confirmed' && customerPhone) {
       sendWhatsAppConfirmation(customerPhone);
     }
@@ -1299,38 +1299,45 @@ if (!selectedBranch) {
         <a href="https://www.facebook.com/Sohelmart.com55" target="_blank" rel="noopener noreferrer" style={{ color: '#be185d', textDecoration: 'none', fontWeight: '600' }}>ফেসবুক পেজ</a>
       </div>
      {showLoginMonitor && <LoginMonitor onClose={() => setShowLoginMonitor(false)} />}
-            {showPanelHub && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => { setShowPanelHub(false); setHubPickEditor(false); }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'white', width: '100%', maxWidth: '420px', borderRadius: '20px 20px 0 0', padding: '16px', maxHeight: '80vh', overflowY: 'auto' }}>
-            {!hubPickEditor ? (
-              <>
-                <h3 style={{ margin: '0 0 6px 0', color: PINK, fontSize: '17px' }}>🧭 সব প্যানেল</h3>
-                <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#6b7280' }}>যে প্যানেলে ঢুকবেন, সেটা ঠিক ওই ব্যবহারকারী যেভাবে দেখে সেভাবে খুলবে।</p>
-                {[
-                  { icon: '🏍️', label: 'রাইডার প্যানেল', sub: 'কনফার্ম অর্ডার, ডেলিভারি, আয়ের হিসাব', fn: openRiderPanel },
-                  { icon: '✏️', label: 'এডিটর প্যানেল', sub: 'একটা পেজ বেছে তার অর্ডার ও হিসাব', fn: openEditorPicker },
-                 { icon: '🏪', label: 'সেলার প্যানেল', sub: 'সেলার তালিকা, প্রতিটার অর্ডার ও আয়', fn: openSellerPanel },
-                  { icon: '🛡️', label: 'লগইন নজরদারি', sub: 'কে কখন ঢুকছে, সেশন বাতিল, ব্লক', fn: () => { setShowPanelHub(false); setShowSettings(false); setShowLoginMonitor(true); } },
-                ].map(p => (
-                  <button key={p.label} onClick={() => p.fn()} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px 14px', marginBottom: '8px', cursor: 'pointer', textAlign: 'left' }}>
-                    <span style={{ fontSize: '24px' }}>{p.icon}</span>
-                    <span>
-                      <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#1f2937' }}>{p.label}</span>
-                      <span style={{ display: 'block', fontSize: '12px', color: '#6b7280' }}>{p.sub}</span>
-                    </span>
-                  </button>
-                ))}
-              </>
-            ) : (
-              <>
-                <button onClick={() => setHubPickEditor(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', padding: 0, marginBottom: '8px' }}>← ব্যাক</button>
-                <h3 style={{ margin: '0 0 8px 0', color: PINK, fontSize: '16px' }}>✏️ কোন পেজের এডিটর প্যানেল?</h3>
-                <input value={hubPageSearch} onChange={e => setHubPageSearch(e.target.value)} placeholder="🔍 পেজ খুঁজুন..." style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', marginBottom: '10px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} />
-                {hubPages.filter(p => (p.name_bn || p.name || '').toLowerCase().includes(hubPageSearch.toLowerCase())).map(p => (
-                  <button key={p.id} onClick={() => openEditorPanel(p)} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '10px 14px', marginBottom: '6px', cursor: 'pointer', textAlign: 'left', fontSize: '14px', color: '#1f2937' }}>{p.name_bn || p.name}</button>
-                ))}
-              </>
-            )}
+                 {showPanelHub && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => { setShowPanelHub(false); setHubPickEditor(false); }} />
+          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '340px', maxWidth: '92vw', background: '#f9fafb', boxShadow: '-4px 0 20px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ background: PINK, color: 'white', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>{hubPickEditor ? '✏️ এডিটর প্যানেল' : '🧭 সব প্যানেল'}</h2>
+              <button onClick={() => { setShowPanelHub(false); setHubPickEditor(false); }} style={{ background: 'none', border: 'none', color: 'white', fontSize: '22px', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
+              {!hubPickEditor ? (
+                <>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#6b7280' }}>যে প্যানেলে ঢুকবেন, সেটা ঠিক ওই ব্যবহারকারী যেভাবে দেখে সেভাবে খুলবে।</p>
+                  {[
+                    { icon: '🏍️', label: 'রাইডার প্যানেল', sub: 'কনফার্ম অর্ডার, ডেলিভারি, আয়ের হিসাব', fn: openRiderPanel },
+                    { icon: '✏️', label: 'এডিটর প্যানেল', sub: 'একটা পেজ বেছে তার অর্ডার ও হিসাব', fn: openEditorPicker },
+                    { icon: '🏪', label: 'সেলার প্যানেল', sub: 'সেলার তালিকা, প্রতিটার অর্ডার ও আয়', fn: openSellerPanel },
+                    { icon: '🛡️', label: 'লগইন নজরদারি', sub: 'কে কখন ঢুকছে, সেশন বাতিল, ব্লক', fn: () => { setShowPanelHub(false); setShowSettings(false); setShowLoginMonitor(true); } },
+                  ].map(p => (
+                    <button key={p.label} onClick={() => p.fn()} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px 14px', marginBottom: '8px', cursor: 'pointer', textAlign: 'left' }}>
+                      <span style={{ fontSize: '24px' }}>{p.icon}</span>
+                      <span>
+                        <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#1f2937' }}>{p.label}</span>
+                        <span style={{ display: 'block', fontSize: '12px', color: '#6b7280' }}>{p.sub}</span>
+                      </span>
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <button onClick={() => setHubPickEditor(false)} style={{ background: 'none', border: 'none', color: PINK, fontSize: '13px', cursor: 'pointer', padding: 0, marginBottom: '8px' }}>← ব্যাক</button>
+                  <p style={{ margin: '0 0 8px 0', color: '#374151', fontSize: '14px', fontWeight: 600 }}>কোন পেজের এডিটর প্যানেল?</p>
+                  <input value={hubPageSearch} onChange={e => setHubPageSearch(e.target.value)} placeholder="🔍 পেজ খুঁজুন..." style={{ border: '2px solid #d1d5db', borderRadius: '10px', padding: '10px 14px', width: '100%', fontSize: '14px', marginBottom: '10px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} />
+                  {hubPages.filter(p => (p.name_bn || p.name || '').toLowerCase().includes(hubPageSearch.toLowerCase())).map(p => (
+                    <button key={p.id} onClick={() => openEditorPanel(p)} style={{ width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '10px 14px', marginBottom: '6px', cursor: 'pointer', textAlign: 'left', fontSize: '14px', color: '#1f2937' }}>{p.name_bn || p.name}</button>
+                  ))}
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

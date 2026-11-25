@@ -26,7 +26,7 @@ const inputStyle = {
   color: '#1f2937',
   background: 'white',
 };
-
+let submitLock = false;
 export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
   const uniqueSellers = [...new Set(cart.map(item => item.seller_id).filter(Boolean))];
   const [form, setForm] = useState({
@@ -64,8 +64,9 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
   // 👑 ডেলিভারি ফ্রি কিনা (শুধু দেখানোর জন্য, চার্জ যোগ হয় না)
    const kachaTotal = cart.filter(c => c.is_kacha_bazar).reduce((a, c) => a + c.price_per_unit * c.qty, 0);
   const freeDelivery = total >= 300 && kachaTotal >= 150;
-  async function submitOrder() {
-         if (!form.name || !form.phone || !form.address) {
+   async function submitOrder() {
+    if (submitLock) return;
+    if (!form.name || !form.phone || !form.address) {
       setError('নাম, ফোন নম্বর এবং ঠিকানা আবশ্যক!');
       return;
     }
@@ -73,6 +74,7 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
       setError('বিকাশ/নগদ এ পেমেন্ট করলে Transaction ID দিতে হবে!');
       return;
     }
+    submitLock = true;
     setLoading(true);
     setError('');
 
@@ -83,19 +85,20 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
         customer_name: form.name,
         customer_email: form.email,
         customer_phone: form.phone,
-         district: form.district,
+        district: form.district,
         upazila: form.upazila,
         address: form.address,
-        vehicle_number: form.vehicle_number,
+        vehicle_number: form.vehicle_number || null,
         payment_method: form.payment,
         transaction_id: form.transaction_id || null,
-            total_amount: total,
+        total_amount: total,
         status: 'pending'
       })
       .select()
       .single();
 
-       if (orderError) {
+    if (orderError) {
+      submitLock = false;
       setError('অর্ডার করতে সমস্যা হয়েছে! আবার চেষ্টা করুন।');
       setLoading(false);
       return;
@@ -103,10 +106,9 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
 
     // 👑 বিস্তারিত ঠিকানা সেভ করা হলো, পরের বার অর্ডার করার সময় auto-fill হবে
     localStorage.setItem('customer_address', form.address);
-        localStorage.setItem('customer_address', form.address);
-    localStorage.setItem('customer_vehicle', form.vehicle_number);
+    localStorage.setItem('customer_vehicle', form.vehicle_number || '');
 
-const items = cart.map(item => {
+    const items = cart.map(item => {
       const isMoha = typeof item.id === 'string' && item.id.startsWith('moha-');
       return {
         order_id: order.id,
@@ -123,15 +125,23 @@ const items = cart.map(item => {
     const { error: itemsError } = await supabase.from('order_items').insert(items);
     if (itemsError) {
       console.error('order_items insert error:', JSON.stringify(itemsError));
+      // খালি অর্ডার যেন জমে না থাকে: অর্ডারটা বাতিল করে কাস্টমারকে জানানো
+      await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id);
+      submitLock = false;
+      setError('অর্ডার সম্পূর্ণ হয়নি। আবার চেষ্টা করুন।');
+      setLoading(false);
+      return;
     }
+
     setLoading(false);
-      trackFb('Purchase', {
+    trackFb('Purchase', {
       value: Math.round(total),
       currency: 'BDT',
       content_type: 'product',
       content_ids: cart.map(c => String(c.id)),
       num_items: cart.length,
     });
+    submitLock = false;
     onSuccess(order.id, form.phone);
   }
  return (

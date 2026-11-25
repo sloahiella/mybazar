@@ -100,8 +100,8 @@ export default function LoginMonitor({ onClose }: { onClose: () => void }) {
   const btn = (bg: string): any => ({ background: bg, color: 'white', border: 'none', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', cursor: 'pointer' })
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ background: '#f9fafb', width: '100%', maxWidth: '560px', borderRadius: '20px 20px 0 0', padding: '16px', maxHeight: '88vh', overflowY: 'auto' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'stretch', justifyContent: 'flex-end' }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#f9fafb', width: '420px', maxWidth: '96vw', padding: '16px', overflowY: 'auto', boxShadow: '-4px 0 20px rgba(0,0,0,0.2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
           <h3 style={{ margin: 0, color: '#db2777', fontSize: '17px' }}>🛡️ লগইন নজরদারি</h3>
           <div style={{ display: 'flex', gap: '8px' }}>
