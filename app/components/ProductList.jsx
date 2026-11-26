@@ -124,10 +124,9 @@ function CartItem({ item, onUpdate, onRemove }) {
     const q = parseFloat(newQty);
     if (!q || q <= 0) return 0;
     if (isKg && newUnit === 'gm') return q / 1000;
-    if (isLiter && newUnit === 'ml') return q / 1000;
-    return q;
+      if (isLiter && newUnit === 'ml') return q / 1000;
+    return isPiece ? Math.floor(q) : q;
   };
-
   return (
     <div className="bg-white rounded-xl shadow p-3">
       <div className="flex justify-between items-start">
@@ -138,14 +137,15 @@ function CartItem({ item, onUpdate, onRemove }) {
         </div>
         <div className="flex gap-2">
           <button onClick={() => setEditing(!editing)} className="text-blue-500 text-xs border border-blue-500 px-2 py-1 rounded-lg">Edit</button>
-          <button onClick={() => onRemove(item.id)} className="text-red-500 text-xs border border-red-500 px-2 py-1 rounded-lg">Remove</button>
+          <button onClick={() => onRemove(item.id, item.selectedSize)} className="text-red-500 text-xs border border-red-500 px-2 py-1 rounded-lg">Remove</button>
         </div>
       </div>
       {editing ? (
         <div className="mt-2 bg-gray-50 rounded-lg p-2">
           <div className="flex gap-1 mb-1">
-            <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={newQty}
-              onChange={e => setNewQty(e.target.value)}
+                    <input type={isPiece ? 'text' : 'number'} inputMode={isPiece ? 'numeric' : 'decimal'} min="0" step={isPiece ? '1' : '0.001'} value={newQty}
+              onKeyDown={e => { if (isPiece && ['.', ',', '-', '+', 'e', 'E'].includes(e.key)) e.preventDefault(); }}
+              onChange={e => setNewQty(isPiece ? digitsOnly(e.target.value) : e.target.value)}
               className="border-2 border-gray-300 rounded-lg px-2 py-2 w-full text-sm text-gray-900"
               placeholder="পরিমাণ লিখুন" />
             {!isPiece && (
@@ -162,7 +162,7 @@ function CartItem({ item, onUpdate, onRemove }) {
             </p>
           )}
           <div className="flex gap-2">
-            <button onClick={() => { const a = getActualQty(); if (a > 0) { onUpdate(item.id, a); setEditing(false); } }}
+            <button onClick={() => { const a = getActualQty(); if (a > 0) { onUpdate(item.id, a, item.selectedSize); setEditing(false); } }}
               className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm flex-1">সেভ</button>
             <button onClick={() => setEditing(false)} className="bg-gray-200 text-gray-600 px-3 py-1 rounded-lg text-sm">বাতিল</button>
           </div>
@@ -1006,7 +1006,7 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
     >
       {product.discount_percent > 0 && (
         <span style={{ position: 'absolute', top: '6px', right: '6px', background: '#db2777', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px', zIndex: 10 }}>
-          ৳{Math.round(product.price_per_unit * product.discount_percent / 100)} ছাড়
+          {Math.round(product.price_per_unit * product.discount_percent / 100)} টাকা সেভ
         </span>
       )}
       {canEdit && (
@@ -1805,18 +1805,19 @@ const isMobile = useIsMobile()
     setCart([...cart, { ...product, qty }]);
   }
 
-   function updateCartQty(id, qty) {
-    if (qty <= 0) { setCart(cart.filter(c => c.id !== id)); return; }
-    const item = cart.find(c => c.id === id);
+    function updateCartQty(id, qty, size) {
+    if (qty <= 0) { setCart(cart.filter(c => !(c.id === id && c.selectedSize === size))); return; }
+    const item = cart.find(c => c.id === id && c.selectedSize === size);
     const stockQty = parseFloat(item?.stock?.[0]?.quantity) || 0;
-    if (item && qty > stockQty + 0.0001) {
+    const otherSizes = cart.filter(c => c.id === id && c.selectedSize !== size).reduce((s, c) => s + c.qty, 0);
+    if (item && otherSizes + qty > stockQty + 0.0001) {
       alert(`দুঃখিত, এই পণ্যের স্টকে মাত্র ${stockQty} ${item.unit} আছে।`);
       return;
     }
-    setCart(cart.map(c => c.id === id ? { ...c, qty } : c));
+    setCart(cart.map(c => (c.id === id && c.selectedSize === size) ? { ...c, qty } : c));
   }
 
-  function removeFromCart(id) { setCart(cart.filter(c => c.id !== id)); }
+  function removeFromCart(id, size) { setCart(cart.filter(c => !(c.id === id && c.selectedSize === size))); }
    const total = cart.reduce((a, c) => a + c.price_per_unit * c.qty, 0);
 
   // 👑 ফ্রি ডেলিভারির হিসাব (শুধু দেখানোর জন্য, চার্জ যোগ হয় না)
@@ -1851,8 +1852,14 @@ const handlePageSelect = (page) => {
      <div style={{ background: '#df1d75', color: 'white', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '12px', height: '60px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.2)', flexShrink: 0 }}>
           <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer', fontWeight: 'bold' }}>←</button>
           <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>🛒 আপনার ঝুড়ি</h2>
-          <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '20px', fontSize: '13px' }}>{cart.length} টি</span>
+         <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '20px', fontSize: '13px' }}>{cart.length} টি</span>
+          <button onClick={() => setShowCustomerOrders(true)} style={{ marginLeft: 'auto', background: 'white', color: '#db2777', border: 'none', borderRadius: '20px', padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>📦 অর্ডার লিস্ট</button>
         </div>
+                {showCustomerOrders && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 1100 }}>
+            <OrdersModal onClose={() => setShowCustomerOrders(false)} isAdmin={false} />
+          </div>
+        )}
 <div className="p-4 space-y-3" style={{ flex: 1 }}>
           {cart.map(item => <CartItem key={`${item.id}-${item.selectedSize}`} item={item} onUpdate={updateCartQty} onRemove={removeFromCart} />)}
         </div>
@@ -1900,7 +1907,7 @@ if (orderId) {
         <ProductDetailModal
          product={products.find(p => String(p.id) === String(selectedProduct.id)) || selectedProduct}
           onClose={closeProduct}
-          onAdd={addToCart} 
+       onAdd={addToCartSafe}
           onSelectProduct={(p) => setSelectedProduct(p)} 
           isAdmin={isAdmin}
          onNeedLogin={() => { setSelectedProduct(null); const event = new CustomEvent('needCustomerAuth'); window.dispatchEvent(event); }}
@@ -2042,7 +2049,7 @@ if (orderId) {
                 key={product.id} 
                 product={product} 
                 index={index}
-                onAdd={addToCart}
+             onAdd={addToCartSafe}
                 onNeedLogin={() => { const event = new CustomEvent('needCustomerAuth'); window.dispatchEvent(event); }}
                 isAdmin={isAdmin} 
                 isEditor={isEditor} 

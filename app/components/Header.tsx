@@ -208,11 +208,11 @@ export default function Header({ cartCount = 0, onCartClick, onMenuClick, role, 
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       {[
-                        { icon: '📋', label: 'অর্ডার লিস্ট', onClick: () => { setShowProfile(false); onOrdersClick && onOrdersClick(); } },
-                        { icon: '❤️', label: 'আমার Wishlist', onClick: () => setShowProfile(false) },
+                       { icon: '📋', label: 'অর্ডার লিস্ট', hideOnMobile: true, onClick: () => { setShowProfile(false); onOrdersClick && onOrdersClick(); } },
+                       { icon: '❤️', label: 'আমার Wishlist', hideOnMobile: true, onClick: () => setShowProfile(false) },
                         { icon: '📍', label: 'আমার ঠিকানা', onClick: () => setShowProfile(false) },
                         { icon: '👤', label: 'Account তথ্য', onClick: () => setShowProfile(false) },
-                      ].map((item, i) => (
+                      ].filter((item: any) => !(isMobile && item.hideOnMobile)).map((item: any, i: number) => (
                         <button key={i} onClick={item.onClick} style={{ width: '100%', padding: '14px 16px', background: 'none', border: 'none', borderBottom: '1px solid #f3f4f6', textAlign: 'left', cursor: 'pointer', fontSize: '14px', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <span style={{ fontSize: '18px' }}>{item.icon}</span>
                           {item.label}
