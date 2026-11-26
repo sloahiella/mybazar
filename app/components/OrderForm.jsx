@@ -74,6 +74,15 @@ export default function OrderForm({ cart, branch, total, onSuccess, onBack }) {
       setError('বিকাশ/নগদ এ পেমেন্ট করলে Transaction ID দিতে হবে!');
       return;
     }
+        const badPiece = cart.find(item => {
+      const u = String(item.unit || '').toLowerCase().trim();
+      const isWeight = u === 'kg' || u === 'liter' || u === 'l';
+      return !isWeight && !Number.isInteger(Number(item.qty));
+    });
+    if (badPiece) {
+      setError(`"${badPiece.name}"-এর পরিমাণ পূর্ণসংখ্যা হতে হবে। ঝুড়িতে ঠিক করুন।`);
+      return;
+    }
     submitLock = true;
     setLoading(true);
     setError('');

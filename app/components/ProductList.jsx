@@ -553,6 +553,10 @@ function ReviewImages({ productId, isAdmin }) {
     </div>
   );
 }
+// পিস পণ্যের পরিমাণের জন্য: শুধু অঙ্ক রাখে (বাংলা অঙ্কও ইংরেজিতে বদলায়), দশমিক বাদ
+function digitsOnly(v) {
+  return String(v).replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)).replace(/\D/g, '');
+}
 function ProductDetailModal({ product, onClose, onAdd, onSelectProduct, isAdmin, onNeedLogin }) {
     const unitPrice = Number(product.discount_percent) > 0 ? Math.round(product.price_per_unit * (1 - product.discount_percent / 100)) : product.price_per_unit;
   const [qty, setQty] = useState('');
@@ -818,7 +822,7 @@ if (availableSizes.length > 0 && !selectedSize) { alert('দয়া করে 
               min="1" 
               step={isPiece ? '1' : '0.001'} 
               value={qty} 
-              onChange={e => setQty(e.target.value)} 
+             onKeyDown={e => { if (isPiece && ['.', ',', '-', '+', 'e', 'E'].includes(e.key)) e.preventDefault(); }} onChange={e => setQty(isPiece ? digitsOnly(e.target.value) : e.target.value)}
               className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               style={{ 
                 border: '1px solid #d1d5db', 
@@ -1058,7 +1062,7 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
         
         <div style={{ marginTop: '4px' }}>
           <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-            <input type="number" min="0" step={isPiece ? '1' : '0.001'} value={qty} onChange={e => setQty(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', width: '100%', fontSize: '12px', color: '#1f2937', outline: 'none', minWidth: 0 }} placeholder="পরিমাণ" />
+          <input type={isPiece ? 'text' : 'number'} inputMode={isPiece ? 'numeric' : 'decimal'} min="0" step={isPiece ? '1' : '0.001'} value={qty} onKeyDown={e => { if (isPiece && ['.', ',', '-', '+', 'e', 'E'].includes(e.key)) e.preventDefault(); }} onChange={e => setQty(isPiece ? digitsOnly(e.target.value) : e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 4px', width: '100%', fontSize: '12px', color: '#1f2937', outline: 'none', minWidth: 0 }} placeholder="পরিমাণ" />
             {!isPiece && (
                          <select value={unit} onChange={e => setUnit(e.target.value)} style={{ border: '2px solid #d1d5db', borderRadius: '8px', padding: '6px 2px', fontSize: '11px', background: 'white', color: '#111827', fontWeight: '600', flexShrink: 0 }}>
                 {isKg && <><option value={product.unit}>Kg</option><option value="gm">gm</option></>}
@@ -1589,6 +1593,13 @@ const isMobile = useIsMobile()
     if (window.location.search.includes('product=')) {
       window.history.replaceState(null, '', selectedPage ? `?page=${selectedPage.id}` : window.location.pathname);
     }
+  }
+    // পিস পণ্যের পরিমাণ সবসময় পূর্ণসংখ্যা হয়ে ঝুড়িতে ঢুকবে (কেজি, লিটারে দশমিক চলবে)
+  function addToCartSafe(product, qty) {
+    const u = String(product?.unit || '').toLowerCase().trim();
+    const isWeight = u === 'kg' || u === 'liter' || u === 'l';
+    const q = isWeight ? qty : Math.max(1, Math.floor(Number(qty) || 1));
+    return addToCart(product, q);
   }
    async function fetchProducts() {
     setLoading(true);
