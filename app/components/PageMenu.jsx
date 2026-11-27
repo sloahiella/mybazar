@@ -1,7 +1,7 @@
 ﻿'use client';
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-
+import EditorBox from './EditorBox';
 const supabase = createClient(
   'https://jthdtmqrapnfmmmeuqsw.supabase.co',
   'sb_publishable_Eoh22VBAPMLBFnhyXMkq6Q_LqIbOw6J'
@@ -206,17 +206,7 @@ function PageItem({ page, selectedPage, onSelectPage, isAdmin, onRefresh, depth 
         </div>
       )}
 
-      {showPasswordSet && (
-        <div style={{ marginLeft: '12px', background: '#fdf2f8', borderRadius: '8px', padding: '10px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <p style={{ fontSize: '12px', color: '#db2777', fontWeight: 'bold', margin: 0 }}>🔑 Editor Password সেট করুন</p>
-          <input value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="password লিখুন" type="text" style={inp} />
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <button onClick={setPassword} style={{ background: '#db2777', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', flex: 1, cursor: 'pointer' }}>সেট করুন</button>
-            <button onClick={() => { setShowPasswordSet(false); setNewPassword(''); }} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>বাতিল</button>
-          </div>
-        </div>
-      )}
-
+           {showPasswordSet && <EditorBox page={page} onClose={() => setShowPasswordSet(false)} />}
       {showPaymentSet && (
         <div style={{ marginLeft: '12px', background: '#f0fdf4', borderRadius: '8px', padding: '10px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <p style={{ fontSize: '12px', color: '#15803d', fontWeight: 'bold', margin: 0 }}>💳 Payment নম্বর সেট করুন</p>

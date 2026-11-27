@@ -1141,28 +1141,16 @@ if (!selectedBranch) {
           </div>
         </div>
 
-        {showLoginModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-            <div style={{ background: 'white', borderRadius: '20px', padding: '24px', maxWidth: '340px', width: '100%', margin: '0 16px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: PINK, textAlign: 'center', marginBottom: '16px' }}>🔐 লগইন</h2>
-                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
-                <button onClick={() => setLoginType('admin')} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: loginType === 'admin' ? PINK : '#e5e7eb', background: loginType === 'admin' ? PINK : 'white', color: loginType === 'admin' ? 'white' : '#374151' }}>👑 Admin</button>
-                <button onClick={() => setLoginType('editor')} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid', cursor: 'pointer', borderColor: loginType === 'editor' ? PINK : '#e5e7eb', background: loginType === 'editor' ? PINK : 'white', color: loginType === 'editor' ? 'white' : '#374151' }}>✏️ Editor</button>
-                <button onClick={() => { setShowLoginModal(false); window.location.href = '/seller/login'; }} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid #16a34a', cursor: 'pointer', background: 'white', color: '#16a34a' }}>🏪 Seller</button>
-               <button onClick={() => { setShowLoginModal(false); window.location.href = '/rider/login'; }} style={{ padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', border: '2px solid #f97316', cursor: 'pointer', background: 'white', color: '#f97316' }}>🏍️ Rider</button>
-              </div>
-             <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} placeholder={loginType === 'admin' ? 'Admin পাসওয়ার্ড' : loginType === 'rider' ? 'Rider পাসওয়ার্ড' : 'Editor পাসওয়ার্ড'} style={{ border: `2px solid ${PINK_BORDER}`, borderRadius: '8px', padding: '10px 12px', width: '100%', fontSize: '14px', marginBottom: '8px', boxSizing: 'border-box', outline: 'none', color: '#1f2937' }} autoFocus />
-              {loginError && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '8px' }}>{loginError}</p>}
-                                        {loginType === 'admin' && (
-                <a href={`/forgot-password?email=${encodeURIComponent(ADMIN_EMAIL)}`} style={{ color: PINK, fontSize: '12px', display: 'inline-block', marginBottom: '8px' }}>পাসওয়ার্ড ভুলে গেছেন?</a>
-              )}
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={handleLogin} style={{ background: PINK, color: 'white', border: 'none', borderRadius: '8px', padding: '10px', flex: 1, fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>লগইন</button>
-                <button onClick={() => { setShowLoginModal(false); setPassword(''); setLoginError(''); }} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '8px', padding: '10px 16px', fontSize: '14px', cursor: 'pointer' }}>বাতিল</button>
-              </div>
-            </div>
-          </div>
-        )}
+       {showLoginModal && (
+  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }} onClick={() => setShowLoginModal(false)}>
+    <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '20px', padding: '24px', maxWidth: '340px', width: '100%', margin: '0 16px', textAlign: 'center' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: PINK, marginBottom: '8px' }}>🔐 স্টাফ লগইন</h2>
+      <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px 0' }}>অ্যাডমিন, এডিটর, রাইডার ও সেলার, সবাই এখান থেকে ঢুকবেন: ইমেইল, পাসওয়ার্ড আর ইমেইলে আসা কোড দিয়ে।</p>
+      <a href="/staff-login" style={{ display: 'block', background: PINK, color: 'white', borderRadius: '10px', padding: '12px', fontSize: '15px', fontWeight: '600', textDecoration: 'none', marginBottom: '8px' }}>এগিয়ে যান</a>
+      <button onClick={() => setShowLoginModal(false)} style={{ background: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '10px', padding: '10px 16px', fontSize: '14px', cursor: 'pointer', width: '100%' }}>বাতিল</button>
+    </div>
+  </div>
+)}
       </div>
     );
   }

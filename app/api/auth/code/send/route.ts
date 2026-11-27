@@ -35,17 +35,19 @@ export async function POST(request: Request) {
     if (!(await allowed(admin, `staffcode-send:${user.id}`, 5, 3600))) return tooMany();
     if (!(await allowed(admin, `staffcode-ip:${ip}`, 30, 3600))) return tooMany();
 
-    // এই লগইনের কোনো স্টাফ ভূমিকা আছে কিনা (নইলে কোড পাঠানো হয় না)
+    // অনুমোদিত কোনো স্টাফ ভূমিকা আছে কিনা (নইলে কোড পাঠানো হয় না)
     const email = user.email.toLowerCase();
-    const [adm, rid, sel] = await Promise.all([
+    const [adm, rid, sel, edi] = await Promise.all([
       admin.from('admins').select('email'),
       admin.from('riders').select('id').eq('user_id', user.id).eq('is_approved', true).limit(1),
-      admin.from('sellers').select('id').eq('profile_id', user.id).limit(1),
+      admin.from('sellers').select('id').eq('profile_id', user.id).eq('is_approved', true).limit(1),
+      admin.from('page_editors').select('id').eq('user_id', user.id).eq('is_blocked', false).limit(1),
     ]);
     const hasRole =
       (adm.data || []).some((a: any) => String(a.email || '').toLowerCase() === email) ||
       (rid.data?.length ?? 0) > 0 ||
-      (sel.data?.length ?? 0) > 0;
+      (sel.data?.length ?? 0) > 0 ||
+      (edi.data?.length ?? 0) > 0;
     if (!hasRole) return fail('এই অ্যাকাউন্টে কোনো প্যানেলের অনুমতি নেই');
 
     const code = String(crypto.randomInt(100000, 1000000));
